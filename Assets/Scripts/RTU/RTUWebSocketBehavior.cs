@@ -10,6 +10,11 @@ namespace RealTimeUpdateRuntime
 {
 	public class RTUWebSocketBehavior : WebSocketBehavior
 	{
+		
+		//todo ideally this should register, but given that the websocketsharp uses template argument,
+		//we would need to use reflection to get all behaviours, get a path from the object, then use
+		//reflection to create a runtime method of the templated func and use that to instantiate. https://stackoverflow.com/questions/2604743/setting-generic-type-at-runtime
+		
 		private readonly Dictionary<string, IRTUCommandHandler> commandHandlers = new()
 		{
 			{"ping", new PingHandler()},
@@ -39,7 +44,7 @@ namespace RealTimeUpdateRuntime
 
 		protected override void OnClose(CloseEventArgs args)
 		{
-			Debug.Log($"Connection lost {args.Reason}");
+			Debug.Log($"Disconnected from editor {args.Reason}");
 		}
 
 		protected override void OnOpen()
@@ -79,5 +84,10 @@ namespace RealTimeUpdateRuntime
 				}
 			}
 		}
+	}
+
+	public interface IRTUMessageHandler
+	{
+		string Path { get; }
 	}
 }

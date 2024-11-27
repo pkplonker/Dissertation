@@ -12,16 +12,38 @@ namespace Editor
 		private static WebSocket socket;
 		public static bool IsConnected => socket?.ReadyState == WebSocketState.Open;
 
-		public static void Connect()
+		public static void Connect(string ipAddress, Action completeCallback = null)
 		{
-			string ipAddress = "127.0.0.1";
 			int port = 6666;
 			string behaviour = "RTU";
-			socket = new WebSocket($"ws://{ipAddress}:{port}/{behaviour}");
-			socket.OnOpen += (_, args) => Debug.Log("Connected to the server");
-			socket.OnClose += (_, args) => Debug.Log("Closed connection to server");
+			try
+			{
+				socket = new WebSocket($"ws://{ipAddress}:{port}/{behaviour}");
+			}
+			catch (Exception e)
+			{
+				Debug.LogError($"Unable to create game connection {e.Message}");
+				return;
+			}
+
+			socket.OnOpen += (_, args) =>
+			{
+				completeCallback?.Invoke();
+				Debug.Log("Connected to the server");
+			};
+			socket.OnClose += (_, args) =>
+			{
+				if (args.WasClean)
+				{
+					Debug.Log("Closed connection to game");
+				}
+				else
+				{
+					Debug.LogWarning($"Unable to establish connection to game. Reason: {args.Reason}");
+				}
+			};
 			socket.OnMessage += (_, args) => Debug.Log($"Message received: {args.Data}");
-			socket.OnError += (_, args) => Debug.Log($"Error connection to server: {args.Message}");
+			socket.OnError += (_, args) => Debug.Log($"Error connection to game: {args.Message}");
 
 			socket.Connect();
 		}

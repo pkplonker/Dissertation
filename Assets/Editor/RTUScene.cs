@@ -24,7 +24,6 @@ namespace Editor
 				clonedObject.transform.position = rootObj.transform.position;
 			}
 
-			Debug.Log("Setup");
 		}
 
 		public static bool IsVisible() => StageUtility.GetCurrentStage() == customStage;

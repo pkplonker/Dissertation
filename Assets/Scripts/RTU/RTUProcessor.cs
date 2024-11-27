@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -20,14 +22,32 @@ namespace RealTimeUpdateRuntime
 			cancellationTokenSource = new CancellationTokenSource();
 			serverThread = new Thread(() => StartServer(cancellationTokenSource.Token));
 			serverThread.Start();
-			Debug.Log("WebSocket server thread started.");
 		}
 
-		public async Task StartServer(CancellationToken token)
+		public void StartServer(CancellationToken token)
 		{
 			try
 			{
+				Debug.Log("Starting Server");
 				int port = 6666;
+				string localIP;
+				// https://stackoverflow.com/questions/6803073/get-local-ip-address
+				if (System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
+				{
+					using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
+					{
+						socket.Connect("8.8.8.8", 65530);
+						IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+						localIP = endPoint.Address.ToString();
+						Debug.Log(localIP);
+					}
+				}
+				else
+				{
+					Debug.LogWarning("Not connected to network - unable to support RTU");
+					return;
+				}
+
 				webSocketServer = new WebSocketServer(port);
 				webSocketServer.AddWebSocketService<RTUWebSocketBehavior>("/RTU");
 				webSocketServer.Start();

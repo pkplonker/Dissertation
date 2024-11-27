@@ -6,6 +6,7 @@ namespace Editor
 	public class RTUEditorWindow : EditorWindow
 	{
 		private RTUProcessorPropertyUpdate rtuProcessorPropertyUpdate;
+		private string ip = "127.0.0.1";
 
 		[MenuItem("SH/RTU")]
 		public static void ShowWindow()
@@ -26,14 +27,15 @@ namespace Editor
 			{
 				if (GUILayout.Button("Connect to Game"))
 				{
-					RTUEditorConnection.Connect();
-					if (rtuProcessorPropertyUpdate == null)
+					RTUEditorConnection.Connect(ip, () =>
 					{
-						rtuProcessorPropertyUpdate = new RTUProcessorPropertyUpdate();
-					}
-					RTUScene.Show();
+						rtuProcessorPropertyUpdate ??= new RTUProcessorPropertyUpdate();
+						RTUScene.Show();
+					});
 				}
 			}
+
+			ip = EditorGUILayout.TextField("IP Address", ip);
 
 			if (GUILayout.Button("Send Test Data to Game"))
 			{
