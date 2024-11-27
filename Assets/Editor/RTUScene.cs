@@ -27,6 +27,8 @@ namespace Editor
 			Debug.Log("Setup");
 		}
 
+		public static bool IsVisible() => StageUtility.GetCurrentStage() == customStage;
+
 		public static void Close()
 		{
 			// bool result = EditorUtility.DisplayDialog(
@@ -46,7 +48,6 @@ namespace Editor
 			// }
 
 			StageUtility.GoToMainStage();
-			
 		}
 	}
 }

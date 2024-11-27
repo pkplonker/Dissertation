@@ -1,49 +1,51 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Net.Sockets;
-using System.Text;
-using Editor;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
-public class RTUEditorWindow : EditorWindow
+namespace Editor
 {
-	[MenuItem("SH/RTU")]
-	public static void ShowWindow()
+	public class RTUEditorWindow : EditorWindow
 	{
-		GetWindow<RTUEditorWindow>("Editor Client");
-	}
+		private RTUProcessorPropertyUpdate rtuProcessorPropertyUpdate;
 
-	private void OnGUI()
-	{
-		if (RTUProcessor.IsConnected)
+		[MenuItem("SH/RTU")]
+		public static void ShowWindow()
 		{
-			if (GUILayout.Button("Disconnect from Game"))
+			GetWindow<RTUEditorWindow>("Editor Client");
+		}
+
+		private void OnGUI()
+		{
+			if (RTUEditorConnection.IsConnected)
 			{
-				RTUProcessor.Disconnect();
+				if (GUILayout.Button("Disconnect from Game"))
+				{
+					RTUEditorConnection.Disconnect();
+				}
 			}
-		}
-		else
-		{
-			if (GUILayout.Button("Connect to Game"))
+			else
 			{
-				RTUProcessor.Connect();
+				if (GUILayout.Button("Connect to Game"))
+				{
+					RTUEditorConnection.Connect();
+					if (rtuProcessorPropertyUpdate == null)
+					{
+						rtuProcessorPropertyUpdate = new RTUProcessorPropertyUpdate();
+					}
+					RTUScene.Show();
+				}
 			}
-		}
 
-		if (GUILayout.Button("Send Test Data to Game"))
-		{
-			RTUProcessor.SendMessageToGame("Hello, Game!");
-		}
-		
-		if (GUILayout.Button("Scene Test"))
-		{
-			RTUScene.Show();
-		}
+			if (GUILayout.Button("Send Test Data to Game"))
+			{
+				RTUEditorConnection.SendMessageToGame("Hello, Game!");
+			}
 
-		GUILayout.Label(RTUProcessor.IsConnected ? "Connected" : "Disconnected");
+			if (GUILayout.Button("Scene Test"))
+			{
+				RTUScene.Show();
+			}
+
+			GUILayout.Label(RTUEditorConnection.IsConnected ? "Connected" : "Disconnected");
+		}
 	}
 }

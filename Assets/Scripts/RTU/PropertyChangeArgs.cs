@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RTU
+namespace RealTimeUpdateRuntime
 {
 	[Serializable]
 	public class PropertyChangeArgs

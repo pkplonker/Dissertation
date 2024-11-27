@@ -1,9 +1,9 @@
-﻿
-	using System.Collections.Generic;
-	using System.Net.Sockets;
-	using System.Text;
-	using UnityEngine;
+﻿using System.Net.Sockets;
+using System.Text;
+using UnityEngine;
 
+namespace RealTimeUpdateRuntime
+{
 	public class PingHandler : IRTUCommandHandler
 	{
 		public void Process(NetworkStream stream, string payload)
@@ -13,3 +13,4 @@
 			stream.Write(ackMessage, 0, ackMessage.Length);
 		}
 	}
+}
