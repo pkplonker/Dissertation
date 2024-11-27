@@ -5,14 +5,16 @@ using UnityEngine;
 
 namespace Editor
 {
-	[ExecuteAlways]
-	public class RTUProcessorPropertyUpdate
+	public class PropertyRTUEditorProcessor : IRTUEditorProcessor
 	{
-		public RTUProcessorPropertyUpdate()
+		public EditorRtuController controller { get; set; }
+		public PropertyRTUEditorProcessor(EditorRtuController controller)
 		{
+			this.controller = controller;
 			Undo.postprocessModifications += PostprocessModificationsCallback;
 			Undo.undoRedoPerformed += OnUndoRedoPerformed;
 		}
+
 		private void OnUndoRedoPerformed()
 		{
 			// Need to do something about undoing a change as it's not reflected in the modifications callback 
@@ -20,7 +22,7 @@ namespace Editor
 
 		private UndoPropertyModification[] PostprocessModificationsCallback(UndoPropertyModification[] modifications)
 		{
-			if (RTUEditorConnection.IsConnected)
+			if (controller.IsConnected)
 			{
 				foreach (var modification in modifications)
 				{
@@ -48,7 +50,7 @@ namespace Editor
 					Value = pm.value,
 					ValueType = pm.value.GetType()
 				};
-				RTUEditorConnection.SendMessageToGame($"property,\n{JsonConvert.SerializeObject(args)}");
+				controller.SendMessageToGame($"property,\n{JsonConvert.SerializeObject(args)}");
 			}
 		}
 
@@ -63,5 +65,7 @@ namespace Editor
 
 			return path;
 		}
+
+		public object Clone() => throw new System.NotImplementedException();
 	}
 }

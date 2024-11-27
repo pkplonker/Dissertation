@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public static class Extensions
 {
-	public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)
+	public static IEnumerable<T> ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)
 	{
 		if (enumerable == null)
 			throw new ArgumentNullException(nameof(enumerable));
@@ -16,5 +16,7 @@ public static class Extensions
 		{
 			action(item);
 		}
+
+		return enumerable;
 	}
 }

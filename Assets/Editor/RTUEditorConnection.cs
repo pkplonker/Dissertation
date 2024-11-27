@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
 using WebSocketSharp;
 
 namespace Editor
 {
-	public static class RTUEditorConnection
+	public class RTUEditorConnection
 	{
 		private static WebSocket socket;
-		public static bool IsConnected => socket?.ReadyState == WebSocketState.Open;
+		public bool IsConnected => socket?.ReadyState == WebSocketState.Open;
 
-		public static void Connect(string ipAddress, Action completeCallback = null)
+		public void Connect(string ipAddress, Action completeCallback = null)
 		{
 			int port = 6666;
 			string behaviour = "RTU";
@@ -28,8 +26,8 @@ namespace Editor
 
 			socket.OnOpen += (_, args) =>
 			{
-				completeCallback?.Invoke();
 				Debug.Log("Connected to the server");
+				completeCallback?.Invoke();
 			};
 			socket.OnClose += (_, args) =>
 			{
@@ -48,7 +46,7 @@ namespace Editor
 			socket.Connect();
 		}
 
-		public static void SendMessageToGame(string message)
+		public void SendMessageToGame(string message)
 		{
 			if (!IsConnected)
 			{
@@ -60,7 +58,7 @@ namespace Editor
 			socket.Send(Encoding.UTF8.GetBytes(message));
 		}
 
-		public static void Disconnect()
+		public void Disconnect()
 		{
 			if (socket != null)
 			{

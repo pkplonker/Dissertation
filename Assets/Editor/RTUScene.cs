@@ -5,11 +5,11 @@ using UnityEngine.SceneManagement;
 
 namespace Editor
 {
-	public static class RTUScene
+	public class RTUScene
 	{
-		private static RTUSceneStage customStage;
+		private RTUSceneStage customStage;
 
-		public static void Show()
+		public void ShowScene()
 		{
 			customStage = ScriptableObject.CreateInstance<RTUSceneStage>();
 			StageUtility.GoToStage(customStage, true);
@@ -23,30 +23,32 @@ namespace Editor
 				SceneManager.MoveGameObjectToScene(clonedObject, scene);
 				clonedObject.transform.position = rootObj.transform.position;
 			}
-
 		}
 
-		public static bool IsVisible() => StageUtility.GetCurrentStage() == customStage;
+		public bool IsVisible() => StageUtility.GetCurrentStage() == customStage;
 
-		public static void Close()
+		public void Close()
 		{
-			// bool result = EditorUtility.DisplayDialog(
-			// 	"Copy RTU changes back to scene?",
-			// 	"Copy RTU changes back to scene?",
-			// 	"Yes",
-			// 	"No"
-			// );
-			//
-			// if (result)
-			// {
-			// 	
-			// }
-			// else
-			// {
-			// 	
-			// }
+			if (IsVisible())
+			{
+				// bool result = EditorUtility.DisplayDialog(
+				// 	"Copy RTU changes back to scene?",
+				// 	"Copy RTU changes back to scene?",
+				// 	"Yes",
+				// 	"No"
+				// );
+				//
+				// if (result)
+				// {
+				// 	
+				// }
+				// else
+				// {
+				// 	
+				// }
 
-			StageUtility.GoToMainStage();
+				StageUtility.GoToMainStage();
+			}
 		}
 	}
 }
