@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
+[ExecuteInEditMode]
 public class MainThreadDispatcher : GenericUnitySingleton<MainThreadDispatcher>
 {
 	private static readonly Queue<Action> ExecutionQueue = new Queue<Action>();

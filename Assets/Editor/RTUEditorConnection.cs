@@ -54,8 +54,7 @@ namespace Editor
 				Debug.LogError("Not connected to the game server.");
 				return;
 			}
-
-			Debug.Log($"Sending Message: {message}");
+			//Debug.Log($"Sending Message: {message}");
 			socket.Send(Encoding.UTF8.GetBytes(message));
 		}
 
