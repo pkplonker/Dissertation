@@ -1,12 +1,16 @@
+using System;
+using System.Diagnostics;
 using UnityEditor;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Editor
 {
 	public class RTUEditorWindow : EditorWindow
 	{
 		private EditorRtuController controller = new EditorRtuController();
-		private string ip = "127.0.0.1";
+		private string ip = "127.0.0.52";
+		private string gamePath = "S:\\Users\\pkplo\\OneDrive\\Desktop\\RTUBuild\\Dev\\RTUIdeaTest.exe";
 
 		[MenuItem("SH/RTU")]
 		public static void ShowWindow()
@@ -16,6 +20,19 @@ namespace Editor
 
 		private void OnGUI()
 		{
+			gamePath = EditorGUILayout.TextField("Game Exe Path", gamePath);
+
+			if (GUILayout.Button("Run Game"))
+			{
+				try
+				{
+					Process.Start(gamePath);
+				}
+				catch (Exception e)
+				{
+					Debug.LogWarning($"Failed to Launch built game {e.Message}");
+				}
+			}
 			if (controller.IsConnected)
 			{
 				if (GUILayout.Button("Disconnect from Game"))

@@ -9,7 +9,7 @@ namespace Editor
 	{
 		private RTUEditorConnection connection = new RTUEditorConnection();
 		private List<IRTUEditorProcessor> handlers;
-		private RTUScene scene;
+		private RTUScene scene = new RTUScene();
 		public bool IsConnected => connection?.IsConnected ?? false;
 
 		private void CloseScene() => scene.Close();
@@ -36,6 +36,7 @@ namespace Editor
 				catch (Exception e)
 				{
 					Debug.LogError($"Failed to setup editor for connection: {e.Message}");
+					connection.Disconnect();
 				}
 
 				try
@@ -45,6 +46,7 @@ namespace Editor
 				catch (Exception e)
 				{
 					Debug.LogError($"Failed to execute connection callback: {e.Message}");
+					connection.Disconnect();
 				}
 			});
 		}
