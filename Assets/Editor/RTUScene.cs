@@ -11,18 +11,21 @@ namespace Editor
 
 		public void ShowScene()
 		{
-			customStage = ScriptableObject.CreateInstance<RTUSceneStage>();
-			StageUtility.GoToStage(customStage, true);
-			var scene = customStage.scene;
-			Scene currentScene = SceneManager.GetActiveScene();
-			GameObject[] rootObjects = currentScene.GetRootGameObjects();
-			foreach (GameObject rootObj in rootObjects)
+			MainThreadDispatcher.Instance.Enqueue(() =>
 			{
-				GameObject clonedObject = GameObject.Instantiate(rootObj);
-				clonedObject.name = rootObj.name;
-				SceneManager.MoveGameObjectToScene(clonedObject, scene);
-				clonedObject.transform.position = rootObj.transform.position;
-			}
+				customStage = ScriptableObject.CreateInstance<RTUSceneStage>();
+				StageUtility.GoToStage(customStage, true);
+				var scene = customStage.scene;
+				Scene currentScene = SceneManager.GetActiveScene();
+				GameObject[] rootObjects = currentScene.GetRootGameObjects();
+				foreach (GameObject rootObj in rootObjects)
+				{
+					GameObject clonedObject = GameObject.Instantiate(rootObj);
+					clonedObject.name = rootObj.name;
+					SceneManager.MoveGameObjectToScene(clonedObject, scene);
+					clonedObject.transform.position = rootObj.transform.position;
+				}
+			});
 		}
 
 		public bool IsVisible() => StageUtility.GetCurrentStage() == customStage;
@@ -46,8 +49,7 @@ namespace Editor
 				// {
 				// 	
 				// }
-
-				StageUtility.GoToMainStage();
+				MainThreadDispatcher.Instance.Enqueue(() => StageUtility.GoToMainStage());
 			}
 		}
 	}

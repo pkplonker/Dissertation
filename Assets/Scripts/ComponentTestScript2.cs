@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ComponentTestScript : MonoBehaviour
+public class ComponentTestScript2 : MonoBehaviour
 {
     public float Number = 10f;
 
@@ -11,6 +11,5 @@ public class ComponentTestScript : MonoBehaviour
 
     private void Update()
     {
-        Debug.Log(Word);
     }
 }
