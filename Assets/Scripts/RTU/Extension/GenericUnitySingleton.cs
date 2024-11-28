@@ -26,11 +26,13 @@ public class GenericUnitySingleton<T> : MonoBehaviour where T : MonoBehaviour
 		if (instance != null)
 		{
 			Destroy(gameObject);
+
 			Debug.LogWarning("Deleted duplicate instance " + nameof(T) + " on gameobject" + gameObject.name);
 			return;
 		}
 
 		instance = GetComponent<T>();
+
 		DontDestroyOnLoad(gameObject);
 	}
 }

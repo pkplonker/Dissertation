@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System.Threading.Tasks;
+using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -11,21 +12,18 @@ namespace Editor
 
 		public void ShowScene()
 		{
-			MainThreadDispatcher.Instance.Enqueue(() =>
+			customStage = ScriptableObject.CreateInstance<RTUSceneStage>();
+			StageUtility.GoToStage(customStage, true);
+			var scene = customStage.scene;
+			Scene currentScene = SceneManager.GetActiveScene();
+			GameObject[] rootObjects = currentScene.GetRootGameObjects();
+			foreach (GameObject rootObj in rootObjects)
 			{
-				customStage = ScriptableObject.CreateInstance<RTUSceneStage>();
-				StageUtility.GoToStage(customStage, true);
-				var scene = customStage.scene;
-				Scene currentScene = SceneManager.GetActiveScene();
-				GameObject[] rootObjects = currentScene.GetRootGameObjects();
-				foreach (GameObject rootObj in rootObjects)
-				{
-					GameObject clonedObject = GameObject.Instantiate(rootObj);
-					clonedObject.name = rootObj.name;
-					SceneManager.MoveGameObjectToScene(clonedObject, scene);
-					clonedObject.transform.position = rootObj.transform.position;
-				}
-			});
+				GameObject clonedObject = GameObject.Instantiate(rootObj);
+				clonedObject.name = rootObj.name;
+				SceneManager.MoveGameObjectToScene(clonedObject, scene);
+				clonedObject.transform.position = rootObj.transform.position;
+			}
 		}
 
 		public bool IsVisible() => StageUtility.GetCurrentStage() == customStage;
@@ -49,7 +47,7 @@ namespace Editor
 				// {
 				// 	
 				// }
-				MainThreadDispatcher.Instance.Enqueue(() => StageUtility.GoToMainStage());
+				StageUtility.GoToMainStage();
 			}
 		}
 	}

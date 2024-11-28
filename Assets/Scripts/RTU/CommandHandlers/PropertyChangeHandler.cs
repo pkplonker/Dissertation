@@ -27,6 +27,7 @@ namespace RealTimeUpdateRuntime
 					var propertySplit = args.PropertyPath.Split('.');
 					var fieldName = propertySplit[0];
 					var subFieldName = string.Empty;
+					// todo will this need changing to support nested values?
 					if (propertySplit.Length > 1)
 					{
 						subFieldName = propertySplit[1];
@@ -34,34 +35,51 @@ namespace RealTimeUpdateRuntime
 
 					var value = args.Value;
 					fieldName = fieldName.Trim("m_".ToCharArray());
-					MemberInfo[] members =
-						type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-							.Concat(type
-								.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-								.OfType<MemberInfo>()).ToArray();
-					IMemberAdapter member = CreateMemberAdapter(members.First(x =>
-						string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase)));
-
+					var member = GetMemberAdapter(type, fieldName);
 					var memberType = member.MemberType;
-
+					bool set = false;
 					if (memberType.IsValueType)
 					{
 						var currentStructValue = member.GetValue(component);
-						var modifiedStruct = ModifyStruct(currentStructValue, subFieldName, value);
-						member.SetValue(component, modifiedStruct);
-					}
-					else
-					{
-						member.SetValue(component, ConvertValue(memberType, value));
+
+						try
+						{
+							if (ModifyStruct(currentStructValue, subFieldName, value, out var modifiedStruct))
+							{
+								member.SetValue(component, modifiedStruct);
+								set = true;
+								Debug.Log($"{fieldName}.{subFieldName} set to {value} successfully.");
+							}
+						}
+						catch
+						{
+							// this is ok as it could not be a struct with values, but rather an intrinsic struct, such as float, int, bool
+						}
 					}
 
-					Debug.Log($"{fieldName}.{subFieldName} set to {value} successfully.");
+					if (!set)
+					{
+						member.SetValue(component, ConvertValue(memberType, value));
+						Debug.Log($"{fieldName} set to {value} successfully.");
+					}
 				}
 				catch (Exception e)
 				{
 					Debug.Log($"Failed to set property: {e.Message}");
 				}
 			});
+		}
+
+		private static IMemberAdapter GetMemberAdapter(Type type, string fieldName)
+		{
+			MemberInfo[] members =
+				type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+					.Concat(type
+						.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+						.OfType<MemberInfo>()).ToArray();
+			IMemberAdapter member = CreateMemberAdapter(members.First(x =>
+				string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase)));
+			return member;
 		}
 
 		private static IMemberAdapter CreateMemberAdapter(MemberInfo memberInfo)
@@ -74,25 +92,25 @@ namespace RealTimeUpdateRuntime
 			};
 		}
 
-		private object ModifyStruct(object structValue, string subFieldName, string newValue)
+		private bool ModifyStruct(object structValue, string subFieldName, string newValue, out object newStruct)
 		{
 			Type structType = structValue.GetType();
 
 			FieldInfo subFieldInfo = structType.GetField(subFieldName, BindingFlags.Public | BindingFlags.Instance);
-
+			newStruct = structType;
 			if (subFieldInfo != null)
 			{
 				object convertedValue = Convert.ChangeType(newValue, subFieldInfo.FieldType);
 
-				object newStruct = structValue;
+				newStruct = structValue;
 
 				subFieldInfo.SetValue(newStruct, convertedValue);
+				Debug.LogError($"Subfield '{subFieldName}' not found in struct '{structType.Name}'.");
 
-				return newStruct;
+				return true;
 			}
 
-			Debug.LogError($"Subfield '{subFieldName}' not found in struct '{structType.Name}'.");
-			return structValue;
+			return false;
 		}
 
 		private static object ConvertValue(Type targetType, object value)
