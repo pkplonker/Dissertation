@@ -14,14 +14,16 @@ namespace RealTimeUpdateRuntime
 	{
 		private CancellationTokenSource cancellationTokenSource;
 		private Thread serverThread;
-
 		private WebSocketServer webSocketServer;
+		private static readonly Queue<Action> ExecutionQueue = new Queue<Action>();
+		public TaskScheduler Schedular { get; private set; }
 
 		void Start()
 		{
 			cancellationTokenSource = new CancellationTokenSource();
 			serverThread = new Thread(() => StartServer(cancellationTokenSource.Token));
 			serverThread.Start();
+			Schedular = TaskScheduler.FromCurrentSynchronizationContext();
 		}
 
 		public void StartServer(CancellationToken token)
@@ -63,6 +65,32 @@ namespace RealTimeUpdateRuntime
 			while (true)
 			{
 				token.ThrowIfCancellationRequested();
+			}
+		}
+
+		public static void Enqueue(Action action)
+		{
+			lock (ExecutionQueue)
+			{
+				ExecutionQueue.Enqueue(action);
+			}
+		}
+
+		void Update()
+		{
+			lock (ExecutionQueue)
+			{
+				while (ExecutionQueue.Count > 0)
+				{
+					try
+					{
+						ExecutionQueue.Dequeue().Invoke();
+					}
+					catch (Exception e)
+					{
+						Debug.LogError($"Failed to execute main thread dispatcher action {e.Message}");
+					}
+				}
 			}
 		}
 

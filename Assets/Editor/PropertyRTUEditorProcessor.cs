@@ -51,6 +51,7 @@ namespace Editor
 					ValueType = pm.value.GetType()
 				};
 				controller.SendMessageToGame($"property,\n{JsonConvert.SerializeObject(args)}");
+				return;
 			}
 		}
 

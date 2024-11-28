@@ -12,6 +12,6 @@ public class ComponentTestScript : MonoBehaviour
 	private void Update()
 	{
 		//Debug.Log(Word);
-		Debug.Log(Number);
+		//Debug.Log(Number);
 	}
 }

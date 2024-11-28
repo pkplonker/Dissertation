@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using WebSocketSharp;
 using WebSocketSharp.Server;
@@ -10,11 +11,13 @@ namespace RealTimeUpdateRuntime
 {
 	public class RTUWebSocketBehavior : WebSocketBehavior
 	{
-		
 		//todo ideally this should register, but given that the websocketsharp uses template argument,
 		//we would need to use reflection to get all behaviours, get a path from the object, then use
 		//reflection to create a runtime method of the templated func and use that to instantiate. https://stackoverflow.com/questions/2604743/setting-generic-type-at-runtime
-		
+		public RTUWebSocketBehavior()
+		{
+		}
+
 		private readonly Dictionary<string, IRTUCommandHandler> commandHandlers = new()
 		{
 			{"property", new PropertyChangeHandler()},
@@ -70,7 +73,10 @@ namespace RealTimeUpdateRuntime
 
 					if (messageType != null && commandHandlers.TryGetValue(messageType, out var handler))
 					{
-						handler.Process(null, payload);
+						handler.Process(new CommandHandlerArgs
+						{
+							Payload = payload,
+						});
 					}
 					else
 					{

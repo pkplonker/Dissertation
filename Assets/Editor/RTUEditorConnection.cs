@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using WebSocketSharp;
 
@@ -8,6 +9,13 @@ namespace Editor
 	public class RTUEditorConnection
 	{
 		private static WebSocket socket;
+		private readonly TaskScheduler scheduler;
+
+		public RTUEditorConnection(TaskScheduler scheduler)
+		{
+			this.scheduler = scheduler;
+		}
+
 		public bool IsConnected => socket?.ReadyState == WebSocketState.Open;
 
 		public void Connect(string ipAddress, Action completeCallback = null, Action<bool> disconnectCallback = null)

@@ -1,21 +1,22 @@
 ﻿using System;
 using System.Linq;
-using System.Net.Sockets;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using UnityEngine;
 
 namespace RealTimeUpdateRuntime
 {
-	public class PropertyChangeHandler : IRTUCommandHandler
+	public class PropertyChangeHandler : RTUCommandHandlerBase
 	{
-		public void Process(NetworkStream stream, string payload)
+		public override void Process(CommandHandlerArgs commandHandlerArgs)
 		{
-			MainThreadDispatcher.Instance.Enqueue(() =>
+			RTUProcessor.Enqueue(() =>
 			{
 				try
 				{
-					var args = JsonConvert.DeserializeObject<PropertyChangeArgs>(payload);
+					var args = JsonConvert.DeserializeObject<PropertyChangeArgs>(commandHandlerArgs.Payload);
 					var go = GameObject.Find(args.GameObjectPath);
 					var type = Type.GetType(args.ComponentTypeName);
 					if (type == null)
@@ -103,7 +104,6 @@ namespace RealTimeUpdateRuntime
 			newStruct = structValue;
 			subFieldInfo.SetValue(newStruct, convertedValue);
 			return true;
-
 		}
 
 		private static object ConvertValue(Type targetType, object value)

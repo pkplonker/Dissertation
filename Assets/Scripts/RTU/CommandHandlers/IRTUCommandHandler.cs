@@ -1,10 +1,22 @@
-﻿using System.Collections.Generic;
-using System.Net.Sockets;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RealTimeUpdateRuntime
 {
 	public interface IRTUCommandHandler
 	{
-		void Process(NetworkStream stream, string payload);
+		void Process(CommandHandlerArgs commandHandlerArgs);
+	}
+
+	public abstract class RTUCommandHandlerBase : IRTUCommandHandler
+	{
+		public abstract void Process(CommandHandlerArgs commandHandlerArgs);
+		
+	}
+
+	public struct CommandHandlerArgs
+	{
+		public string Payload { get; set; }
 	}
 }
