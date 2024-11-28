@@ -98,19 +98,12 @@ namespace RealTimeUpdateRuntime
 
 			FieldInfo subFieldInfo = structType.GetField(subFieldName, BindingFlags.Public | BindingFlags.Instance);
 			newStruct = structType;
-			if (subFieldInfo != null)
-			{
-				object convertedValue = Convert.ChangeType(newValue, subFieldInfo.FieldType);
+			if (subFieldInfo == null) return false;
+			object convertedValue = Convert.ChangeType(newValue, subFieldInfo.FieldType);
+			newStruct = structValue;
+			subFieldInfo.SetValue(newStruct, convertedValue);
+			return true;
 
-				newStruct = structValue;
-
-				subFieldInfo.SetValue(newStruct, convertedValue);
-				Debug.LogError($"Subfield '{subFieldName}' not found in struct '{structType.Name}'.");
-
-				return true;
-			}
-
-			return false;
 		}
 
 		private static object ConvertValue(Type targetType, object value)
