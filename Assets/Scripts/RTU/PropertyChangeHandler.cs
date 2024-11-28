@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Sockets;
 using System.Reflection;
 using Newtonsoft.Json;
@@ -16,48 +17,61 @@ namespace RealTimeUpdateRuntime
 				{
 					var args = JsonConvert.DeserializeObject<PropertyChangeArgs>(payload);
 					var go = GameObject.Find(args.GameObjectPath);
-					Type type = Type.GetType(args.ComponentTypeName);
+					var type = Type.GetType(args.ComponentTypeName);
+					if (type == null)
+					{
+						throw new Exception("Could not determine property update type");
+					}
+
 					var component = go.GetComponent(type);
 					var propertySplit = args.PropertyPath.Split('.');
-					string fieldName = propertySplit[0];
-					string subFieldName = propertySplit[1];
-					string value = args.Value;
+					var fieldName = propertySplit[0];
+					var subFieldName = string.Empty;
+					if (propertySplit.Length > 1)
+					{
+						subFieldName = propertySplit[1];
+					}
+
+					var value = args.Value;
 					fieldName = fieldName.Trim("m_".ToCharArray());
-					PropertyInfo[] props =
-						type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-					PropertyInfo propInfo = null;
-					foreach (var prop in props)
+					MemberInfo[] members =
+						type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+							.Concat(type
+								.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+								.OfType<MemberInfo>()).ToArray();
+					IMemberAdapter member = CreateMemberAdapter(members.First(x =>
+						string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase)));
+
+					var memberType = member.MemberType;
+
+					if (memberType.IsValueType)
 					{
-						if (string.Equals(prop.Name, fieldName, StringComparison.InvariantCultureIgnoreCase))
-						{
-							propInfo = prop;
-							break;
-						}
+						var currentStructValue = member.GetValue(component);
+						var modifiedStruct = ModifyStruct(currentStructValue, subFieldName, value);
+						member.SetValue(component, modifiedStruct);
+					}
+					else
+					{
+						member.SetValue(component, ConvertValue(memberType, value));
 					}
 
-					if (propInfo != null)
-					{
-						var propType = propInfo.PropertyType;
-
-						if (propType.IsValueType)
-						{
-							var currentStructValue = propInfo.GetValue(component);
-							var modifiedStruct = ModifyStruct(currentStructValue, subFieldName, value);
-							propInfo.SetValue(component, modifiedStruct);
-						}
-						else
-						{
-							propInfo.SetValue(component, ConvertValue(propInfo.PropertyType, value));
-						}
-
-						Debug.Log($"{fieldName}.{subFieldName} set to {value} successfully.");
-					}
+					Debug.Log($"{fieldName}.{subFieldName} set to {value} successfully.");
 				}
 				catch (Exception e)
 				{
 					Debug.Log($"Failed to set property: {e.Message}");
 				}
 			});
+		}
+
+		private static IMemberAdapter CreateMemberAdapter(MemberInfo memberInfo)
+		{
+			return memberInfo switch
+			{
+				PropertyInfo prop => new PropertyAdapter(prop),
+				FieldInfo field => new FieldAdapter(field),
+				_ => throw new InvalidOperationException("Unsupported member type.")
+			};
 		}
 
 		private object ModifyStruct(object structValue, string subFieldName, string newValue)

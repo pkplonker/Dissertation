@@ -17,7 +17,6 @@ namespace RealTimeUpdateRuntime
 		
 		private readonly Dictionary<string, IRTUCommandHandler> commandHandlers = new()
 		{
-			{"ping", new PingHandler()},
 			{"property", new PropertyChangeHandler()},
 		};
 

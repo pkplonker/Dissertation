@@ -10,7 +10,7 @@ namespace Editor
 		private static WebSocket socket;
 		public bool IsConnected => socket?.ReadyState == WebSocketState.Open;
 
-		public void Connect(string ipAddress, Action completeCallback = null)
+		public void Connect(string ipAddress, Action completeCallback = null, Action<bool> disconnectCallback = null)
 		{
 			int port = 6666;
 			string behaviour = "RTU";
@@ -39,6 +39,7 @@ namespace Editor
 				{
 					Debug.LogWarning($"Unable to establish connection to game. Reason: {args.Reason}");
 				}
+				disconnectCallback?.Invoke(args.WasClean);
 			};
 			socket.OnMessage += (_, args) => Debug.Log($"Message received: {args.Data}");
 			socket.OnError += (_, args) => Debug.Log($"Error connection to game: {args.Message}");

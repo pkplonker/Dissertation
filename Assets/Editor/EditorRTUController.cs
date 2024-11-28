@@ -24,9 +24,35 @@ namespace Editor
 			connection.Disconnect();
 		}
 
-		public void Connect(string ip, Action callback)
+		public void Connect(string ip, Action connectCallback = null, Action disconnectCallback = null)
 		{
-			connection.Connect(ip, () =>
+			connection.Connect(ip, OnConnection(connectCallback), b => OnDisconnect(disconnectCallback, b));
+		}
+
+		private void OnDisconnect(Action disconnectCallback, bool b)
+		{
+			try
+			{
+				CloseScene();
+			}
+			catch (Exception e)
+			{
+				Debug.LogError($"Failed to close scene on disconnect: {e.Message}");
+			}
+
+			try
+			{
+				disconnectCallback?.Invoke();
+			}
+			catch (Exception e)
+			{
+				Debug.LogError($"Failed to execute disconnection callback: {e.Message}");
+			}
+		}
+
+		private Action OnConnection(Action connectCallback)
+		{
+			return () =>
 			{
 				try
 				{
@@ -41,14 +67,14 @@ namespace Editor
 
 				try
 				{
-					callback?.Invoke();
+					connectCallback?.Invoke();
 				}
 				catch (Exception e)
 				{
 					Debug.LogError($"Failed to execute connection callback: {e.Message}");
 					connection.Disconnect();
 				}
-			});
+			};
 		}
 
 		private void CreateHandlers()
