@@ -33,6 +33,7 @@ namespace RTUEditor
 					Debug.LogWarning($"Failed to Launch built game {e.Message}");
 				}
 			}
+
 			if (controller.IsConnected)
 			{
 				if (GUILayout.Button("Disconnect from Game"))
@@ -59,12 +60,17 @@ namespace RTUEditor
 			{
 				controller.ShowScene();
 			}
+
 			GUILayout.Label("---------Debug---------------");
 			if (GUILayout.Button("Reload processors"))
 			{
 				controller.CreateProcessors();
 			}
-			
+
+			if (GUILayout.Button("Reload asset store"))
+			{
+				RTUAssetStore.GenerateDictionary();
+			}
 
 			GUILayout.Label(controller.IsConnected ? "Connected" : "Disconnected");
 		}
