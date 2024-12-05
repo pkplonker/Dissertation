@@ -3,18 +3,20 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class RTUSceneStage : PreviewSceneStage
+namespace RTUEditor
 {
-	protected override GUIContent CreateHeaderContent() => new GUIContent("RTU Preview Scene");
-
-	protected override void OnDisable()
+	public class RTUSceneStage : PreviewSceneStage
 	{
-		base.OnDisable();
+		protected override GUIContent CreateHeaderContent() => new GUIContent("RTU Preview Scene");
 
-		if (scene.IsValid())
+		protected override void OnDisable()
 		{
-			EditorSceneManager.CloseScene(scene, true);
+			base.OnDisable();
+
+			if (scene.IsValid())
+			{
+				EditorSceneManager.CloseScene(scene, true);
+			}
 		}
 	}
-	
 }

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Editor
+namespace RTUEditor
 {
-	public class EditorRtuController
+	public class EditorRtuController : IMessageSender
 	{
 		private readonly RTUEditorConnection connection;
 		private readonly List<IRTUEditorProcessor> handlers;
@@ -66,7 +66,7 @@ namespace Editor
 			{
 				try
 				{
-					CreateHandlers();
+					CreateProcessors();
 					ShowScene();
 				}
 				catch (Exception e)
@@ -87,7 +87,7 @@ namespace Editor
 			};
 		}
 
-		private void CreateHandlers()
+		public void CreateProcessors()
 		{
 			handlers.Clear();
 			handlers.AddRange(AppDomain.CurrentDomain.GetAssemblies()

@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-namespace Editor
+namespace RTUEditor
 {
 	public class RTUEditorWindow : EditorWindow
 	{
@@ -59,6 +59,12 @@ namespace Editor
 			{
 				controller.ShowScene();
 			}
+			GUILayout.Label("---------Debug---------------");
+			if (GUILayout.Button("Reload processors"))
+			{
+				controller.CreateProcessors();
+			}
+			
 
 			GUILayout.Label(controller.IsConnected ? "Connected" : "Disconnected");
 		}

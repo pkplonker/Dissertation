@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using WebSocketSharp;
 
-namespace Editor
+namespace RTUEditor
 {
 	public class RTUEditorConnection
 	{

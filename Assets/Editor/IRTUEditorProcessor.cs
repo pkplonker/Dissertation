@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Editor
+namespace RTUEditor
 {
 	public interface IRTUEditorProcessor 
 	{

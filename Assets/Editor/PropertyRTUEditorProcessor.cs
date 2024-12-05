@@ -1,14 +1,16 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
 using UnityEditor;
 using UnityEngine;
 
-namespace Editor
+namespace RTUEditor
 {
 	public class PropertyRTUEditorProcessor : IRTUEditorProcessor
 	{
-		public EditorRtuController controller { get; set; }
-		public PropertyRTUEditorProcessor(EditorRtuController controller)
+		public IMessageSender controller { get; set; }
+
+		public PropertyRTUEditorProcessor(IMessageSender controller)
 		{
 			this.controller = controller;
 			Undo.postprocessModifications += PostprocessModificationsCallback;
@@ -17,7 +19,7 @@ namespace Editor
 
 		private void OnUndoRedoPerformed()
 		{
-			// Need to do something about undoing a change as it's not reflected in the modifications callback 
+			// TODO Need to do something about undoing a change as it's not reflected in the modifications callback 
 		}
 
 		private UndoPropertyModification[] PostprocessModificationsCallback(UndoPropertyModification[] modifications)
@@ -66,7 +68,5 @@ namespace Editor
 
 			return path;
 		}
-
-		public object Clone() => throw new System.NotImplementedException();
 	}
 }
