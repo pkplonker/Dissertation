@@ -36,7 +36,7 @@ namespace RealTimeUpdateRuntime
 
 					var value = args.Value;
 					fieldName = fieldName.Trim("m_".ToCharArray());
-					var member = GetMemberAdapter(type, fieldName);
+					var member = MemberAdaptorUtils.GetMemberAdapter(type, fieldName);
 					var memberType = member.MemberType;
 					bool set = false;
 					if (memberType.IsValueType)
@@ -71,27 +71,7 @@ namespace RealTimeUpdateRuntime
 			});
 		}
 
-		private static IMemberAdapter GetMemberAdapter(Type type, string fieldName)
-		{
-			MemberInfo[] members =
-				type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-					.Concat(type
-						.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-						.OfType<MemberInfo>()).ToArray();
-			IMemberAdapter member = CreateMemberAdapter(members.First(x =>
-				string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase)));
-			return member;
-		}
 
-		private static IMemberAdapter CreateMemberAdapter(MemberInfo memberInfo)
-		{
-			return memberInfo switch
-			{
-				PropertyInfo prop => new PropertyAdapter(prop),
-				FieldInfo field => new FieldAdapter(field),
-				_ => throw new InvalidOperationException("Unsupported member type.")
-			};
-		}
 
 		private bool ModifyStruct(object structValue, string subFieldName, string newValue, out object newStruct)
 		{

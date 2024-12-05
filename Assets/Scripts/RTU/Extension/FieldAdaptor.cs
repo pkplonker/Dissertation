@@ -14,7 +14,14 @@ namespace RealTimeUpdateRuntime
 
 		public object GetValue(object component)
 		{
-			return field?.GetValue(component);
+			try
+			{
+				return field?.GetValue(component);
+			}
+			catch
+			{
+				return null;
+			}
 		}
 
 		public void SetValue(object component, object value)
@@ -27,6 +34,5 @@ namespace RealTimeUpdateRuntime
 
 		public string Name => field.Name;
 		public MemberInfo GetMemberInfo() => field;
-
 	}
 }

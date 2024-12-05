@@ -14,7 +14,14 @@ namespace RealTimeUpdateRuntime
 
 		public object GetValue(object component)
 		{
-			return property?.GetValue(component);
+			try
+			{
+				return property?.GetValue(component);
+			}
+			catch
+			{
+				return null;
+			}
 		}
 
 		public void SetValue(object component, object value)
