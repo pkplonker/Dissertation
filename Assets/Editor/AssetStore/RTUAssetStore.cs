@@ -1,18 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using RealTimeUpdateRuntime;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-public class Clone : Dictionary<string, object> { }
-
-public class AssetTypeCollection : Dictionary<string, Clone> { }
-
-namespace RTUEditor
+namespace RTUEditor.AssetStore
 {
 	[InitializeOnLoad]
 	public static class RTUAssetStore
@@ -23,7 +17,8 @@ namespace RTUEditor
 		private static HashSet<string> assetTypes = new()
 		{
 			"Shader",
-			"Mat"
+			"Mat",
+			"PNG"
 		};
 
 		static RTUAssetStore()
@@ -53,6 +48,7 @@ namespace RTUEditor
 				foreach (var path in paths)
 				{
 					var asset = AssetDatabase.LoadMainAssetAtPath(path);
+					if (asset == null) continue;
 					var assetClone = CloneAsset(asset);
 					if (!assetDict[assetType].TryAdd(path, assetClone))
 					{
