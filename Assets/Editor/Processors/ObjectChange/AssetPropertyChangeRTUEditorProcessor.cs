@@ -23,14 +23,14 @@ namespace RTUEditor.ObjectChange
 			stream.GetChangeAssetObjectPropertiesEvent(streamIdx, out var changeAssetObjectPropertiesEvent);
 			var changeAsset = EditorUtility.InstanceIDToObject(changeAssetObjectPropertiesEvent.instanceId);
 			var changeAssetPath = AssetDatabase.GUIDToAssetPath(changeAssetObjectPropertiesEvent.guid);
-			var changes = RTUAssetStore.GetChangedProperties(changeAsset, changeAssetPath);
-			var payload = GeneratePayload(changes); // change to strategy pattern for each asset type?
+			var clone = RTUAssetStore.GetExistingClone(changeAssetPath);
+			var payload = GeneratePayload(clone); // change to strategy pattern for each asset type?
 			//MessageSender.SendMessageToGame(payload);
 			Debug.Log(
 				$"AssetPropertyChanged: {changeAsset} at {changeAssetPath} in scene {changeAssetObjectPropertiesEvent.scene}.");
 		}
 
-		private string GeneratePayload(Dictionary<string, object> changes)
+		private string GeneratePayload(Clone clone)
 		{
 			var args = new AssetPropertyChangeEventArgs
 			{

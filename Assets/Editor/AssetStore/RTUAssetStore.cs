@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using RealTimeUpdateRuntime;
 using UnityEditor;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace RTUEditor.AssetStore
 {
@@ -19,6 +17,13 @@ namespace RTUEditor.AssetStore
 			"Shader",
 			"Mat",
 			"PNG"
+		};
+
+		private static ICloneAssetStrategy defaultCloneStrategy = new DefaultCloneAssetStrategy();
+
+		private static Dictionary<string, ICloneAssetStrategy> cloneStrategies = new()
+		{
+			{"PNG", new TextureCloneAssetStrategy()},
 		};
 
 		static RTUAssetStore()
@@ -44,12 +49,13 @@ namespace RTUEditor.AssetStore
 				{
 					Debug.LogWarning($"Failed to locate any assets of type {assetType}");
 				}
-			
+
 				foreach (var path in paths)
 				{
 					var asset = AssetDatabase.LoadMainAssetAtPath(path);
 					if (asset == null) continue;
-					var assetClone = CloneAsset(asset);
+					var strategy = GetCloneStrategy(assetType);
+					var assetClone = strategy.CloneAsset(asset);
 					if (!assetDict[assetType].TryAdd(path, assetClone))
 					{
 						Debug.LogWarning($"Failed to add {path} as element already exists");
@@ -60,37 +66,10 @@ namespace RTUEditor.AssetStore
 			return assetDict;
 		}
 
-		private static Clone CloneAsset(Object asset)
-		{
-			var type = asset.GetType();
-			var clone = new Clone();
-			// Getting the member adaptors each asset is ineffective, but will ignore for the time being as it's not currently an issue,
-			// and will require some thought as you could have derived types of assets
-			foreach (var prop in MemberAdaptorUtils.GetMemberAdapters(type))
-			{
-				object val = null;
-				try
-				{
-					val = prop.GetValue(asset);
-				}
-				catch { }
+		private static ICloneAssetStrategy GetCloneStrategy(string assetType) =>
+			cloneStrategies.TryGetValue(assetType, out var strategy) ? strategy : defaultCloneStrategy;
 
-				if (val == null)
-				{
-					//Debug.LogWarning($"Failed to get value for {prop.Name} to clone dictionary of {asset.name}");
-					continue;
-				}
-
-				if (!clone.TryAdd(prop.Name, val))
-				{
-					Debug.LogWarning($"Failed to add {prop.Name} to clone dictionary of {asset.name}");
-				}
-			}
-
-			return clone;
-		}
-
-		public static Dictionary<string, object> GetChangedProperties(object changeObject, string objectPath)
+		public static Clone GetExistingClone(string objectPath)
 		{
 			return null;
 		}
