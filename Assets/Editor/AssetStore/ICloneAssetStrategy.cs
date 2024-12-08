@@ -4,6 +4,6 @@ namespace RTUEditor.AssetStore
 {
 	public interface ICloneAssetStrategy
 	{
-		public Clone CloneAsset(Object asset);
+		public Clone CloneAsset(Object asset, string path);
 	}
 }

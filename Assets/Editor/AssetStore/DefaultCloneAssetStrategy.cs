@@ -1,13 +1,13 @@
 ﻿using System;
 using RealTimeUpdateRuntime;
-using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace RTUEditor.AssetStore
 {
 	public class DefaultCloneAssetStrategy : ICloneAssetStrategy
 	{
-		public virtual Clone CloneAsset(Object asset) => CloneInternal(asset, asset.GetType(), new Clone());
+		public virtual Clone CloneAsset(Object asset, string path) => CloneInternal(asset, asset.GetType(),
+			new Clone(path, StringComparer.InvariantCultureIgnoreCase));
 
 		protected Clone CloneInternal(Object asset, Type type, Clone clone)
 		{
@@ -30,7 +30,7 @@ namespace RTUEditor.AssetStore
 
 				if (!clone.TryAdd(prop.Name, val))
 				{
-					Debug.LogWarning($"Failed to add {prop.Name} to clone dictionary of {asset.name}");
+					//Debug.LogWarning($"Failed to add {prop.Name} to clone dictionary of {asset.name}");
 				}
 			}
 

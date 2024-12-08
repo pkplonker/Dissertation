@@ -7,9 +7,9 @@ namespace RTUEditor.AssetStore
 {
 	public class TextureCloneAssetStrategy : DefaultCloneAssetStrategy
 	{
-		public override Clone CloneAsset(Object asset)
+		public override Clone CloneAsset(Object asset, string path)
 		{
-			var clone = CloneInternal(asset, asset.GetType(), new TextureClone()) as TextureClone;
+			var clone = CloneInternal(asset, asset.GetType(), new TextureClone(path)) as TextureClone;
 
 			try
 			{

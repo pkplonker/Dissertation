@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.IO;
 using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
@@ -9,11 +9,13 @@ namespace RTUEditor.ObjectChange
 {
 	public class AssetPropertyChangeRTUEditorProcessor : IObjectChangeProcessor
 	{
+		private readonly AssetChangePayloadStrategyFactory assetChangePayloadStrategyFactory;
 		public ObjectChangeKind ChangeType => ObjectChangeKind.ChangeAssetObjectProperties;
 
 		public AssetPropertyChangeRTUEditorProcessor(IMessageSender messageSender)
 		{
 			this.MessageSender = messageSender;
+			assetChangePayloadStrategyFactory = new AssetChangePayloadStrategyFactory();
 		}
 
 		public IMessageSender MessageSender { get; }
@@ -23,20 +25,28 @@ namespace RTUEditor.ObjectChange
 			stream.GetChangeAssetObjectPropertiesEvent(streamIdx, out var changeAssetObjectPropertiesEvent);
 			var changeAsset = EditorUtility.InstanceIDToObject(changeAssetObjectPropertiesEvent.instanceId);
 			var changeAssetPath = AssetDatabase.GUIDToAssetPath(changeAssetObjectPropertiesEvent.guid);
-			var clone = RTUAssetStore.GetExistingClone(changeAssetPath);
-			var payload = GeneratePayload(clone); // change to strategy pattern for each asset type?
-			//MessageSender.SendMessageToGame(payload);
-			Debug.Log(
-				$"AssetPropertyChanged: {changeAsset} at {changeAssetPath} in scene {changeAssetObjectPropertiesEvent.scene}.");
-		}
+			var type = Path.GetExtension(changeAssetPath).Trim('.');
 
-		private string GeneratePayload(Clone clone)
-		{
-			var args = new AssetPropertyChangeEventArgs
+			if (RTUAssetStore.TryGetExistingClone(changeAssetPath, type, out var databaseClone))
 			{
-				// to be completed
-			};
-			return $"property,\n{JsonConvert.SerializeObject(args)}";
+				if (RTUAssetStore.GenerateClone(changeAssetPath, type, out var currentClone))
+				{
+					if (assetChangePayloadStrategyFactory.GeneratePayload(databaseClone,currentClone, type, out var payload))
+					{
+						MessageSender.SendMessageToGame(payload);
+						Debug.Log(
+							$"AssetPropertyChanged: {changeAsset} at {changeAssetPath} in scene {changeAssetObjectPropertiesEvent.scene}.");
+					}
+				}
+				else
+				{
+					Debug.LogWarning($"Failed to generate clone for current asset {changeAssetPath}");
+				}
+			}
+			else
+			{
+				Debug.LogWarning("Failed to get asset for path");
+			}
 		}
 	}
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using RTUEditor.AssetStore;
 using UnityEngine;
 
 namespace RTUEditor
@@ -36,6 +37,8 @@ namespace RTUEditor
 
 		public void Connect(string ip, Action connectCallback = null, Action disconnectCallback = null)
 		{
+			CreateProcessors();
+			RTUAssetStore.GenerateDictionary();
 			connection.Connect(ip, OnConnection(connectCallback), b => OnDisconnect(disconnectCallback, b));
 		}
 
