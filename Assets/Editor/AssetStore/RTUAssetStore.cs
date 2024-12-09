@@ -15,9 +15,9 @@ namespace RTUEditor.AssetStore
 
 		public static HashSet<string> AssetTypes = new(StringComparer.InvariantCultureIgnoreCase)
 		{
-			"Shader",
+			//"Shader",
 			"Mat",
-			"PNG"
+			//"PNG"
 		};
 
 		static RTUAssetStore()
@@ -72,6 +72,7 @@ namespace RTUEditor.AssetStore
 			}
 
 			var asset = AssetDatabase.LoadMainAssetAtPath(path);
+			var mat = asset as Material;
 			if (asset == null) return false;
 			var strategy = assetCloneStrategyFactory.GetCloneStrategy(assetType);
 			assetClone = strategy.CloneAsset(asset, path);

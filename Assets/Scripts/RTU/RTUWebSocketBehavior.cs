@@ -21,6 +21,7 @@ namespace RealTimeUpdateRuntime
 		private readonly Dictionary<string, IRTUCommandHandler> commandHandlers = new()
 		{
 			{"property", new PropertyChangeHandler()},
+			{"assetUpdate", new AssetUpdateChangeHandler()}
 		};
 
 		protected override void OnMessage(MessageEventArgs args)

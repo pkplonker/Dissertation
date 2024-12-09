@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public static class Extensions
 {
@@ -19,4 +20,6 @@ public static class Extensions
 
 		return enumerable;
 	}
+
+	public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T> enumerable) => enumerable.Where(x => x != null);
 }

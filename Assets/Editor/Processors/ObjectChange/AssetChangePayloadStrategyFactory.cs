@@ -71,7 +71,7 @@ namespace RTUEditor.ObjectChange
 			if (HasChange(originalClone, currentClone, out var changes))
 			{
 				UpdateAssetStoreWithLatest(currentClone);
-				args = CreateArgs(changes);
+				args = CreateArgs(currentClone,changes);
 				return true;
 			}
 
@@ -84,11 +84,14 @@ namespace RTUEditor.ObjectChange
 			RTUAssetStore.UpdateClone(currentClone);
 		}
 
-		protected virtual AssetPropertyChangeEventArgs CreateArgs(Dictionary<string, object> changes)
+		protected virtual AssetPropertyChangeEventArgs CreateArgs(Clone currentClone,
+			Dictionary<string, object> changes)
 		{
-			var args = new AssetPropertyChangeEventArgs()
+			var args = new AssetPropertyChangeEventArgs
 			{
+				Path = currentClone.Name,
 				Changes = changes,
+				Type = currentClone.Type
 			};
 			return args;
 		}
