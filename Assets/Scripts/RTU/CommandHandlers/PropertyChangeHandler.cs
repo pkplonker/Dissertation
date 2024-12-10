@@ -36,7 +36,24 @@ namespace RealTimeUpdateRuntime
 
 					object value = args.Value;
 					fieldName = fieldName.Trim("m_".ToCharArray());
-					var member = MemberAdaptorUtils.GetMemberAdapter(type, fieldName);
+					IMemberAdapter member = null;
+					try
+					{
+						member = MemberAdaptorUtils.GetMemberAdapter(type, fieldName);
+					}
+					catch
+					{
+						try
+						{
+							member = MemberAdaptorUtils.GetMemberAdapter(type,
+								new string(fieldName.ToCharArray().Where(c => !Char.IsWhiteSpace(c)).ToArray()));
+						}
+						catch (Exception e)
+						{
+							throw;
+						}
+					}
+
 					var memberType = member.MemberType;
 					bool set = false;
 					if (memberType.IsValueType)
@@ -60,7 +77,7 @@ namespace RealTimeUpdateRuntime
 
 					if (!set)
 					{
-						var convertedVal = ConvertValue(memberType, ConvertValue(member.MemberType, value));
+						var convertedVal = ConvertValue(memberType, value);
 						member.SetValue(component, convertedVal);
 						Debug.Log($"{fieldName} set to {convertedVal} successfully.");
 					}
@@ -109,7 +126,19 @@ namespace RealTimeUpdateRuntime
 			{
 				return JsonConvert.DeserializeObject(value.ToString(), targetType);
 			}
-
+			
+			if (targetType == typeof(int))
+			{
+				if (value is IConvertible)
+				{
+					long longValue = Convert.ToInt64(value);
+					if (longValue == 4294967295)
+					{
+						return -1;
+					}
+				}
+			}
+			
 			return Convert.ChangeType(value, targetType);
 		}
 	}
