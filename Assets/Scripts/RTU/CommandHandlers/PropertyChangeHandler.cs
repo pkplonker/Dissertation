@@ -77,7 +77,7 @@ namespace RealTimeUpdateRuntime
 
 					if (!set)
 					{
-						var convertedVal = ConvertValue(memberType, value);
+						var convertedVal = ValueConverter.ConvertValue(memberType, value);
 						member.SetValue(component, convertedVal);
 						Debug.Log($"{fieldName} set to {convertedVal} successfully.");
 					}
@@ -100,46 +100,6 @@ namespace RealTimeUpdateRuntime
 			newStruct = structValue;
 			subFieldInfo.SetValue(newStruct, convertedValue);
 			return true;
-		}
-
-		private static object ConvertValue(Type targetType, object value)
-		{
-			if (value == null || targetType == null)
-				return null;
-
-			if (targetType == typeof(bool))
-			{
-				if (value is string strValue)
-				{
-					return strValue == "1" || strValue.Equals("true", StringComparison.OrdinalIgnoreCase);
-				}
-
-				return Convert.ToBoolean(value);
-			}
-
-			if (targetType.IsEnum)
-			{
-				return Enum.Parse(targetType, value.ToString());
-			}
-
-			if (targetType != typeof(string) && targetType.IsClass)
-			{
-				return JsonConvert.DeserializeObject(value.ToString(), targetType);
-			}
-			
-			if (targetType == typeof(int))
-			{
-				if (value is IConvertible)
-				{
-					long longValue = Convert.ToInt64(value);
-					if (longValue == 4294967295)
-					{
-						return -1;
-					}
-				}
-			}
-			
-			return Convert.ChangeType(value, targetType);
 		}
 	}
 }
