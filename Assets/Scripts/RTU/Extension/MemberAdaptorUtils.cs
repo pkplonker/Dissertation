@@ -10,8 +10,21 @@ namespace RealTimeUpdateRuntime
 		public static IMemberAdapter GetMemberAdapter(Type type, string fieldName)
 		{
 			var members = GetMemberInfo(type);
-			var member = CreateMemberAdapter(members.First(x =>
-				string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase)));
+			var memberInfo = members.FirstOrDefault(x =>
+				string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase));
+			IMemberAdapter member = null;
+			if (memberInfo == null)
+			{
+				memberInfo = members.FirstOrDefault(x =>
+					string.Equals(x.Name, fieldName.Insert(0, "m_"), StringComparison.InvariantCultureIgnoreCase));
+			}
+
+			if (memberInfo == null)
+			{
+				throw new Exception("Member not found");
+			}
+			member = CreateMemberAdapter(memberInfo);
+
 			return member;
 		}
 
