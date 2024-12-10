@@ -31,7 +31,7 @@ namespace RealTimeUpdateRuntime
 						subFieldName = propertySplit[1];
 					}
 
-					var value = args.Value;
+					object value = args.Value;
 					fieldName = fieldName.Trim("m_".ToCharArray());
 					var member = MemberAdaptorUtils.GetMemberAdapter(type, fieldName);
 					var memberType = member.MemberType;
@@ -57,8 +57,9 @@ namespace RealTimeUpdateRuntime
 
 					if (!set)
 					{
-						member.SetValue(component, ConvertValue(memberType, value));
-						Debug.Log($"{fieldName} set to {value} successfully.");
+						var convertedVal = ConvertValue(memberType, ConvertValue(member.MemberType, value));
+						member.SetValue(component, convertedVal);
+						Debug.Log($"{fieldName} set to {convertedVal} successfully.");
 					}
 				}
 				catch (Exception e)
@@ -68,9 +69,7 @@ namespace RealTimeUpdateRuntime
 			});
 		}
 
-
-
-		private bool ModifyStruct(object structValue, string subFieldName, string newValue, out object newStruct)
+		private bool ModifyStruct(object structValue, string subFieldName, object newValue, out object newStruct)
 		{
 			Type structType = structValue.GetType();
 
@@ -85,23 +84,30 @@ namespace RealTimeUpdateRuntime
 
 		private static object ConvertValue(Type targetType, object value)
 		{
-			try
+			if (value == null || targetType == null)
+				return null;
+
+			if (targetType == typeof(bool))
 			{
-				return Convert.ChangeType(value, targetType);
+				if (value is string strValue)
+				{
+					return strValue == "1" || strValue.Equals("true", StringComparison.OrdinalIgnoreCase);
+				}
+
+				return Convert.ToBoolean(value);
 			}
-			catch (InvalidCastException)
+
+			if (targetType.IsEnum)
 			{
-				throw new InvalidCastException(
-					$"Cannot convert value '{value}' of type {targetType} to {targetType}.");
+				return Enum.Parse(targetType, value.ToString());
 			}
-			catch (FormatException)
+
+			if (targetType != typeof(string) && targetType.IsClass)
 			{
-				throw new FormatException($"Invalid format for value '{value}' when converting to {targetType}.");
+				return JsonConvert.DeserializeObject(value.ToString(), targetType);
 			}
-			catch (Exception ex)
-			{
-				throw new Exception($"Failed to convert value '{value}' to {targetType}: {ex.Message}");
-			}
+
+			return Convert.ChangeType(value, targetType);
 		}
 	}
 }
