@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using RealTimeUpdateRuntime;
 using Object = UnityEngine.Object;
 
@@ -6,14 +7,14 @@ namespace RTUEditor.AssetStore
 {
 	public class DefaultCloneAssetStrategy : ICloneAssetStrategy
 	{
+		private static Dictionary<Type, List<IMemberAdapter>> memberAdaptorCollection = new ();
+
 		public virtual Clone CloneAsset(Object asset, string path) => CloneInternal(asset, asset.GetType(),
 			new Clone(path, StringComparer.InvariantCultureIgnoreCase));
 
 		protected Clone CloneInternal(Object asset, Type type, Clone clone)
 		{
-			// Getting the member adaptors each asset is ineffective, but will ignore for the time being as it's not currently an issue,
-			// and will require some thought as you could have derived types of assets
-			foreach (var prop in MemberAdaptorUtils.GetMemberAdapters(type))
+			foreach (var prop in GetMemberAdapters(type))
 			{
 				object val = null;
 				try
@@ -35,6 +36,18 @@ namespace RTUEditor.AssetStore
 			}
 
 			return clone;
+		}
+
+		private static List<IMemberAdapter> GetMemberAdapters(Type type)
+		{
+			if (memberAdaptorCollection.TryGetValue(type, out var collection))
+			{
+				return collection;
+			}
+
+			var newCollection = MemberAdaptorUtils.GetMemberAdapters(type);
+			memberAdaptorCollection[type] = newCollection;
+			return newCollection;
 		}
 	}
 }
