@@ -75,7 +75,7 @@ namespace RTUEditor.AssetStore
 			var mat = asset as Material;
 			if (asset == null) return false;
 			var strategy = assetCloneStrategyFactory.GetCloneStrategy(assetType);
-			assetClone = strategy.CloneAsset(asset, path);
+			assetClone = strategy.Clone(asset, path);
 			return true;
 		}
 

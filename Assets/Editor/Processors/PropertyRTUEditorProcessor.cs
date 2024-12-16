@@ -8,10 +8,12 @@ namespace RTUEditor
 {
 	public class PropertyRTUEditorProcessor : IRTUEditorProcessor
 	{
+		private readonly SceneGameobjectStore sceneGameObjectStore;
 		public IMessageSender controller { get; set; }
 
-		public PropertyRTUEditorProcessor(IMessageSender controller)
+		public PropertyRTUEditorProcessor(EditorRtuController controller)
 		{
+			sceneGameObjectStore = new SceneGameobjectStore(controller);
 			this.controller = controller;
 			Undo.postprocessModifications += PostprocessModificationsCallback;
 			Undo.undoRedoPerformed += OnUndoRedoPerformed;
@@ -40,33 +42,12 @@ namespace RTUEditor
 
 		private void ProcessPropertyModification(PropertyModification pm)
 		{
-			if (pm.target is Component component)
+			if (sceneGameObjectStore.TryGetChange(pm, out PropertyChangeArgs args))
 			{
-				var go = component.gameObject;
-				var path = GetGameObjectPath(go);
-				var args = new PropertyChangeArgs()
-				{
-					GameObjectPath = path,
-					ComponentTypeName = component.GetType().AssemblyQualifiedName,
-					PropertyPath = pm.propertyPath,
-					Value = pm.value,
-					ValueType = pm.value.GetType()
-				};
 				controller.SendMessageToGame($"property,\n{JsonConvert.SerializeObject(args)}");
-				return;
 			}
 		}
 
-		private string GetGameObjectPath(GameObject obj)
-		{
-			string path = "/" + obj.name;
-			while (obj.transform.parent != null)
-			{
-				obj = obj.transform.parent.gameObject;
-				path = "/" + obj.name + path;
-			}
-
-			return path;
-		}
+		
 	}
 }

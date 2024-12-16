@@ -5,14 +5,14 @@ namespace RTUEditor.AssetStore
 {
 	public class AssetCloneStrategyFactory
 	{
-		private ICloneAssetStrategy defaultCloneStrategy = new DefaultCloneAssetStrategy();
+		private ICloneStrategy defaultCloneStrategy = new DefaultCloneStrategy();
 
-		private Dictionary<string, ICloneAssetStrategy> cloneStrategies = new(StringComparer.InvariantCultureIgnoreCase)
+		private Dictionary<string, ICloneStrategy> cloneStrategies = new(StringComparer.InvariantCultureIgnoreCase)
 		{
-			{"PNG", new TextureCloneAssetStrategy()},
+			{"PNG", new TextureCloneStrategy()},
 		};
 
-		public ICloneAssetStrategy GetCloneStrategy(string assetType) =>
+		public ICloneStrategy GetCloneStrategy(string assetType) =>
 			cloneStrategies.GetValueOrDefault(assetType, defaultCloneStrategy);
 	}
 }

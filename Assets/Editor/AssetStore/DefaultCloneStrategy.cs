@@ -5,11 +5,11 @@ using Object = UnityEngine.Object;
 
 namespace RTUEditor.AssetStore
 {
-	public class DefaultCloneAssetStrategy : ICloneAssetStrategy
+	public class DefaultCloneStrategy : ICloneStrategy
 	{
 		private static Dictionary<Type, List<IMemberAdapter>> memberAdaptorCollection = new ();
 
-		public virtual Clone CloneAsset(Object asset, string path) => CloneInternal(asset, asset.GetType(),
+		public virtual Clone Clone(Object asset, string path) => CloneInternal(asset, asset.GetType(),
 			new Clone(path, StringComparer.InvariantCultureIgnoreCase));
 
 		protected Clone CloneInternal(Object asset, Type type, Clone clone)

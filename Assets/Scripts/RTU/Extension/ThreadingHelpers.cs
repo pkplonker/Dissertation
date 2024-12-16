@@ -13,5 +13,8 @@ namespace RealTimeUpdateRuntime
 		public static  void ActionOnScheduler(Action action, TaskScheduler scheduler) =>
 			Task.Factory.StartNew(action, new CancellationToken(),
 				new TaskCreationOptions(), scheduler).Wait();
+		public static async Task ActionOnSchedulerAsync(Action action, TaskScheduler scheduler) =>
+			await Task.Factory.StartNew(action, new CancellationToken(),
+				new TaskCreationOptions(), scheduler);
 	}
 }

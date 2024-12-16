@@ -11,20 +11,23 @@ namespace RTUEditor
 	{
 		private readonly RTUEditorConnection connection;
 		private readonly List<IRTUEditorProcessor> handlers;
-		private readonly RTUScene scene;
+		public RTUScene Scene { get; private set; }
 		private readonly TaskScheduler scheduler;
 		public bool IsConnected => connection?.IsConnected ?? false;
 
-		private void CloseScene() => scene.Close();
+		private void CloseScene() => Scene.Close();
 
-		public void ShowScene() => scene.ShowScene();
+		public void ShowScene()
+		{
+			Scene = new RTUScene(scheduler);
+			Scene.ShowScene();
+		}
 
 		public EditorRtuController()
 		{
 			handlers = new List<IRTUEditorProcessor>();
 			scheduler = TaskScheduler.FromCurrentSynchronizationContext();
 			connection = new RTUEditorConnection(scheduler);
-			scene = new RTUScene(scheduler);
 		}
 
 		public void SendMessageToGame(string message) => connection.SendMessageToGame(message);
@@ -37,7 +40,6 @@ namespace RTUEditor
 
 		public void Connect(string ip, Action connectCallback = null, Action disconnectCallback = null)
 		{
-			CreateProcessors();
 			RTUAssetStore.GenerateDictionary();
 			connection.Connect(ip, OnConnection(connectCallback), b => OnDisconnect(disconnectCallback, b));
 		}
@@ -69,8 +71,8 @@ namespace RTUEditor
 			{
 				try
 				{
-					CreateProcessors();
 					ShowScene();
+					CreateProcessors();
 				}
 				catch (Exception e)
 				{
