@@ -15,7 +15,6 @@ namespace RTUEditor
 		private readonly RTUScene rtuScene;
 		private Dictionary<GameObject, Clone> clones = new();
 		private GameObjectCloneStrategy gameObjectCloneStrategy = new();
-		private ComponentCloneStrategy componentCloneStrategy = new();
 
 		public SceneGameobjectStore(EditorRtuController controller)
 		{

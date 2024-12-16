@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using RealTimeUpdateRuntime;
 using Object = UnityEngine.Object;
 
@@ -7,14 +8,17 @@ namespace RTUEditor.AssetStore
 {
 	public class DefaultCloneStrategy : ICloneStrategy
 	{
-		private static Dictionary<Type, List<IMemberAdapter>> memberAdaptorCollection = new ();
+		private static Dictionary<Type, List<IMemberAdapter>> memberAdaptorCollection = new();
 
 		public virtual Clone Clone(Object asset, string path) => CloneInternal(asset, asset.GetType(),
 			new Clone(path, StringComparer.InvariantCultureIgnoreCase));
 
-		protected Clone CloneInternal(Object asset, Type type, Clone clone)
+		protected Clone CloneInternal(Object asset, Type type, Clone clone, List<string> excludedProperties = null)
 		{
-			foreach (var prop in GetMemberAdapters(type))
+			var adaptors = GetMemberAdapters(type)
+				.Where(x => !excludedProperties?.Any(e =>
+					string.Equals(e, x.Name, StringComparison.InvariantCultureIgnoreCase)) ?? false);
+			foreach (var prop in adaptors)
 			{
 				object val = null;
 				try
