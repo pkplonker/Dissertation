@@ -32,7 +32,7 @@ namespace RealTimeUpdateRuntime
 						subFieldName = propertySplit[1];
 					}
 
-					object value = args.Value;
+					var value = args.GetDeserializedValue();
 					fieldName = fieldName.Trim("m_".ToCharArray());
 					IMemberAdapter member = null;
 					try
