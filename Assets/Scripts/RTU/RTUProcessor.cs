@@ -21,7 +21,18 @@ namespace RealTimeUpdateRuntime
 		void Start()
 		{
 			cancellationTokenSource = new CancellationTokenSource();
-			serverThread = new Thread(() => StartServer(cancellationTokenSource.Token));
+			serverThread = new Thread(() =>
+			{
+				try
+				{
+					StartServer(cancellationTokenSource.Token);
+				}
+				catch
+				{
+					webSocketServer = null;
+					serverThread = null;
+				}
+			});
 			serverThread.Start();
 			Schedular = TaskScheduler.FromCurrentSynchronizationContext();
 		}
