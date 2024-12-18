@@ -62,7 +62,7 @@ namespace RTUEditor
 					// }
 					StageUtility.GoToMainStage();
 				}
-			}, scheduler);
+			}, scheduler,1000);
 		}
 	}
 }
