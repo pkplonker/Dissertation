@@ -64,7 +64,7 @@ namespace RealTimeUpdateRuntime
 							{
 								member.SetValue(component, modifiedStruct);
 								set = true;
-								Debug.Log($"{fieldName}.{subFieldName} set to {value} successfully.");
+								RTUDebug.Log($"{fieldName}.{subFieldName} set to {value} successfully.");
 							}
 						}
 						catch
@@ -77,12 +77,12 @@ namespace RealTimeUpdateRuntime
 					{
 						var convertedVal = ConvertValue(memberType, value);
 						member.SetValue(component, convertedVal);
-						Debug.Log($"{fieldName} set to {convertedVal} successfully.");
+						RTUDebug.Log($"{fieldName} set to {convertedVal} successfully.");
 					}
 				}
 				catch (Exception e)
 				{
-					Debug.Log($"Failed to set property: {e.Message}");
+					RTUDebug.Log($"Failed to set property: {e.Message}");
 				}
 			});
 		}

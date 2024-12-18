@@ -107,7 +107,8 @@ namespace RTUEditor
 				// transform 
 				if (originalName.Equals("position", StringComparison.InvariantCultureIgnoreCase) ||
 				    originalName.Equals("worldToLocalMatrix", StringComparison.InvariantCultureIgnoreCase) ||
-				    originalName.Equals("localToWorldMatrix", StringComparison.InvariantCultureIgnoreCase)) continue;
+				    originalName.Equals("localToWorldMatrix", StringComparison.InvariantCultureIgnoreCase) ||
+				    originalName.Equals("lossyScale", StringComparison.InvariantCultureIgnoreCase)) continue;
 				if (!currentCloneComponent.TryGetValue(originalName, out var newValue)) continue;
 				//if both unity objects(assets) compared the ptr
 				bool handled = false;

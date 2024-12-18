@@ -2,17 +2,16 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
-using RealTimeUpdateRuntime.ClassWrappers;
 using UnityEditor;
 using UnityEngine;
-using Vector3 = System.Numerics.Vector3;
 
 namespace RTUEditor
 {
 	public class PropertyRTUEditorProcessor : IRTUEditorProcessor
 	{
 		private readonly SceneGameobjectStore sceneGameObjectStore;
-		public IMessageSender controller { get; set; }
+		private readonly JsonSerializerSettings JSONSettings;
+		private readonly IMessageSender controller;
 
 		public PropertyRTUEditorProcessor(EditorRtuController controller)
 		{
@@ -20,6 +19,7 @@ namespace RTUEditor
 			this.controller = controller;
 			Undo.postprocessModifications += PostprocessModificationsCallback;
 			Undo.undoRedoPerformed += OnUndoRedoPerformed;
+			JSONSettings = new JSONSettingsCreator().Create();
 		}
 
 		private void OnUndoRedoPerformed()
@@ -49,9 +49,16 @@ namespace RTUEditor
 			{
 				foreach (var change in args)
 				{
-					var message =
-						$"property,\n{JsonConvert.SerializeObject(change, Formatting.Indented, new JsonSerializerSettings {ReferenceLoopHandling = ReferenceLoopHandling.Ignore})}";
-					controller.SendMessageToGame(message);
+					try
+					{
+						var message =
+							$"property,\n{JsonConvert.SerializeObject(change, Formatting.Indented, JSONSettings)}";
+						controller.SendMessageToGame(message);
+					}
+					catch (Exception e)
+					{
+						Debug.LogWarning("Unable to create property change message}");
+					}
 				}
 			}
 		}

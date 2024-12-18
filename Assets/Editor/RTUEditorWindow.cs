@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
 using UnityEditor;
 using UnityEngine;
@@ -31,7 +32,7 @@ namespace RTUEditor
 				}
 				catch (Exception e)
 				{
-					Debug.LogWarning($"Failed to Launch built game {e.Message}");
+					RTUDebug.LogWarning($"Failed to Launch built game {e.Message}");
 				}
 			}
 
