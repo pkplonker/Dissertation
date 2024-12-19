@@ -476,12 +476,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 91243944}
+  - component: {fileID: 91243940}
   - component: {fileID: 91243943}
   - component: {fileID: 91243942}
   - component: {fileID: 91243941}
-  - component: {fileID: 91243940}
+  - component: {fileID: 91243945}
   m_Layer: 0
-  m_Name: Cube (2)
+  m_Name: ComponentTest
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -499,8 +500,48 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 968109c572bb11547ab6f8ceea73376a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Number: 11
-  Word: 123456
+  intField: 0
+  floatField: 0
+  <doubleField>k__BackingField: 0
+  stringField: 
+  privateStringField: 
+  <serializedStringProperty>k__BackingField: 
+  vector3Field: {x: 0, y: 0, z: 0}
+  quaternionField: {x: 0, y: 0, z: 0, w: 0}
+  <colorProp>k__BackingField: {r: 0, g: 0, b: 0, a: 0}
+  intArray: 010000000200000005000000
+  stringArray: []
+  <vector3Array>k__BackingField: []
+  intList: 
+  stringList: []
+  <colorList>k__BackingField: []
+  nestedClassField:
+    nestedInt: 0
+    nestedString: 
+  privateNestedClassField:
+    nestedInt: 0
+    nestedString: 
+  <serializedNestedClass>k__BackingField:
+    nestedInt: 0
+    nestedString: 
+  enumField: 0
+  privateEnumField: 0
+  <serializedEnumProperty>k__BackingField: 0
+  structField:
+    structInt: 0
+    structFloat: 0
+  privateStructField:
+    structInt: 0
+    structFloat: 0
+  <serializedStructProperty>k__BackingField:
+    structInt: 0
+    structFloat: 0
+  gameObjectField: {fileID: 0}
+  transformField: {fileID: 0}
+  <rigidbdyProperty>k__BackingField: {fileID: 0}
+  gameObjectArray: []
+  transformList: []
+  <rigidbodyList>k__BackingField: []
 --- !u!65 &91243941
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -508,7 +549,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 91243939}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 497218946}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -587,6 +628,33 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!54 &91243945
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 91243939}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &230956574
 GameObject:
   m_ObjectHideFlags: 0
@@ -1064,6 +1132,7 @@ GameObject:
   - component: {fileID: 419011277}
   - component: {fileID: 419011276}
   - component: {fileID: 419011275}
+  - component: {fileID: 419011280}
   m_Layer: 0
   m_Name: Cube (1)
   m_TagString: Untagged
@@ -1083,8 +1152,48 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 968109c572bb11547ab6f8ceea73376a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Number: 11
-  Word: 123456
+  intField: 0
+  floatField: 0
+  <doubleField>k__BackingField: 0
+  stringField: 
+  privateStringField: 
+  <serializedStringProperty>k__BackingField: 
+  vector3Field: {x: 0, y: 0, z: 0}
+  quaternionField: {x: 0, y: 0, z: 0, w: 0}
+  <colorProp>k__BackingField: {r: 0, g: 0, b: 0, a: 0}
+  intArray: 
+  stringArray: []
+  <vector3Array>k__BackingField: []
+  intList: 
+  stringList: []
+  <colorList>k__BackingField: []
+  nestedClassField:
+    nestedInt: 0
+    nestedString: 
+  privateNestedClassField:
+    nestedInt: 0
+    nestedString: 
+  <serializedNestedClass>k__BackingField:
+    nestedInt: 0
+    nestedString: 
+  enumField: 0
+  privateEnumField: 0
+  <serializedEnumProperty>k__BackingField: 0
+  structField:
+    structInt: 0
+    structFloat: 0
+  privateStructField:
+    structInt: 0
+    structFloat: 0
+  <serializedStructProperty>k__BackingField:
+    structInt: 0
+    structFloat: 0
+  gameObjectField: {fileID: 0}
+  transformField: {fileID: 0}
+  <rigidbdyProperty>k__BackingField: {fileID: 0}
+  gameObjectArray: []
+  transformList: []
+  <rigidbodyList>k__BackingField: []
 --- !u!65 &419011276
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1171,6 +1280,45 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!54 &419011280
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 419011274}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!134 &497218946
+PhysicMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  dynamicFriction: 0.6
+  staticFriction: 0.6
+  bounciness: 0
+  frictionCombine: 0
+  bounceCombine: 0
 --- !u!1 &672735301
 GameObject:
   m_ObjectHideFlags: 0
