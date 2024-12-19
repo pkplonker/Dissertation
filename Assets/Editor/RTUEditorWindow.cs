@@ -36,6 +36,21 @@ namespace RTUEditor
 				}
 			}
 
+			if (GUILayout.Button("Build + Run Game"))
+			{
+				try
+				{
+					BuildPipeline.BuildPlayer(new string[] {"Assets/Scenes/RTUTest.unity"}, gamePath,
+						BuildTarget.StandaloneWindows64, BuildOptions.AutoRunPlayer);
+
+					//Process.Start(gamePath);
+				}
+				catch (Exception e)
+				{
+					RTUDebug.LogWarning($"Failed to Launch built game {e.Message}");
+				}
+			}
+
 			if (controller.IsConnected)
 			{
 				if (GUILayout.Button("Disconnect from Game"))
