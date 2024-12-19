@@ -29,6 +29,7 @@ namespace RTUEditor
 
 		private UndoPropertyModification[] PostprocessModificationsCallback(UndoPropertyModification[] modifications)
 		{
+			
 			if (controller.IsConnected)
 			{
 				foreach (var modification in modifications)

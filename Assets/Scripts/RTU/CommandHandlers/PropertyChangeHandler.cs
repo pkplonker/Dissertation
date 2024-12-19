@@ -8,7 +8,8 @@ namespace RealTimeUpdateRuntime
 {
 	public class PropertyChangeHandler : RTUCommandHandlerBase
 	{
-		public override void Process(CommandHandlerArgs commandHandlerArgs)
+		
+		public override void Process(CommandHandlerArgs commandHandlerArgs, JsonSerializerSettings jsonSettings)
 		{
 			RTUProcessor.Enqueue(() =>
 			{
@@ -32,7 +33,7 @@ namespace RealTimeUpdateRuntime
 						subFieldName = propertySplit[1];
 					}
 
-					var value = args.GetDeserializedValue();
+					var value = args.GetDeserializedValue(jsonSettings);
 					fieldName = fieldName.Trim("m_".ToCharArray());
 					IMemberAdapter member = null;
 					try
@@ -75,7 +76,7 @@ namespace RealTimeUpdateRuntime
 
 					if (!set)
 					{
-						var convertedVal = ConvertValue(memberType, value);
+						var convertedVal = ConvertValue(memberType, value, jsonSettings);
 						member.SetValue(component, convertedVal);
 						RTUDebug.Log($"{fieldName} set to {convertedVal} successfully.");
 					}
@@ -100,11 +101,11 @@ namespace RealTimeUpdateRuntime
 			return true;
 		}
 
-		private static object ConvertValue(Type targetType, object value)
+		private static object ConvertValue(Type targetType, object value, JsonSerializerSettings jsonSettings)
 		{
 			if (value == null || targetType == null)
 				return null;
-
+			if (targetType.IsArray) return value;
 			if (targetType == typeof(bool))
 			{
 				if (value is string strValue)
@@ -122,7 +123,7 @@ namespace RealTimeUpdateRuntime
 
 			if (targetType != typeof(string) && targetType.IsClass)
 			{
-				return JsonConvert.DeserializeObject(value.ToString(), targetType);
+				return JsonConvert.DeserializeObject(value.ToString(), targetType, jsonSettings);
 			}
 			
 			if (targetType == typeof(int))

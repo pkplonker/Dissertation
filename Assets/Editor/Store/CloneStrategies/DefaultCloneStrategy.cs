@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace RTUEditor.AssetStore
@@ -15,7 +19,7 @@ namespace RTUEditor.AssetStore
 
 		protected Clone CloneInternal(Object asset, Type type, Clone clone, List<string> excludedProperties = null)
 		{
-			var adaptors = GetMemberAdapters(type)
+			var adaptors = MemberAdaptorUtils.GetMemberAdapters(type)
 				.Where(x => !excludedProperties?.Any(e =>
 					string.Equals(e, x.Name, StringComparison.InvariantCultureIgnoreCase)) ?? false);
 			foreach (var prop in adaptors)
@@ -23,7 +27,7 @@ namespace RTUEditor.AssetStore
 				object val = null;
 				try
 				{
-					val = prop.GetValue(asset);
+					val =prop.GetValue(asset);
 				}
 				catch { }
 
@@ -40,18 +44,6 @@ namespace RTUEditor.AssetStore
 			}
 
 			return clone;
-		}
-
-		private static List<IMemberAdapter> GetMemberAdapters(Type type)
-		{
-			if (memberAdaptorCollection.TryGetValue(type, out var collection))
-			{
-				return collection;
-			}
-
-			var newCollection = MemberAdaptorUtils.GetMemberAdapters(type);
-			memberAdaptorCollection[type] = newCollection;
-			return newCollection;
 		}
 	}
 }

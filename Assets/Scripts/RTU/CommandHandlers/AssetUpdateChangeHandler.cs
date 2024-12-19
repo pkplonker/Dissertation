@@ -11,13 +11,13 @@ namespace RealTimeUpdateRuntime
 {
 	public class AssetUpdateChangeHandler : RTUCommandHandlerBase
 	{
-		public override void Process(CommandHandlerArgs commandHandlerArgs)
+		public override void Process(CommandHandlerArgs commandHandlerArgs, JsonSerializerSettings jsonSettings)
 		{
 			RTUProcessor.Enqueue(() =>
 			{
 				try
 				{
-					var args = JsonConvert.DeserializeObject<AssetPropertyChangeEventArgs>(commandHandlerArgs.Payload);
+					var args = JsonConvert.DeserializeObject<AssetPropertyChangeEventArgs>(commandHandlerArgs.Payload, jsonSettings);
 					switch (args.Type.ToLower())
 					{
 						case "mat":

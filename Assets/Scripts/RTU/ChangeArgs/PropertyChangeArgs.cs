@@ -20,7 +20,7 @@ namespace RealTimeUpdateRuntime
 			set => ValueTypeName = value?.AssemblyQualifiedName;
 		}
 
-		public object GetDeserializedValue()
+		public object GetDeserializedValue(JsonSerializerSettings settings)
 		{
 			if (Value == null || string.IsNullOrEmpty(ValueTypeName))
 				return null;
@@ -36,7 +36,7 @@ namespace RealTimeUpdateRuntime
 				catch { }
 			}
 
-			return JsonConvert.DeserializeObject(Value.ToString(), targetType);
+			return JsonConvert.DeserializeObject(Value.ToString(), targetType, settings);
 		}
 
 		public PropertyChangeArgs Clone() =>

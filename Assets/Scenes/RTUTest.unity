@@ -509,7 +509,7 @@ MonoBehaviour:
   vector3Field: {x: 0, y: 0, z: 0}
   quaternionField: {x: 0, y: 0, z: 0, w: 0}
   <colorProp>k__BackingField: {r: 0, g: 0, b: 0, a: 0}
-  intArray: 010000000200000005000000
+  intArray: 01000000020000000500000005000000050000000100000001000000
   stringArray: []
   <vector3Array>k__BackingField: []
   intList: 
@@ -549,7 +549,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 91243939}
-  m_Material: {fileID: 497218946}
+  m_Material: {fileID: 1964602097}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1307,18 +1307,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!134 &497218946
-PhysicMaterial:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  dynamicFriction: 0.6
-  staticFriction: 0.6
-  bounciness: 0
-  frictionCombine: 0
-  bounceCombine: 0
 --- !u!1 &672735301
 GameObject:
   m_ObjectHideFlags: 0
@@ -1483,9 +1471,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 924186298}
+  - component: {fileID: 924186303}
   - component: {fileID: 924186301}
   - component: {fileID: 924186300}
   - component: {fileID: 924186299}
+  - component: {fileID: 924186302}
   m_Layer: 0
   m_Name: NESTED2
   m_TagString: Untagged
@@ -1502,7 +1492,7 @@ Transform:
   m_GameObject: {fileID: 924186297}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1, y: -0.38, z: 0}
+  m_LocalPosition: {x: 1, y: -0.38, z: -1.377}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1579,6 +1569,102 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 924186297}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!54 &924186302
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 924186297}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!114 &924186303
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 924186297}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 968109c572bb11547ab6f8ceea73376a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  intField: 10
+  floatField: 20.5
+  <doubleField>k__BackingField: 30.123
+  stringField: Test String
+  privateStringField: Private Test String
+  <serializedStringProperty>k__BackingField: Serialized Property String
+  vector3Field: {x: 1, y: 1, z: 1}
+  quaternionField: {x: 0, y: 0, z: 0, w: 1}
+  <colorProp>k__BackingField: {r: 1, g: 0, b: 0, a: 1}
+  intArray: 010000000200000003000000
+  stringArray:
+  - A
+  - B
+  - C
+  <vector3Array>k__BackingField:
+  - {x: 0, y: 1, z: 0}
+  - {x: 0, y: -1, z: 0}
+  - {x: -1, y: 0, z: 0}
+  intList: 010000000200000003000000
+  stringList:
+  - X
+  - Y
+  - Z
+  <colorList>k__BackingField:
+  - {r: 0, g: 1, b: 0, a: 1}
+  - {r: 0, g: 0, b: 1, a: 1}
+  - {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  nestedClassField:
+    nestedInt: 10
+    nestedString: Nested
+  privateNestedClassField:
+    nestedInt: 20
+    nestedString: Private Nested
+  <serializedNestedClass>k__BackingField:
+    nestedInt: 30
+    nestedString: 'Serialized Nested '
+  enumField: 0
+  privateEnumField: 1
+  <serializedEnumProperty>k__BackingField: 2
+  structField:
+    structInt: 10
+    structFloat: 10.5
+  privateStructField:
+    structInt: 20
+    structFloat: 20.5
+  <serializedStructProperty>k__BackingField:
+    structInt: 30
+    structFloat: 30.5
+  gameObjectField: {fileID: 924186297}
+  transformField: {fileID: 924186298}
+  <rigidbdyProperty>k__BackingField: {fileID: 924186302}
+  gameObjectArray:
+  - {fileID: 924186297}
+  transformList:
+  - {fileID: 924186298}
+  <rigidbodyList>k__BackingField:
+  - {fileID: 924186302}
 --- !u!1 &961849233
 GameObject:
   m_ObjectHideFlags: 0
@@ -1654,6 +1740,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 961849233}
   m_CullTransparentMesh: 1
+--- !u!134 &973480395
+PhysicMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  dynamicFriction: 0.6
+  staticFriction: 0.6
+  bounciness: 0
+  frictionCombine: 0
+  bounceCombine: 0
 --- !u!1 &1089829614
 GameObject:
   m_ObjectHideFlags: 0
@@ -2258,7 +2356,7 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1902618100}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 973480395}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -2331,13 +2429,25 @@ Transform:
   m_GameObject: {fileID: 1902618100}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.9, y: 1.42, z: 0.65}
+  m_LocalPosition: {x: -1.911, y: 1.42, z: 0.65}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 924186298}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!134 &1964602097
+PhysicMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ' (Instance)'
+  dynamicFriction: 0.6
+  staticFriction: 0.6
+  bounciness: 0
+  frictionCombine: 0
+  bounceCombine: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
