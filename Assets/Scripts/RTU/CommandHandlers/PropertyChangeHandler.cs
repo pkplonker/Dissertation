@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
@@ -106,6 +108,8 @@ namespace RealTimeUpdateRuntime
 			if (value == null || targetType == null)
 				return null;
 			if (targetType.IsArray) return value;
+			if (value is IEnumerable) return value;
+
 			if (targetType == typeof(bool))
 			{
 				if (value is string strValue)

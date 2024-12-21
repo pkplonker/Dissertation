@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -43,6 +44,43 @@ namespace RTUEditor.AssetStore
 					var clonedArray = Array.CreateInstance(array.GetType().GetElementType(), array.Length);
 					Array.Copy(array, clonedArray, array.Length);
 					val = clonedArray;
+				}
+				else if (val is IList list)
+				{
+					try
+					{
+						// Handle lists
+						var clonedList = (IList) Activator.CreateInstance(val.GetType());
+						foreach (var item in list)
+						{
+							clonedList.Add(item);
+						}
+
+						val = clonedList;
+					}
+					catch (Exception e) { }
+				}
+				else if (val is IDictionary dictionary)
+				{
+					//ignore for now?
+				}
+				else if (val is IEnumerable enumerable && !(val is string))
+				{
+					try
+					{
+						var clonedEnumerable = (IEnumerable) Activator.CreateInstance(val.GetType());
+						var addMethod = clonedEnumerable.GetType().GetMethod("Add");
+						if (addMethod != null)
+						{
+							foreach (var item in enumerable)
+							{
+								addMethod.Invoke(clonedEnumerable, new[] {item});
+							}
+						}
+
+						val = clonedEnumerable;
+					}
+					catch (Exception e) { }
 				}
 
 				if (!clone.TryAdd(prop.Name, val))

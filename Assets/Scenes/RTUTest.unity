@@ -513,7 +513,7 @@ MonoBehaviour:
   stringArray:
   - 
   <vector3Array>k__BackingField: []
-  intList: 
+  intList: 00000000
   stringList: []
   <colorList>k__BackingField: []
   nestedClassField:

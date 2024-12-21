@@ -51,29 +51,29 @@ namespace RealTimeUpdateRuntime
 									}
 									catch (Exception e)
 									{
-										Debug.LogWarning($"Failed setting {change.Key} on {args.Path}: {e.Message}");
+										RTUDebug.LogWarning($"Failed setting {change.Key} on {args.Path}: {e.Message}");
 									}
 								}
 							}
 							else if (!matchingMats.Any())
 							{
-								Debug.LogWarning($"No matches found for {materialName} - no change is being made");
+								RTUDebug.LogWarning($"No matches found for {materialName} - no change is being made");
 							}
 							else
 							{
-								Debug.LogWarning(
+								RTUDebug.LogWarning(
 									$"Multiply possible matches found for {materialName} - no change is being made");
 							}
 
 							break;
 						default:
-							Debug.LogWarning($"Asset Type not yet supported {args.Type.ToLower()}");
+							RTUDebug.LogWarning($"Asset Type not yet supported {args.Type.ToLower()}");
 							break;
 					}
 				}
 				catch (Exception e)
 				{
-					Debug.Log($"Failed to set property: {e.Message}");
+					RTUDebug.Log($"Failed to set property: {e.Message}");
 				}
 			});
 		}

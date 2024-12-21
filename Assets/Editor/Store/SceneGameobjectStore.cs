@@ -160,20 +160,14 @@ namespace RTUEditor
 
 						if (originalArray.Length == newArray.Length)
 						{
-							bool arraysEqual = true;
-
 							for (int i = 0; i < originalArray.Length; i++)
 							{
 								if (!Equals(originalArray.GetValue(i), newArray.GetValue(i)))
 								{
-									arraysEqual = false;
+									handled = AddToChanges(changes, originalName, newValue);
+
 									break;
 								}
-							}
-
-							if (!arraysEqual)
-							{
-								handled = AddToChanges(changes, originalName, newValue);
 							}
 						}
 						else
@@ -183,11 +177,40 @@ namespace RTUEditor
 
 						handled = true;
 					}
-					catch(Exception e)
+					catch (Exception e)
 					{
 						Debug.LogWarning($"Failed array comparison {e.Message}");
 					}
 				}
+				else if (!handled && newValue is IEnumerable newObjectEnumerable &&
+				         oldValue is IEnumerable originalObjectEnumerable &&
+				         newValue.GetType() != typeof(string))
+				{
+					try
+					{
+						var originalList = originalObjectEnumerable.Cast<object>().ToList();
+						var newList = newObjectEnumerable.Cast<object>().ToList();
+						if (originalList.Count == newList.Count)
+						{
+							for (int i = 0; i < originalList.Count; i++)
+							{
+								if (originalList.ElementAt(i).Equals(newList.ElementAt(i)))
+								{
+									handled = AddToChanges(changes, originalName, newValue);
+									break;
+								}
+							}
+						}
+						else
+						{
+							handled = AddToChanges(changes, originalName, newValue);
+						}
+
+						handled = true;
+					}
+					catch { }
+				}
+
 				if (!handled && !Equals(oldValue, newValue))
 				{
 					handled = AddToChanges(changes, originalName, newValue);
