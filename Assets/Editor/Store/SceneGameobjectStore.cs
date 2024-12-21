@@ -102,122 +102,152 @@ namespace RTUEditor
 			//changes = originalCloneComponent.Except(currentCloneComponent).ToDictionary(x => x.Key, x => x.Value);
 			foreach (var (originalName, oldValue) in originalCloneComponent)
 			{
-				// any component
-				if (originalName.Equals("gameObject", StringComparison.InvariantCultureIgnoreCase) ||
-				    originalName.Equals("transform", StringComparison.InvariantCultureIgnoreCase)) continue;
-				// transform 
-				if (originalName.Equals("position", StringComparison.InvariantCultureIgnoreCase) ||
-				    originalName.Equals("worldToLocalMatrix", StringComparison.InvariantCultureIgnoreCase) ||
-				    originalName.Equals("localToWorldMatrix", StringComparison.InvariantCultureIgnoreCase) ||
-				    originalName.Equals("lossyScale", StringComparison.InvariantCultureIgnoreCase)) continue;
+				if (oldValue is Matrix4x4) continue;
 				if (!currentCloneComponent.TryGetValue(originalName, out var newValue)) continue;
-				//if both unity objects(assets) compared the ptr
 				bool handled = false;
 				var type = newValue.GetType();
+
 				if (!handled && newValue is Object valueAsObject && oldValue is Object propValueAsObject)
 				{
-					if (valueAsObject.GetInstanceID() != propValueAsObject.GetInstanceID())
-					{
-						handled = AddToChanges(changes, originalName, newValue);
-					}
-
-					handled = true;
+					handled = HandleUnityObject(changes, valueAsObject, propValueAsObject, originalName, newValue);
 				}
 				else if (!handled && newValue is IEnumerable<Object> newEnumerable &&
 				         oldValue is IEnumerable<Object> originalEnumerable &&
 				         newValue.GetType() != typeof(string))
 				{
-					try
-					{
-						var originalHashset = new HashSet<Object>(originalEnumerable);
-						var newHashset = new HashSet<Object>(newEnumerable);
-						if (originalHashset.Count == newHashset.Count)
-						{
-							for (int i = 0; i < originalHashset.Count; i++)
-							{
-								if (originalHashset.ElementAt(i).GetInstanceID() ==
-								    newHashset.ElementAt(i).GetInstanceID())
-								{
-									// todo handle
-								}
-							}
-						}
-						else
-						{
-							// todo handle new elements being added / reordered
-						}
-
-						handled = true;
-					}
-					catch { }
+					handled = HandleUnityObjectCollection(originalEnumerable, newEnumerable);
 				}
 				else if (!handled && type.IsArray)
 				{
-					try
-					{
-						var originalArray = oldValue as Array;
-						var newArray = newValue as Array;
-
-						if (originalArray.Length == newArray.Length)
-						{
-							for (int i = 0; i < originalArray.Length; i++)
-							{
-								if (!Equals(originalArray.GetValue(i), newArray.GetValue(i)))
-								{
-									handled = AddToChanges(changes, originalName, newValue);
-
-									break;
-								}
-							}
-						}
-						else
-						{
-							handled = AddToChanges(changes, originalName, newValue);
-						}
-
-						handled = true;
-					}
-					catch (Exception e)
-					{
-						Debug.LogWarning($"Failed array comparison {e.Message}");
-					}
+					handled = HandleArray(changes, oldValue, newValue, originalName);
 				}
 				else if (!handled && newValue is IEnumerable newObjectEnumerable &&
 				         oldValue is IEnumerable originalObjectEnumerable &&
 				         newValue.GetType() != typeof(string))
 				{
-					try
-					{
-						var originalList = originalObjectEnumerable.Cast<object>().ToList();
-						var newList = newObjectEnumerable.Cast<object>().ToList();
-						if (originalList.Count == newList.Count)
-						{
-							for (int i = 0; i < originalList.Count; i++)
-							{
-								if (originalList.ElementAt(i).Equals(newList.ElementAt(i)))
-								{
-									handled = AddToChanges(changes, originalName, newValue);
-									break;
-								}
-							}
-						}
-						else
-						{
-							handled = AddToChanges(changes, originalName, newValue);
-						}
-
-						handled = true;
-					}
-					catch { }
+					handled = HandleCollection(changes, originalObjectEnumerable, newObjectEnumerable, originalName,
+						newValue);
 				}
 
 				if (!handled && !Equals(oldValue, newValue))
 				{
-					handled = AddToChanges(changes, originalName, newValue);
+					AddToChanges(changes, originalName, newValue);
 				}
 			}
 
 			return changes.Any();
+		}
+
+		private static bool HandleCollection(Dictionary<string, object> changes, IEnumerable originalObjectEnumerable,
+			IEnumerable newObjectEnumerable, string originalName, object newValue)
+		{
+			bool handled = false;
+			try
+			{
+				var originalList = originalObjectEnumerable.Cast<object>().ToList();
+				var newList = newObjectEnumerable.Cast<object>().ToList();
+				if (originalList.Count == newList.Count)
+				{
+					for (int i = 0; i < originalList.Count; i++)
+					{
+						if (originalList.ElementAt(i).Equals(newList.ElementAt(i)))
+						{
+							handled = AddToChanges(changes, originalName, newValue);
+							break;
+						}
+					}
+				}
+				else
+				{
+					handled = AddToChanges(changes, originalName, newValue);
+				}
+
+				handled = true;
+			}
+			catch { }
+
+			return handled;
+		}
+
+		private static bool HandleArray(Dictionary<string, object> changes, object oldValue, object newValue,
+			string originalName)
+		{
+			bool handled = false;
+			try
+			{
+				var originalArray = oldValue as Array;
+				var newArray = newValue as Array;
+
+				if (originalArray.Length == newArray.Length)
+				{
+					for (int i = 0; i < originalArray.Length; i++)
+					{
+						if (!Equals(originalArray.GetValue(i), newArray.GetValue(i)))
+						{
+							handled = AddToChanges(changes, originalName, newValue);
+
+							break;
+						}
+					}
+				}
+				else
+				{
+					handled = AddToChanges(changes, originalName, newValue);
+				}
+
+				handled = true;
+			}
+			catch (Exception e)
+			{
+				Debug.LogWarning($"Failed array comparison {e.Message}");
+			}
+
+			return handled;
+		}
+
+		private static bool HandleUnityObject(Dictionary<string, object> changes, Object valueAsObject,
+			Object propValueAsObject,
+			string originalName, object newValue)
+		{
+			bool handled = false;
+			if (valueAsObject.GetInstanceID() != propValueAsObject.GetInstanceID())
+			{
+				AddToChanges(changes, originalName, newValue);
+			}
+
+			handled = true;
+			return handled;
+		}
+
+		private static bool HandleUnityObjectCollection(IEnumerable<Object> originalEnumerable,
+			IEnumerable<Object> newEnumerable)
+		{
+			bool handled = false;
+			try
+			{
+				var originalHashset = new HashSet<Object>(originalEnumerable);
+				var newHashset = new HashSet<Object>(newEnumerable);
+				if (originalHashset.Count == newHashset.Count)
+				{
+					for (int i = 0; i < originalHashset.Count; i++)
+					{
+						if (originalHashset.ElementAt(i).GetInstanceID() ==
+						    newHashset.ElementAt(i).GetInstanceID())
+						{
+							// todo handle
+						}
+					}
+				}
+				else
+				{
+					// todo handle new elements being added / reordered
+				}
+
+				handled = true;
+			}
+			catch { }
+
+			return handled;
 		}
 
 		private static bool AddToChanges(Dictionary<string, object> changes, string originalName, object newValue)
