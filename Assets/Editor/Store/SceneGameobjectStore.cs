@@ -150,7 +150,7 @@ namespace RTUEditor
 				{
 					for (int i = 0; i < originalList.Count; i++)
 					{
-						if (originalList.ElementAt(i).Equals(newList.ElementAt(i)))
+						if (!originalList.ElementAt(i).Equals(newList.ElementAt(i)))
 						{
 							handled = AddToChanges(changes, originalName, newValue);
 							break;
