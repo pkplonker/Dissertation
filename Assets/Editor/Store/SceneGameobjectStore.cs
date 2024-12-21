@@ -99,12 +99,33 @@ namespace RTUEditor
 				return false;
 			}
 
-			//changes = originalCloneComponent.Except(currentCloneComponent).ToDictionary(x => x.Key, x => x.Value);
+			var adaptors = MemberAdaptorUtils.GetMemberAdapters(component.GetType());
+			bool handled = false;
 			foreach (var (originalName, oldValue) in originalCloneComponent)
 			{
+				var adaptor = adaptors.FirstOrDefault(x =>
+					x.Name.Equals(originalName, StringComparison.InvariantCultureIgnoreCase));
+
 				if (oldValue is Matrix4x4) continue;
 				if (!currentCloneComponent.TryGetValue(originalName, out var newValue)) continue;
-				bool handled = false;
+
+				if (adaptor != null && oldValue.GetType() != adaptor.MemberType)
+				{
+					// The parsed type is not the same as the property type and as such (Because we've a class)
+					if (oldValue is ulong && newValue is ulong)
+					{
+						if (!oldValue.Equals(newValue))
+						{
+							handled = AddToChanges(changes, originalName, adaptor.GetValue(component));
+							continue;
+						}
+					}
+
+					//Something has gone wrong
+					RTUDebug.LogWarning(
+						$"type mismatch {newValue.GetType()} : {oldValue.GetType()} for {originalName}");
+				}
+
 				var type = newValue.GetType();
 
 				if (!handled && newValue is Object valueAsObject && oldValue is Object propValueAsObject)
@@ -129,9 +150,19 @@ namespace RTUEditor
 						newValue);
 				}
 
-				if (!handled && !Equals(oldValue, newValue))
+				if (!handled && (type.IsValueType || type != typeof(string)) && !Equals(oldValue, newValue))
 				{
-					AddToChanges(changes, originalName, newValue);
+					handled = AddToChanges(changes, originalName, newValue);
+				}
+
+				if (!handled && type.IsClass)
+				{
+					if (type == typeof(string) && !Equals(oldValue, newValue))
+					{
+						handled = AddToChanges(changes, originalName, newValue);
+					}
+
+					// need to handle
 				}
 			}
 

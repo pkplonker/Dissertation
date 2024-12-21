@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace RealTimeUpdateRuntime
@@ -109,7 +110,7 @@ namespace RealTimeUpdateRuntime
 				return null;
 			if (targetType.IsArray) return value;
 			if (value is IEnumerable) return value;
-
+			if (value.GetType() == targetType) return value;
 			if (targetType == typeof(bool))
 			{
 				if (value is string strValue)

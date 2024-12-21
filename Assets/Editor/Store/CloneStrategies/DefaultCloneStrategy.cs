@@ -82,6 +82,14 @@ namespace RTUEditor.AssetStore
 					}
 					catch (Exception e) { }
 				}
+				else if (val.GetType().IsClass && val.GetType() != typeof(string) && val is not Object)
+				{
+					try
+					{
+						val = val.GetStaticHashCode();
+					}
+					catch { }
+				}
 
 				if (!clone.TryAdd(prop.Name, val))
 				{
