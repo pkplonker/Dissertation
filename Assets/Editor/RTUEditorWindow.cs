@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
 using UnityEditor;
 using UnityEngine;
@@ -31,7 +32,22 @@ namespace RTUEditor
 				}
 				catch (Exception e)
 				{
-					Debug.LogWarning($"Failed to Launch built game {e.Message}");
+					RTUDebug.LogWarning($"Failed to Launch built game {e.Message}");
+				}
+			}
+
+			if (GUILayout.Button("Build + Run Game"))
+			{
+				try
+				{
+					BuildPipeline.BuildPlayer(new string[] {"Assets/Scenes/RTUTest.unity"}, gamePath,
+						BuildTarget.StandaloneWindows64, BuildOptions.AutoRunPlayer);
+
+					//Process.Start(gamePath);
+				}
+				catch (Exception e)
+				{
+					RTUDebug.LogWarning($"Failed to Launch built game {e.Message}");
 				}
 			}
 

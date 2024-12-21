@@ -37,6 +37,7 @@ namespace RTUEditor
 		}
 
 		public bool IsVisible() => StageUtility.GetCurrentStage() == customStage;
+		public Scene GetScene() => customStage.scene;
 
 		public void Close()
 		{
@@ -61,7 +62,7 @@ namespace RTUEditor
 					// }
 					StageUtility.GoToMainStage();
 				}
-			}, scheduler);
+			}, scheduler,1000);
 		}
 	}
 }

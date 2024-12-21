@@ -1,0 +1,95 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using Newtonsoft.Json;
+using RealTimeUpdateRuntime;
+using UnityEngine;
+using Object = UnityEngine.Object;
+
+namespace RTUEditor.AssetStore
+{
+	public class DefaultCloneStrategy : ICloneStrategy
+	{
+		private static Dictionary<Type, List<IMemberAdapter>> memberAdaptorCollection = new();
+
+		public virtual Clone Clone(Object asset, string path) => CloneInternal(asset, asset.GetType(),
+			new Clone(path, StringComparer.InvariantCultureIgnoreCase));
+
+		protected Clone CloneInternal(Object asset, Type type, Clone clone, List<string> excludedProperties = null)
+		{
+			var adaptors = MemberAdaptorUtils.GetMemberAdapters(type)
+				.Where(x => !excludedProperties?.Any(e =>
+					string.Equals(e, x.Name, StringComparison.InvariantCultureIgnoreCase)) ?? false);
+			foreach (var prop in adaptors)
+			{
+				object val = null;
+				try
+				{
+					val = prop.GetValue(asset);
+				}
+				catch { }
+
+				if (val == null)
+				{
+					//Debug.LogWarning($"Failed to get value for {prop.Name} to clone dictionary of {asset.name}");
+					continue;
+				}
+
+				if (val.GetType().IsArray)
+				{
+					var array = (Array) val;
+					var clonedArray = Array.CreateInstance(array.GetType().GetElementType(), array.Length);
+					Array.Copy(array, clonedArray, array.Length);
+					val = clonedArray;
+				}
+				else if (val is IList list)
+				{
+					try
+					{
+						// Handle lists
+						var clonedList = (IList) Activator.CreateInstance(val.GetType());
+						foreach (var item in list)
+						{
+							clonedList.Add(item);
+						}
+
+						val = clonedList;
+					}
+					catch (Exception e) { }
+				}
+				else if (val is IDictionary dictionary)
+				{
+					//ignore for now?
+				}
+				else if (val is IEnumerable enumerable && !(val is string))
+				{
+					try
+					{
+						var clonedEnumerable = (IEnumerable) Activator.CreateInstance(val.GetType());
+						var addMethod = clonedEnumerable.GetType().GetMethod("Add");
+						if (addMethod != null)
+						{
+							foreach (var item in enumerable)
+							{
+								addMethod.Invoke(clonedEnumerable, new[] {item});
+							}
+						}
+
+						val = clonedEnumerable;
+					}
+					catch (Exception e) { }
+				}
+
+				if (!clone.TryAdd(prop.Name, val))
+				{
+					//Debug.LogWarning($"Failed to add {prop.Name} to clone dictionary of {asset.name}");
+				}
+			}
+
+			return clone;
+		}
+	}
+}

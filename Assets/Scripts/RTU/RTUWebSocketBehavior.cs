@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using UnityEngine;
 using WebSocketSharp;
 using WebSocketSharp.Server;
@@ -11,18 +12,22 @@ namespace RealTimeUpdateRuntime
 {
 	public class RTUWebSocketBehavior : WebSocketBehavior
 	{
+		private readonly JsonSerializerSettings jsonSettings;
+
 		//todo ideally this should register, but given that the websocketsharp uses template argument,
 		//we would need to use reflection to get all behaviours, get a path from the object, then use
 		//reflection to create a runtime method of the templated func and use that to instantiate. https://stackoverflow.com/questions/2604743/setting-generic-type-at-runtime
 		public RTUWebSocketBehavior()
 		{
+			jsonSettings =  new JSONSettingsCreator().Create();
 		}
 
 		private readonly Dictionary<string, IRTUCommandHandler> commandHandlers = new()
 		{
 			{"property", new PropertyChangeHandler()},
+			{"assetUpdate", new AssetUpdateChangeHandler()}
 		};
-
+		
 		protected override void OnMessage(MessageEventArgs args)
 		{
 			try
@@ -76,7 +81,7 @@ namespace RealTimeUpdateRuntime
 						handler.Process(new CommandHandlerArgs
 						{
 							Payload = payload,
-						});
+						}, jsonSettings);
 					}
 					else
 					{

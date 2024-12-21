@@ -21,7 +21,18 @@ namespace RealTimeUpdateRuntime
 		void Start()
 		{
 			cancellationTokenSource = new CancellationTokenSource();
-			serverThread = new Thread(() => StartServer(cancellationTokenSource.Token));
+			serverThread = new Thread(() =>
+			{
+				try
+				{
+					StartServer(cancellationTokenSource.Token);
+				}
+				catch
+				{
+					webSocketServer = null;
+					serverThread = null;
+				}
+			});
 			serverThread.Start();
 			Schedular = TaskScheduler.FromCurrentSynchronizationContext();
 		}
@@ -30,7 +41,7 @@ namespace RealTimeUpdateRuntime
 		{
 			try
 			{
-				Debug.Log("Starting Server");
+				RTUDebug.Log("Starting Server");
 				int port = 6666;
 				string localIP;
 				// https://stackoverflow.com/questions/6803073/get-local-ip-address
@@ -41,12 +52,12 @@ namespace RealTimeUpdateRuntime
 						socket.Connect("8.8.8.8", 65530);
 						IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
 						localIP = endPoint.Address.ToString();
-						Debug.Log(localIP);
+						RTUDebug.Log(localIP);
 					}
 				}
 				else
 				{
-					Debug.LogWarning("Not connected to network - unable to support RTU");
+					RTUDebug.LogWarning("Not connected to network - unable to support RTU");
 					return;
 				}
 
@@ -56,11 +67,11 @@ namespace RealTimeUpdateRuntime
 			}
 			catch (Exception e)
 			{
-				Debug.Log($"err {e}");
+				RTUDebug.Log($"err {e}");
 				return;
 			}
 
-			Debug.Log("Server started. Waiting for connections...");
+			RTUDebug.Log("Server started. Waiting for connections...");
 
 			while (true)
 			{
@@ -88,7 +99,7 @@ namespace RealTimeUpdateRuntime
 					}
 					catch (Exception e)
 					{
-						Debug.LogError($"Failed to execute main thread dispatcher action {e.Message}");
+						RTUDebug.LogError($"Failed to execute main thread dispatcher action {e.Message}");
 					}
 				}
 			}
@@ -99,7 +110,7 @@ namespace RealTimeUpdateRuntime
 			cancellationTokenSource?.Cancel();
 			cancellationTokenSource?.Dispose();
 			webSocketServer?.Stop();
-			Debug.Log("WebSocket server shutting down.");
+			RTUDebug.Log("WebSocket server shutting down.");
 		}
 	}
 }

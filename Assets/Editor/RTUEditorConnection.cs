@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Threading.Tasks;
+using RealTimeUpdateRuntime;
 using UnityEngine;
 using WebSocketSharp;
 
@@ -28,29 +29,29 @@ namespace RTUEditor
 			}
 			catch (Exception e)
 			{
-				Debug.LogError($"Unable to create game connection {e.Message}");
+				RTUDebug.LogError($"Unable to create game connection {e.Message}");
 				return;
 			}
 
 			socket.OnOpen += (_, args) =>
 			{
-				Debug.Log("Connected to the server");
+				RTUDebug.Log("Connected to the server");
 				completeCallback?.Invoke();
 			};
 			socket.OnClose += (_, args) =>
 			{
 				if (args.WasClean)
 				{
-					Debug.Log("Closed connection to game");
+					RTUDebug.Log("Closed connection to game");
 				}
 				else
 				{
-					Debug.LogWarning($"Unable to establish connection to game. Reason: {args.Reason}");
+					RTUDebug.LogWarning($"Unable to establish connection to game. Reason: {args.Reason}");
 				}
 				disconnectCallback?.Invoke(args.WasClean);
 			};
-			socket.OnMessage += (_, args) => Debug.Log($"Message received: {args.Data}");
-			socket.OnError += (_, args) => Debug.Log($"Error connection to game: {args.Message}");
+			socket.OnMessage += (_, args) => RTUDebug.Log($"Message received: {args.Data}");
+			socket.OnError += (_, args) => RTUDebug.Log($"Error connection to game: {args.Message}");
 
 			socket.Connect();
 		}
@@ -59,10 +60,10 @@ namespace RTUEditor
 		{
 			if (!IsConnected)
 			{
-				Debug.LogError("Not connected to the game server.");
+				RTUDebug.LogError("Not connected to the game server.");
 				return;
 			}
-			//Debug.Log($"Sending Message: {message}");
+			//RTUDebug.Log($"Sending Message: {message}");
 			socket.Send(Encoding.UTF8.GetBytes(message));
 		}
 

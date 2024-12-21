@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
 using UnityEditor;
@@ -8,13 +9,17 @@ namespace RTUEditor
 {
 	public class PropertyRTUEditorProcessor : IRTUEditorProcessor
 	{
-		public IMessageSender controller { get; set; }
+		private readonly SceneGameobjectStore sceneGameObjectStore;
+		private readonly JsonSerializerSettings JSONSettings;
+		private readonly IMessageSender controller;
 
-		public PropertyRTUEditorProcessor(IMessageSender controller)
+		public PropertyRTUEditorProcessor(EditorRtuController controller)
 		{
+			sceneGameObjectStore = new SceneGameobjectStore(controller);
 			this.controller = controller;
 			Undo.postprocessModifications += PostprocessModificationsCallback;
 			Undo.undoRedoPerformed += OnUndoRedoPerformed;
+			JSONSettings = new JSONSettingsCreator().Create();
 		}
 
 		private void OnUndoRedoPerformed()
@@ -24,6 +29,7 @@ namespace RTUEditor
 
 		private UndoPropertyModification[] PostprocessModificationsCallback(UndoPropertyModification[] modifications)
 		{
+			
 			if (controller.IsConnected)
 			{
 				foreach (var modification in modifications)
@@ -40,33 +46,22 @@ namespace RTUEditor
 
 		private void ProcessPropertyModification(PropertyModification pm)
 		{
-			if (pm.target is Component component)
+			if (sceneGameObjectStore.TryGetChange(pm, out HashSet<PropertyChangeArgs> args))
 			{
-				var go = component.gameObject;
-				var path = GetGameObjectPath(go);
-				var args = new PropertyChangeArgs()
+				foreach (var change in args)
 				{
-					GameObjectPath = path,
-					ComponentTypeName = component.GetType().AssemblyQualifiedName,
-					PropertyPath = pm.propertyPath,
-					Value = pm.value,
-					ValueType = pm.value.GetType()
-				};
-				controller.SendMessageToGame($"property,\n{JsonConvert.SerializeObject(args)}");
-				return;
+					try
+					{
+						var message =
+							$"property,\n{JsonConvert.SerializeObject(change, Formatting.Indented, JSONSettings)}";
+						controller.SendMessageToGame(message);
+					}
+					catch (Exception e)
+					{
+						Debug.LogWarning("Unable to create property change message}");
+					}
+				}
 			}
-		}
-
-		private string GetGameObjectPath(GameObject obj)
-		{
-			string path = "/" + obj.name;
-			while (obj.transform.parent != null)
-			{
-				obj = obj.transform.parent.gameObject;
-				path = "/" + obj.name + path;
-			}
-
-			return path;
 		}
 	}
 }

@@ -5,9 +5,9 @@ using Object = UnityEngine.Object;
 
 namespace RTUEditor.AssetStore
 {
-	public class TextureCloneAssetStrategy : DefaultCloneAssetStrategy
+	public class TextureCloneStrategy : DefaultCloneStrategy
 	{
-		public override Clone CloneAsset(Object asset, string path)
+		public override Clone Clone(Object asset, string path)
 		{
 			var clone = CloneInternal(asset, asset.GetType(), new TextureClone(path)) as TextureClone;
 

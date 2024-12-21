@@ -1,8 +1,8 @@
-﻿using System;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using UnityEngine;
 
@@ -10,7 +10,8 @@ namespace RealTimeUpdateRuntime
 {
 	public class PropertyChangeHandler : RTUCommandHandlerBase
 	{
-		public override void Process(CommandHandlerArgs commandHandlerArgs)
+		
+		public override void Process(CommandHandlerArgs commandHandlerArgs, JsonSerializerSettings jsonSettings)
 		{
 			RTUProcessor.Enqueue(() =>
 			{
@@ -34,7 +35,7 @@ namespace RealTimeUpdateRuntime
 						subFieldName = propertySplit[1];
 					}
 
-					object value = args.Value;
+					var value = args.GetDeserializedValue(jsonSettings);
 					fieldName = fieldName.Trim("m_".ToCharArray());
 					IMemberAdapter member = null;
 					try
@@ -66,7 +67,7 @@ namespace RealTimeUpdateRuntime
 							{
 								member.SetValue(component, modifiedStruct);
 								set = true;
-								Debug.Log($"{fieldName}.{subFieldName} set to {value} successfully.");
+								RTUDebug.Log($"{fieldName}.{subFieldName} set to {value} successfully.");
 							}
 						}
 						catch
@@ -77,14 +78,14 @@ namespace RealTimeUpdateRuntime
 
 					if (!set)
 					{
-						var convertedVal = ValueConverter.ConvertValue(memberType, value);
+						var convertedVal = ConvertValue(memberType, value, jsonSettings);
 						member.SetValue(component, convertedVal);
-						Debug.Log($"{fieldName} set to {convertedVal} successfully.");
+						RTUDebug.Log($"{fieldName} set to {convertedVal} successfully.");
 					}
 				}
 				catch (Exception e)
 				{
-					Debug.Log($"Failed to set property: {e.Message}");
+					RTUDebug.Log($"Failed to set property: {e.Message}");
 				}
 			});
 		}
@@ -100,6 +101,48 @@ namespace RealTimeUpdateRuntime
 			newStruct = structValue;
 			subFieldInfo.SetValue(newStruct, convertedValue);
 			return true;
+		}
+
+		private static object ConvertValue(Type targetType, object value, JsonSerializerSettings jsonSettings)
+		{
+			if (value == null || targetType == null)
+				return null;
+			if (targetType.IsArray) return value;
+			if (value is IEnumerable) return value;
+
+			if (targetType == typeof(bool))
+			{
+				if (value is string strValue)
+				{
+					return strValue == "1" || strValue.Equals("true", StringComparison.OrdinalIgnoreCase);
+				}
+
+				return Convert.ToBoolean(value);
+			}
+
+			if (targetType.IsEnum)
+			{
+				return Enum.Parse(targetType, value.ToString());
+			}
+
+			if (targetType != typeof(string) && targetType.IsClass)
+			{
+				return JsonConvert.DeserializeObject(value.ToString(), targetType, jsonSettings);
+			}
+			
+			if (targetType == typeof(int))
+			{
+				if (value is IConvertible)
+				{
+					long longValue = Convert.ToInt64(value);
+					if (longValue == 4294967295)
+					{
+						return -1;
+					}
+				}
+			}
+			
+			return Convert.ChangeType(value, targetType);
 		}
 	}
 }
