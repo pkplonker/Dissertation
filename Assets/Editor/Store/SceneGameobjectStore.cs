@@ -65,7 +65,7 @@ namespace RTUEditor
 						clones[fullPath] = currentGameobjectClone;
 						foreach (var change in changes)
 						{
-							args.Add( new PropertyChangeArgs()
+							args.Add(new PropertyChangeArgs()
 							{
 								GameObjectPath = fullPath,
 								ComponentTypeName = component.GetType().AssemblyQualifiedName,
@@ -74,6 +74,7 @@ namespace RTUEditor
 								ValueType = change.Value.GetType()
 							});
 						}
+
 						return true;
 					}
 				}
@@ -99,7 +100,7 @@ namespace RTUEditor
 			}
 
 			//changes = originalCloneComponent.Except(currentCloneComponent).ToDictionary(x => x.Key, x => x.Value);
-			foreach (var (originalName, originalValue) in originalCloneComponent)
+			foreach (var (originalName, oldValue) in originalCloneComponent)
 			{
 				// any component
 				if (originalName.Equals("gameObject", StringComparison.InvariantCultureIgnoreCase) ||
@@ -112,17 +113,18 @@ namespace RTUEditor
 				if (!currentCloneComponent.TryGetValue(originalName, out var newValue)) continue;
 				//if both unity objects(assets) compared the ptr
 				bool handled = false;
-				if (!handled && newValue is Object valueAsObject && originalValue is Object propValueAsObject)
+				var type = newValue.GetType();
+				if (!handled && newValue is Object valueAsObject && oldValue is Object propValueAsObject)
 				{
 					if (valueAsObject.GetInstanceID() != propValueAsObject.GetInstanceID())
 					{
-						changes.Add(originalName, newValue);
+						handled = AddToChanges(changes, originalName, newValue);
 					}
 
 					handled = true;
 				}
 				else if (!handled && newValue is IEnumerable<Object> newEnumerable &&
-				         originalValue is IEnumerable<Object> originalEnumerable &&
+				         oldValue is IEnumerable<Object> originalEnumerable &&
 				         newValue.GetType() != typeof(string))
 				{
 					try
@@ -144,17 +146,63 @@ namespace RTUEditor
 						{
 							// todo handle new elements being added / reordered
 						}
+
+						handled = true;
 					}
 					catch { }
 				}
-				else if (!handled && !Equals(originalValue, newValue))
+				else if (!handled && type.IsArray)
 				{
-					changes.Add(originalName, newValue);
-					handled = true;
+					try
+					{
+						var originalArray = oldValue as Array;
+						var newArray = newValue as Array;
+
+						if (originalArray.Length == newArray.Length)
+						{
+							bool arraysEqual = true;
+
+							for (int i = 0; i < originalArray.Length; i++)
+							{
+								if (!Equals(originalArray.GetValue(i), newArray.GetValue(i)))
+								{
+									arraysEqual = false;
+									break;
+								}
+							}
+
+							if (!arraysEqual)
+							{
+								handled = AddToChanges(changes, originalName, newValue);
+							}
+						}
+						else
+						{
+							handled = AddToChanges(changes, originalName, newValue);
+						}
+
+						handled = true;
+					}
+					catch(Exception e)
+					{
+						Debug.LogWarning($"Failed array comparison {e.Message}");
+					}
+				}
+				if (!handled && !Equals(oldValue, newValue))
+				{
+					handled = AddToChanges(changes, originalName, newValue);
 				}
 			}
 
 			return changes.Any();
+		}
+
+		private static bool AddToChanges(Dictionary<string, object> changes, string originalName, object newValue)
+		{
+			bool handled;
+			changes.Add(originalName, newValue);
+			handled = true;
+			return handled;
 		}
 
 		private static ComponentClone GetComponentFromClone(GameObjectClone clone, Component component) =>

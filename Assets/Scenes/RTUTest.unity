@@ -500,17 +500,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 968109c572bb11547ab6f8ceea73376a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  intField: 0
-  floatField: 0
-  <doubleField>k__BackingField: 0
-  stringField: 
-  privateStringField: 
-  <serializedStringProperty>k__BackingField: 
-  vector3Field: {x: 0, y: 0, z: 0}
-  quaternionField: {x: 0, y: 0, z: 0, w: 0}
-  <colorProp>k__BackingField: {r: 0, g: 0, b: 0, a: 0}
-  intArray: 01000000020000000500000005000000050000000100000001000000
-  stringArray: []
+  intField: 1
+  floatField: 2
+  <doubleField>k__BackingField: 3
+  stringField: 4
+  privateStringField: 5
+  <serializedStringProperty>k__BackingField: 6
+  vector3Field: {x: 1, y: 2, z: 3}
+  quaternionField: {x: 0.026324216, y: 0.01721736, z: 0.008265384, w: 0.999471}
+  <colorProp>k__BackingField: {r: 0.5471698, g: 0.47873914, b: 0.30799806, a: 1}
+  intArray: 02000000
+  stringArray:
+  - 
   <vector3Array>k__BackingField: []
   intList: 
   stringList: []
@@ -549,7 +550,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 91243939}
-  m_Material: {fileID: 1964602097}
+  m_Material: {fileID: 860679355}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1462,6 +1463,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!134 &860679355
+PhysicMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ' (Instance) (Instance) (Instance)'
+  dynamicFriction: 0.6
+  staticFriction: 0.6
+  bounciness: 0
+  frictionCombine: 0
+  bounceCombine: 0
 --- !u!1 &924186297
 GameObject:
   m_ObjectHideFlags: 0
@@ -2436,18 +2449,6 @@ Transform:
   - {fileID: 924186298}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!134 &1964602097
-PhysicMaterial:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: ' (Instance)'
-  dynamicFriction: 0.6
-  staticFriction: 0.6
-  bounciness: 0
-  frictionCombine: 0
-  bounceCombine: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

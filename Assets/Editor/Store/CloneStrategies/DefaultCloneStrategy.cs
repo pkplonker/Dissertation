@@ -27,7 +27,7 @@ namespace RTUEditor.AssetStore
 				object val = null;
 				try
 				{
-					val =prop.GetValue(asset);
+					val = prop.GetValue(asset);
 				}
 				catch { }
 
@@ -35,6 +35,14 @@ namespace RTUEditor.AssetStore
 				{
 					//Debug.LogWarning($"Failed to get value for {prop.Name} to clone dictionary of {asset.name}");
 					continue;
+				}
+
+				if (val.GetType().IsArray)
+				{
+					var array = (Array) val;
+					var clonedArray = Array.CreateInstance(array.GetType().GetElementType(), array.Length);
+					Array.Copy(array, clonedArray, array.Length);
+					val = clonedArray;
 				}
 
 				if (!clone.TryAdd(prop.Name, val))

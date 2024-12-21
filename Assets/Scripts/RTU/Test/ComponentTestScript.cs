@@ -132,6 +132,7 @@ public class ComponentTestScript : MonoBehaviour
 	public List<Rigidbody> rigidbodyList { get; private set; }
 
 	private int[] cachedIntArray = null;
+	private string[] cachedStringArray = null;
 
 	private void Update()
 	{
@@ -146,7 +147,19 @@ public class ComponentTestScript : MonoBehaviour
 			}
 
 		}
+		if (cachedStringArray != stringArray)
+		{
+			if (stringArray?.Any() ?? false)
+			{
+				foreach (var i in stringArray)
+				{
+					Debug.Log(i);
+				}
+			}
 
+		}
+
+		cachedStringArray = stringArray;
 		cachedIntArray = intArray;
 	}
 
