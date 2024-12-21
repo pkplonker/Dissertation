@@ -58,7 +58,7 @@ namespace RTUEditor.AssetStore
 
 						val = clonedList;
 					}
-					catch (Exception e) { }
+					catch { }
 				}
 				else if (val is IDictionary dictionary)
 				{
@@ -80,7 +80,7 @@ namespace RTUEditor.AssetStore
 
 						val = clonedEnumerable;
 					}
-					catch (Exception e) { }
+					catch { }
 				}
 				else if (val.GetType().IsClass && val.GetType() != typeof(string) && val is not Object)
 				{

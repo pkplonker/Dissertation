@@ -58,7 +58,7 @@ namespace RTUEditor
 					}
 					catch (Exception e)
 					{
-						Debug.LogWarning("Unable to create property change message}");
+						RTUDebug.LogWarning($"Unable to create property change message {e.Message}");
 					}
 				}
 			}

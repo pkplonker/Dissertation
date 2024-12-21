@@ -100,9 +100,10 @@ namespace RTUEditor
 			}
 
 			var adaptors = MemberAdaptorUtils.GetMemberAdapters(component.GetType());
-			bool handled = false;
 			foreach (var (originalName, oldValue) in originalCloneComponent)
 			{
+				bool handled = false;
+
 				var adaptor = adaptors.FirstOrDefault(x =>
 					x.Name.Equals(originalName, StringComparison.InvariantCultureIgnoreCase));
 
@@ -117,8 +118,9 @@ namespace RTUEditor
 						if (!oldValue.Equals(newValue))
 						{
 							handled = AddToChanges(changes, originalName, adaptor.GetValue(component));
-							continue;
 						}
+
+						continue;
 					}
 
 					//Something has gone wrong
