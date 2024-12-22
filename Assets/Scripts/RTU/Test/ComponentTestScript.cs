@@ -127,7 +127,8 @@ public class ComponentTestScript : MonoBehaviour
 
 	[SerializeField]
 	private List<Transform> transformList;
-
+	[SerializeField]
+	private List<NestedClass> classList;
 	[field: SerializeField]
 	public List<Rigidbody> rigidbodyList { get; private set; }
 
@@ -165,6 +166,7 @@ public class ComponentTestScript : MonoBehaviour
 
 	private void Reset()
 	{
+		classList = new List<NestedClass>();
 		intField = 10;
 		floatField = 20.5f;
 		doubleField = 30.123;
