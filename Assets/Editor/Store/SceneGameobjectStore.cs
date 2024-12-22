@@ -68,7 +68,7 @@ namespace RTUEditor
 							args.Add(new PropertyChangeArgs()
 							{
 								GameObjectPath = fullPath,
-								ComponentTypeName = component.GetType().AssemblyQualifiedName,
+								ComponentTypeName = component.GetType().FullName,
 								PropertyPath = change.Key,
 								Value = change.Value,
 								ValueType = change.Value.GetType()
@@ -110,7 +110,7 @@ namespace RTUEditor
 				if (oldValue is Matrix4x4) continue;
 				if (!currentCloneComponent.TryGetValue(originalName, out var newValue)) continue;
 
-				if (adaptor != null && oldValue.GetType() != adaptor.MemberType)
+				if (adaptor != null && oldValue != null && oldValue?.GetType() != adaptor.MemberType)
 				{
 					// The parsed type is not the same as the property type and as such (Because we've a class)
 					if (oldValue is ulong && newValue is ulong)
@@ -125,10 +125,10 @@ namespace RTUEditor
 
 					//Something has gone wrong
 					RTUDebug.LogWarning(
-						$"type mismatch {newValue.GetType()} : {oldValue.GetType()} for {originalName}");
+						$"type mismatch {newValue?.GetType()} : {oldValue?.GetType()} for {originalName}");
 				}
 
-				var type = newValue.GetType();
+				var type = adaptor.MemberType;
 
 				if (!handled && newValue is Object valueAsObject && oldValue is Object propValueAsObject)
 				{

@@ -26,69 +26,44 @@ namespace RTUEditor.AssetStore
 			foreach (var prop in adaptors)
 			{
 				object val = null;
-				try
+				if (prop.MemberType.IsSubclassOf(typeof(Object)))
 				{
-					val = prop.GetValue(asset);
+					val = HandleUnityObject(asset, prop);
 				}
-				catch { }
-
-				if (val == null)
-				{
-					//Debug.LogWarning($"Failed to get value for {prop.Name} to clone dictionary of {asset.name}");
-					continue;
-				}
-
-				if (val.GetType().IsArray)
-				{
-					var array = (Array) val;
-					var clonedArray = Array.CreateInstance(array.GetType().GetElementType(), array.Length);
-					Array.Copy(array, clonedArray, array.Length);
-					val = clonedArray;
-				}
-				else if (val is IList list)
+				else
 				{
 					try
 					{
-						// Handle lists
-						var clonedList = (IList) Activator.CreateInstance(val.GetType());
-						foreach (var item in list)
-						{
-							clonedList.Add(item);
-						}
+						val = prop.GetValue(asset);
+					}
+					catch { }
 
-						val = clonedList;
-					}
-					catch { }
-				}
-				else if (val is IDictionary dictionary)
-				{
-					//ignore for now?
-				}
-				else if (val is IEnumerable enumerable && !(val is string))
-				{
-					try
+					if (val == null)
 					{
-						var clonedEnumerable = (IEnumerable) Activator.CreateInstance(val.GetType());
-						var addMethod = clonedEnumerable.GetType().GetMethod("Add");
-						if (addMethod != null)
-						{
-							foreach (var item in enumerable)
-							{
-								addMethod.Invoke(clonedEnumerable, new[] {item});
-							}
-						}
+						//Debug.LogWarning($"Failed to get value for {prop.Name} to clone dictionary of {asset.name}");
+						continue;
+					}
 
-						val = clonedEnumerable;
-					}
-					catch { }
-				}
-				else if (val.GetType().IsClass && val.GetType() != typeof(string) && val is not Object)
-				{
-					try
+					if (val.GetType().IsArray)
 					{
-						val = val.GetStaticHashCode();
+						val = HandleArray(val);
 					}
-					catch { }
+					else if (val is IList list)
+					{
+						val = HandleList(val, list);
+					}
+					else if (val is IDictionary dictionary)
+					{
+						//ignore for now?
+					}
+					else if (val is IEnumerable enumerable && !(val is string))
+					{
+						val = HandleCollection(val, enumerable);
+					}
+					else if (val.GetType().IsClass && val.GetType() != typeof(string) && val is not Object)
+					{
+						val = HandleClass(val);
+					}
 				}
 
 				if (!clone.TryAdd(prop.Name, val))
@@ -98,6 +73,81 @@ namespace RTUEditor.AssetStore
 			}
 
 			return clone;
+		}
+
+		private static object HandleClass(object val)
+		{
+			try
+			{
+				val = val.GetStaticHashCode();
+			}
+			catch { }
+
+			return val;
+		}
+
+		private static object HandleCollection(object val, IEnumerable enumerable)
+		{
+			try
+			{
+				var clonedEnumerable = (IEnumerable) Activator.CreateInstance(val.GetType());
+				var addMethod = clonedEnumerable.GetType().GetMethod("Add");
+				if (addMethod != null)
+				{
+					foreach (var item in enumerable)
+					{
+						addMethod.Invoke(clonedEnumerable, new[] {item});
+					}
+				}
+
+				val = clonedEnumerable;
+			}
+			catch { }
+
+			return val;
+		}
+
+		private static object HandleList(object val, IList list)
+		{
+			try
+			{
+				// Handle lists
+				var clonedList = (IList) Activator.CreateInstance(val.GetType());
+				foreach (var item in list)
+				{
+					clonedList.Add(item);
+				}
+
+				val = clonedList;
+			}
+			catch { }
+
+			return val;
+		}
+
+		private static object HandleArray(object val)
+		{
+			var array = (Array) val;
+			var clonedArray = Array.CreateInstance(array.GetType().GetElementType(), array.Length);
+			Array.Copy(array, clonedArray, array.Length);
+			val = clonedArray;
+			return val;
+		}
+
+		private static object HandleUnityObject(Object asset, IMemberAdapter prop)
+		{
+			object val;
+			var unityObject = prop.GetValue(asset) as UnityEngine.Object;
+			if (unityObject != null)
+			{
+				val = unityObject.GetInstanceID();
+			}
+			else
+			{
+				val = null;
+			}
+
+			return val;
 		}
 	}
 }
