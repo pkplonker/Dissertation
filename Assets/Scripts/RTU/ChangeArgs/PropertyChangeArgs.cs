@@ -4,11 +4,14 @@ using Newtonsoft.Json;
 namespace RealTimeUpdateRuntime
 {
 	[Serializable]
-	public class PropertyChangeArgs
+	public class PropertyChangeArgs : IPropertyChangeArgs
 	{
-		public string GameObjectPath = string.Empty;
-		public string ComponentTypeName = string.Empty;
-		public string PropertyPath = string.Empty;
+		private IPropertyChangeArgs propertyChangeArgsImplementation;
+		public string GameObjectPath { get; set; } = string.Empty;
+		public string ComponentTypeName { get; set; } = string.Empty;
+		public string PropertyPath { get; set; } = string.Empty;
+		public string GeneratePayload(JsonSerializerSettings JSONSettings) =>
+			$"property,\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}";
 
 		public string ValueTypeName { get; set; }
 		public object Value { get; set; }
@@ -38,15 +41,5 @@ namespace RealTimeUpdateRuntime
 
 			return JsonConvert.DeserializeObject(Value.ToString(), targetType, settings);
 		}
-
-		public PropertyChangeArgs Clone() =>
-			new()
-			{
-				GameObjectPath = this.GameObjectPath,
-				ComponentTypeName = this.ComponentTypeName,
-				PropertyPath = this.PropertyPath,
-				Value = this.Value,
-				ValueType = this.ValueType,
-			};
 	}
 }

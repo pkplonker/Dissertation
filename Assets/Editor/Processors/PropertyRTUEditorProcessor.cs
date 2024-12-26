@@ -29,7 +29,6 @@ namespace RTUEditor
 
 		private UndoPropertyModification[] PostprocessModificationsCallback(UndoPropertyModification[] modifications)
 		{
-			
 			if (controller.IsConnected)
 			{
 				foreach (var modification in modifications)
@@ -46,15 +45,13 @@ namespace RTUEditor
 
 		private void ProcessPropertyModification(PropertyModification pm)
 		{
-			if (sceneGameObjectStore.TryGetChange(pm, out HashSet<PropertyChangeArgs> args))
+			if (sceneGameObjectStore.TryGetChange(pm, JSONSettings, out HashSet<string> changes))
 			{
-				foreach (var change in args)
+				foreach (var change in changes)
 				{
 					try
 					{
-						var message =
-							$"property,\n{JsonConvert.SerializeObject(change, Formatting.Indented, JSONSettings)}";
-						controller.SendMessageToGame(message);
+						controller.SendMessageToGame(change);
 					}
 					catch (Exception e)
 					{

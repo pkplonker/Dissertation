@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
 using UnityEditor;
@@ -48,9 +49,9 @@ namespace RTUEditor
 		private static string GetSceneFullName(GameObject go, string parentPath) =>
 			parentPath == string.Empty ? go.name : parentPath + $"/{go.name}";
 
-		public bool TryGetChange(PropertyModification pm, out HashSet<PropertyChangeArgs> args)
+		public bool TryGetChange(PropertyModification pm, JsonSerializerSettings settings, out HashSet<string> args)
 		{
-			args = new HashSet<PropertyChangeArgs>();
+			args = new HashSet<string>();
 			if (pm.target is Component component)
 			{
 				var go = component.gameObject;
@@ -63,16 +64,48 @@ namespace RTUEditor
 					    HasChange(originalGameobjectClone, currentGameobjectClone, component, out var changes))
 					{
 						clones[fullPath] = currentGameobjectClone;
-						foreach (var change in changes)
+						try
 						{
-							args.Add(new PropertyChangeArgs()
+							foreach (var change in changes)
 							{
-								GameObjectPath = fullPath,
-								ComponentTypeName = component.GetType().FullName,
-								PropertyPath = change.Key,
-								Value = change.Value,
-								ValueType = change.Value.GetType()
-							});
+								// todo move to factory
+								if (change.Value is UnityEngine.GameObject targetGo)
+								{
+									args.Add(new GameObjectPropertyChangeArgs()
+									{
+										GameObjectPath = fullPath,
+										ComponentTypeName = component.GetType().FullName,
+										PropertyPath = change.Key,
+										ValuePath = targetGo.GetFullName(),
+									}.GeneratePayload(settings));
+								}
+								else if (change.Value is UnityEngine.Component Targetcomponent)
+								{
+									args.Add(new ComponentPropertyChangeArgs()
+									{
+										GameObjectPath = fullPath,
+										ComponentTypeName = component.GetType().FullName,
+										PropertyPath = change.Key,
+										ValuePath =
+											@$"{Targetcomponent.gameObject.GetFullName()}\{Targetcomponent.name}",
+									}.GeneratePayload(settings));
+								}
+								else
+								{
+									args.Add(new PropertyChangeArgs()
+									{
+										GameObjectPath = fullPath,
+										ComponentTypeName = component.GetType().FullName,
+										PropertyPath = change.Key,
+										Value = change.Value,
+										ValueType = change.Value.GetType()
+									}.GeneratePayload(settings));
+								}
+							}
+						}
+						catch (Exception e)
+						{
+							RTUDebug.LogError($"Failed to generate property change payload string {e.Message}");
 						}
 
 						return true;
@@ -102,20 +135,23 @@ namespace RTUEditor
 			var adaptors = MemberAdaptorUtils.GetMemberAdapters(component.GetType());
 			foreach (var (originalName, oldValue) in originalCloneComponent)
 			{
+				if (originalName.Equals("gameobject", StringComparison.InvariantCultureIgnoreCase) ||
+				    originalName.Equals("transform", StringComparison.InvariantCultureIgnoreCase)) continue;
 				bool handled = false;
 
 				var adaptor = adaptors.FirstOrDefault(x =>
 					x.Name.Equals(originalName, StringComparison.InvariantCultureIgnoreCase));
 
 				if (oldValue is Matrix4x4) continue;
-				if (!currentCloneComponent.TryGetValue(originalName, out var newValue)) continue;
-
-				if (adaptor != null && oldValue != null && oldValue?.GetType() != adaptor.MemberType)
+				if (!currentCloneComponent.TryGetValue(originalName, out var newValue)) handled = true;
+				if (oldValue == null && newValue == null) handled = true;
+				if (!handled && adaptor != null && ((oldValue != null && oldValue?.GetType() != adaptor.MemberType) ||
+				                                    (newValue != null && newValue?.GetType() != adaptor.MemberType)))
 				{
 					// The parsed type is not the same as the property type and as such (Because we've a class)
-					if (oldValue is ulong && newValue is ulong)
+					if (oldValue is ulong || newValue is ulong)
 					{
-						if (!oldValue.Equals(newValue))
+						if (!oldValue?.Equals(newValue) ?? true)
 						{
 							handled = AddToChanges(changes, originalName, adaptor.GetValue(component));
 						}
@@ -123,9 +159,13 @@ namespace RTUEditor
 						continue;
 					}
 
-					//Something has gone wrong
-					RTUDebug.LogWarning(
-						$"type mismatch {newValue?.GetType()} : {oldValue?.GetType()} for {originalName}");
+					if (oldValue is not int &&
+					    newValue is not int) // this is a unityobject reference so isn't a mismatch
+					{
+						//Something has gone wrong
+						RTUDebug.LogWarning(
+							$"type mismatch {newValue?.GetType()} : {oldValue?.GetType()} for {originalName}");
+					}
 				}
 
 				var type = adaptor.MemberType;
