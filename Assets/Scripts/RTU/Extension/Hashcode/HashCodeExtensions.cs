@@ -6,7 +6,7 @@ namespace System {
 	public static class HashCodeExtensions {
 		//private static readonly MethodInfo CloneMethod = typeof(Object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
 
-		private class ReferenceEqualityComparer : EqualityComparer<Object> {
+		private class ReferenceEqualityComparer : EqualityComparer<object> {
 			public override bool Equals(object x, object y) {
 				return ReferenceEquals(x, y);
 			}
@@ -42,7 +42,7 @@ namespace System {
 			return number;
 		}
 
-		private static ulong? DoHash(Object o, ULong hash, Dictionary<string, ulong> savedHashes, bool hashingType = false) {
+		private static ulong? DoHash(object o, ULong hash, Dictionary<string, ulong> savedHashes, bool hashingType = false) {
 			if (o != null) {
 				unchecked {
 					ulong obj = 0;
@@ -74,7 +74,7 @@ namespace System {
 			public ulong Value { get; set; }
 		}
 
-		private static void InternalCopy(Object originalObject, ULong hash, Dictionary<string, ulong> savedHashes, HashSet<object> visited) {
+		private static void InternalCopy(object originalObject, ULong hash, Dictionary<string, ulong> savedHashes, HashSet<object> visited) {
 			if (originalObject == null) return;
 			var typeToReflect = originalObject.GetType();
 

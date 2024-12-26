@@ -130,9 +130,15 @@ namespace RTUEditor
 
 				var type = adaptor.MemberType;
 
-				if (!handled && newValue is Object valueAsObject && oldValue is Object propValueAsObject)
+				if (!handled && type.IsSubclassOf(typeof(UnityEngine.Object)))
 				{
-					handled = HandleUnityObject(changes, valueAsObject, propValueAsObject, originalName, newValue);
+					try
+					{
+						handled = AddToChanges(changes, originalName, adaptor.GetValue(component) as Object);
+					}
+					catch { }
+
+					handled = true;
 				}
 				else if (!handled && newValue is IEnumerable<Object> newEnumerable &&
 				         oldValue is IEnumerable<Object> originalEnumerable &&
@@ -235,20 +241,6 @@ namespace RTUEditor
 				Debug.LogWarning($"Failed array comparison {e.Message}");
 			}
 
-			return handled;
-		}
-
-		private static bool HandleUnityObject(Dictionary<string, object> changes, Object valueAsObject,
-			Object propValueAsObject,
-			string originalName, object newValue)
-		{
-			bool handled = false;
-			if (valueAsObject.GetInstanceID() != propValueAsObject.GetInstanceID())
-			{
-				AddToChanges(changes, originalName, newValue);
-			}
-
-			handled = true;
 			return handled;
 		}
 
