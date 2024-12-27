@@ -16,7 +16,7 @@ namespace RealTimeUpdateRuntime
 		
 	}
 
-	public struct CommandHandlerArgs
+	public class CommandHandlerArgs
 	{
 		public string Payload { get; set; }
 	}

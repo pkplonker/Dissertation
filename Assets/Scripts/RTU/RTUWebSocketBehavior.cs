@@ -22,9 +22,14 @@ namespace RealTimeUpdateRuntime
 			jsonSettings =  new JSONSettingsCreator().Create();
 		}
 
-		private readonly Dictionary<string, IRTUCommandHandler> commandHandlers = new()
+		private readonly Dictionary<string, IRTUCommandHandler> commandHandlers = new(StringComparer.InvariantCultureIgnoreCase)
 		{
 			{"property", new PropertyChangeHandler()},
+			{"componentProperty", new ComponentPropertyChangeHandler()},
+			{"gameObjectProperty", new GameObjectPropertyChangeHandler()},
+			{"componentCollectionProperty", new ComponentCollectionPropertyChangeHandler()},
+			{"gameObjectCollectionProperty", new GameObjectCollectionPropertyChangeHandler()},
+
 			{"assetUpdate", new AssetUpdateChangeHandler()}
 		};
 		

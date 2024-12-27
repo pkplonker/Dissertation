@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
 using UnityEditor;
@@ -18,12 +19,14 @@ namespace RTUEditor
 		private readonly RTUScene rtuScene;
 		private Dictionary<string, Clone> clones = new(StringComparer.CurrentCultureIgnoreCase);
 		private GameObjectCloneStrategy gameObjectCloneStrategy = new();
+		private readonly PropertyChangePayloadFactory propertyChangePayloadFactory;
 
 		public SceneGameobjectStore(EditorRtuController controller)
 		{
 			rtuScene = controller.Scene;
 			scene = rtuScene.GetScene();
 			CreateClones(scene.GetRootGameObjects().Select(x => x.transform), parentPath: string.Empty);
+			propertyChangePayloadFactory = new PropertyChangePayloadFactory();
 		}
 
 		// recursive
@@ -48,9 +51,9 @@ namespace RTUEditor
 		private static string GetSceneFullName(GameObject go, string parentPath) =>
 			parentPath == string.Empty ? go.name : parentPath + $"/{go.name}";
 
-		public bool TryGetChange(PropertyModification pm, out HashSet<PropertyChangeArgs> args)
+		public bool TryGetChange(PropertyModification pm, JsonSerializerSettings settings, out HashSet<string> args)
 		{
-			args = new HashSet<PropertyChangeArgs>();
+			args = new HashSet<string>();
 			if (pm.target is Component component)
 			{
 				var go = component.gameObject;
@@ -63,16 +66,16 @@ namespace RTUEditor
 					    HasChange(originalGameobjectClone, currentGameobjectClone, component, out var changes))
 					{
 						clones[fullPath] = currentGameobjectClone;
-						foreach (var change in changes)
+						try
 						{
-							args.Add(new PropertyChangeArgs()
+							foreach (var change in changes)
 							{
-								GameObjectPath = fullPath,
-								ComponentTypeName = component.GetType().AssemblyQualifiedName,
-								PropertyPath = change.Key,
-								Value = change.Value,
-								ValueType = change.Value.GetType()
-							});
+								propertyChangePayloadFactory.CreatePayload(settings, args, change, fullPath, component);
+							}
+						}
+						catch (Exception e)
+						{
+							RTUDebug.LogError($"Failed to generate property change payload string {e.Message}");
 						}
 
 						return true;
@@ -99,39 +102,106 @@ namespace RTUEditor
 				return false;
 			}
 
-			//changes = originalCloneComponent.Except(currentCloneComponent).ToDictionary(x => x.Key, x => x.Value);
+			var adaptors = MemberAdaptorUtils.GetMemberAdapters(component.GetType());
 			foreach (var (originalName, oldValue) in originalCloneComponent)
 			{
-				if (oldValue is Matrix4x4) continue;
-				if (!currentCloneComponent.TryGetValue(originalName, out var newValue)) continue;
+				if (originalName.Equals("gameobject", StringComparison.InvariantCultureIgnoreCase) ||
+				    originalName.Equals("transform", StringComparison.InvariantCultureIgnoreCase)) continue;
 				bool handled = false;
-				var type = newValue.GetType();
 
-				if (!handled && newValue is Object valueAsObject && oldValue is Object propValueAsObject)
+				var adaptor = adaptors.FirstOrDefault(x =>
+					x.Name.Equals(originalName, StringComparison.InvariantCultureIgnoreCase));
+
+				if (oldValue is Matrix4x4) continue;
+				if (!currentCloneComponent.TryGetValue(originalName, out var newValue)) handled = true;
+				if (oldValue == null && newValue == null) handled = true;
+				if (!handled && adaptor != null && ((oldValue != null && oldValue?.GetType() != adaptor.MemberType) ||
+				                                    (newValue != null && newValue?.GetType() != adaptor.MemberType)))
 				{
-					handled = HandleUnityObject(changes, valueAsObject, propValueAsObject, originalName, newValue);
+					// The parsed type is not the same as the property type and as such (Because it's a class)
+					if (oldValue is ulong || newValue is ulong)
+					{
+						if (!oldValue?.Equals(newValue) ?? true)
+						{
+							handled = AddToChanges(changes, originalName, adaptor.GetValue(component));
+						}
+
+						continue;
+					}
+
+					if (oldValue is not int &&
+					    newValue is not int) // this is a unityobject reference so isn't a mismatch
+					{
+						if (oldValue is not IList && newValue is not IList)
+						{
+							RTUDebug.LogWarning(
+								$"type mismatch {newValue?.GetType()} : {oldValue?.GetType()} for {originalName}");
+							continue;
+						}
+					}
 				}
-				else if (!handled && newValue is IEnumerable<Object> newEnumerable &&
-				         oldValue is IEnumerable<Object> originalEnumerable &&
-				         newValue.GetType() != typeof(string))
+
+				var type = adaptor.MemberType;
+
+				if (!handled && type.IsSubclassOf(typeof(UnityEngine.Object)))
 				{
-					handled = HandleUnityObjectCollection(originalEnumerable, newEnumerable);
+					if (oldValue is int ov && newValue is int nv)
+					{
+						if (ov != nv)
+						{
+							try
+							{
+								handled = AddToChanges(changes, originalName, adaptor.GetValue(component) as Object);
+							}
+							catch { }
+						}
+					}
+					else
+					{
+						try
+						{
+							handled = AddToChanges(changes, originalName, adaptor.GetValue(component) as Object);
+						}
+						catch { }
+					}
+
+					handled = true;
 				}
-				else if (!handled && type.IsArray)
+
+				if (!handled && newValue is IEnumerable<Object> newEnumerable &&
+				    oldValue is IEnumerable<Object> originalEnumerable &&
+				    newValue.GetType() != typeof(string))
+				{
+					handled = HandleUnityObjectCollection(changes, originalName, originalEnumerable, newEnumerable,
+						adaptor.GetValue(component));
+				}
+
+				if (!handled && type.IsArray)
 				{
 					handled = HandleArray(changes, oldValue, newValue, originalName);
 				}
-				else if (!handled && newValue is IEnumerable newObjectEnumerable &&
-				         oldValue is IEnumerable originalObjectEnumerable &&
-				         newValue.GetType() != typeof(string))
+
+				if (!handled && newValue is IEnumerable newObjectEnumerable &&
+				    oldValue is IEnumerable originalObjectEnumerable &&
+				    newValue.GetType() != typeof(string))
 				{
 					handled = HandleCollection(changes, originalObjectEnumerable, newObjectEnumerable, originalName,
-						newValue);
+						newValue, adaptor.GetValue(component));
 				}
 
-				if (!handled && !Equals(oldValue, newValue))
+				if (!handled && (type.IsValueType || type != typeof(string)) && !Equals(oldValue, newValue))
 				{
-					AddToChanges(changes, originalName, newValue);
+					handled = AddToChanges(changes, originalName, newValue);
+				}
+
+				if (!handled && type.IsClass)
+				{
+					if (type == typeof(string) && !Equals(oldValue, newValue))
+					{
+						handled = AddToChanges(changes, originalName, newValue);
+					}
+
+					// need to handle
 				}
 			}
 
@@ -139,7 +209,7 @@ namespace RTUEditor
 		}
 
 		private static bool HandleCollection(Dictionary<string, object> changes, IEnumerable originalObjectEnumerable,
-			IEnumerable newObjectEnumerable, string originalName, object newValue)
+			IEnumerable newObjectEnumerable, string originalName, object newValue, object newValueUnmodified)
 		{
 			bool handled = false;
 			try
@@ -150,16 +220,31 @@ namespace RTUEditor
 				{
 					for (int i = 0; i < originalList.Count; i++)
 					{
-						if (!originalList.ElementAt(i).Equals(newList.ElementAt(i)))
+						var originalObject = originalList.ElementAt(i);
+						var newObject = newList.ElementAt(i);
+						bool valuesAreDifferent;
+						// avoid boxed value ref comparison
+						if (originalObject is ValueType || newObject is ValueType)
 						{
-							handled = AddToChanges(changes, originalName, newValue);
+							valuesAreDifferent = !EqualityComparer<object>.Default.Equals(originalObject, newObject);
+						}
+						else
+						{
+							valuesAreDifferent = !Equals(originalObject, newObject);
+						}
+
+						var staticHashEqual = originalObject?.GetStaticHashCode() == newObject?.GetStaticHashCode();
+
+						if (valuesAreDifferent || !staticHashEqual)
+						{
+							handled = AddToChanges(changes, originalName, newValueUnmodified);
 							break;
 						}
 					}
 				}
 				else
 				{
-					handled = AddToChanges(changes, originalName, newValue);
+					handled = AddToChanges(changes, originalName, newValueUnmodified);
 				}
 
 				handled = true;
@@ -205,42 +290,53 @@ namespace RTUEditor
 			return handled;
 		}
 
-		private static bool HandleUnityObject(Dictionary<string, object> changes, Object valueAsObject,
-			Object propValueAsObject,
-			string originalName, object newValue)
-		{
-			bool handled = false;
-			if (valueAsObject.GetInstanceID() != propValueAsObject.GetInstanceID())
-			{
-				AddToChanges(changes, originalName, newValue);
-			}
-
-			handled = true;
-			return handled;
-		}
-
-		private static bool HandleUnityObjectCollection(IEnumerable<Object> originalEnumerable,
-			IEnumerable<Object> newEnumerable)
+		private static bool HandleUnityObjectCollection(Dictionary<string, object> changes, string originalName,
+			IEnumerable<Object> originalEnumerable,
+			IEnumerable<Object> newEnumerable, object newValueUnmodified)
 		{
 			bool handled = false;
 			try
 			{
-				var originalHashset = new HashSet<Object>(originalEnumerable);
-				var newHashset = new HashSet<Object>(newEnumerable);
-				if (originalHashset.Count == newHashset.Count)
+				var originalCollection = new List<Object>(originalEnumerable);
+				var newCollection = new List<Object>(newEnumerable);
+				if (originalCollection.Count == newCollection.Count)
 				{
-					for (int i = 0; i < originalHashset.Count; i++)
+					for (int i = 0; i < originalCollection.Count; i++)
 					{
-						if (originalHashset.ElementAt(i).GetInstanceID() ==
-						    newHashset.ElementAt(i).GetInstanceID())
+						if (originalCollection?.ElementAt(i).GetInstanceID() ==
+						    newCollection?.ElementAt(i).GetInstanceID())
 						{
-							// todo handle
+							var t = newValueUnmodified.GetType();
+							var elementType = t.GetElementTypeForCollection();
+							if (elementType.IsSubclassOf(typeof(Object)))
+							{
+								var list = t.CreateListFromType() as IList;
+								foreach (var obj in newValueUnmodified as IList)
+								{
+									list.Add((Object) obj);
+								}
+
+								handled = AddToChanges(changes, originalName, list);
+							}
+							else
+							{
+								handled = AddToChanges(changes, originalName, newValueUnmodified);
+							}
 						}
 					}
 				}
 				else
 				{
-					// todo handle new elements being added / reordered
+					var t = newValueUnmodified.GetType();
+					var elementType = t.GetElementTypeForCollection();
+
+					var list = elementType.CreateListFromType() as IList;
+					foreach (var obj in newValueUnmodified as IList)
+					{
+						list.Add((Object) obj);
+					}
+
+					handled = AddToChanges(changes, originalName, list);
 				}
 
 				handled = true;
@@ -249,6 +345,8 @@ namespace RTUEditor
 
 			return handled;
 		}
+
+
 
 		private static bool AddToChanges(Dictionary<string, object> changes, string originalName, object newValue)
 		{

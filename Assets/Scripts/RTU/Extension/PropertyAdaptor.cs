@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace RealTimeUpdateRuntime
 {
-	public struct PropertyAdapter : IMemberAdapter
+	public class PropertyAdapter : IMemberAdapter
 	{
 		private readonly PropertyInfo property;
 

@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace RealTimeUpdateRuntime
 {
-	public struct FieldAdapter : IMemberAdapter
+	public class FieldAdapter : IMemberAdapter
 	{
 		private readonly FieldInfo field;
 
