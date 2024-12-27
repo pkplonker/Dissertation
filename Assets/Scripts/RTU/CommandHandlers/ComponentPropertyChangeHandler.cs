@@ -23,15 +23,15 @@ namespace RealTimeUpdateRuntime
 					GameObject targetGO = GameObject.Find(args.TargetGOPath);
 					if (targetGO != null)
 					{
-						var comp = targetGO.GetComponent(args.TargetComponentTypeName);
+						var comp = targetGO.GetComponent(args.TargetComponentType);
 						if (comp != null)
 						{
 							member.SetValue(component, comp);
-							RTUDebug.Log($"{fieldName} set to {args.TargetComponentTypeName} successfully.");
+							RTUDebug.Log($"{fieldName} set to {args.TargetComponentType} successfully.");
 						}
 						else
 						{
-							RTUDebug.LogWarning($"Cannot locate component {args.TargetComponentTypeName} on {args.TargetGOPath}");
+							RTUDebug.LogWarning($"Cannot locate component {args.TargetComponentType} on {args.TargetGOPath}");
 						}
 					}
 					else

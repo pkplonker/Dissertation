@@ -11,7 +11,7 @@ namespace RealTimeUpdateRuntime
 		public string PropertyPath { get; set; } = string.Empty;
 		public string TargetGOPath;
 
-		public Type TargetComponentTypeName { get; set; }
+		public Type TargetComponentType { get; set; }
 
 		public string GeneratePayload(JsonSerializerSettings JSONSettings) =>
 			$"ComponentProperty,\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}";

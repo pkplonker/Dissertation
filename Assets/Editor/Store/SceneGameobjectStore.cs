@@ -132,9 +132,12 @@ namespace RTUEditor
 					if (oldValue is not int &&
 					    newValue is not int) // this is a unityobject reference so isn't a mismatch
 					{
-						//Something has gone wrong
-						RTUDebug.LogWarning(
-							$"type mismatch {newValue?.GetType()} : {oldValue?.GetType()} for {originalName}");
+						if (oldValue is not IList && newValue is not IList)
+						{
+							RTUDebug.LogWarning(
+								$"type mismatch {newValue?.GetType()} : {oldValue?.GetType()} for {originalName}");
+							continue;
+						}
 					}
 				}
 
@@ -169,7 +172,8 @@ namespace RTUEditor
 				    oldValue is IEnumerable<Object> originalEnumerable &&
 				    newValue.GetType() != typeof(string))
 				{
-					handled = HandleUnityObjectCollection(originalEnumerable, newEnumerable);
+					handled = HandleUnityObjectCollection(changes, originalName, originalEnumerable, newEnumerable,
+						adaptor.GetValue(component));
 				}
 
 				if (!handled && type.IsArray)
@@ -286,28 +290,53 @@ namespace RTUEditor
 			return handled;
 		}
 
-		private static bool HandleUnityObjectCollection(IEnumerable<Object> originalEnumerable,
-			IEnumerable<Object> newEnumerable)
+		private static bool HandleUnityObjectCollection(Dictionary<string, object> changes, string originalName,
+			IEnumerable<Object> originalEnumerable,
+			IEnumerable<Object> newEnumerable, object newValueUnmodified)
 		{
 			bool handled = false;
 			try
 			{
-				var originalHashset = new HashSet<Object>(originalEnumerable);
-				var newHashset = new HashSet<Object>(newEnumerable);
-				if (originalHashset.Count == newHashset.Count)
+				var originalCollection = new List<Object>(originalEnumerable);
+				var newCollection = new List<Object>(newEnumerable);
+				if (originalCollection.Count == newCollection.Count)
 				{
-					for (int i = 0; i < originalHashset.Count; i++)
+					for (int i = 0; i < originalCollection.Count; i++)
 					{
-						if (originalHashset.ElementAt(i).GetInstanceID() ==
-						    newHashset.ElementAt(i).GetInstanceID())
+						if (originalCollection?.ElementAt(i).GetInstanceID() ==
+						    newCollection?.ElementAt(i).GetInstanceID())
 						{
-							// todo handle
+							var t = newValueUnmodified.GetType();
+							var elementType = t.GetElementTypeForCollection();
+							if (elementType.IsSubclassOf(typeof(Object)))
+							{
+								var list = t.CreateListFromType() as IList;
+								foreach (var obj in newValueUnmodified as IList)
+								{
+									list.Add((Object) obj);
+								}
+
+								handled = AddToChanges(changes, originalName, list);
+							}
+							else
+							{
+								handled = AddToChanges(changes, originalName, newValueUnmodified);
+							}
 						}
 					}
 				}
 				else
 				{
-					// todo handle new elements being added / reordered
+					var t = newValueUnmodified.GetType();
+					var elementType = t.GetElementTypeForCollection();
+
+					var list = elementType.CreateListFromType() as IList;
+					foreach (var obj in newValueUnmodified as IList)
+					{
+						list.Add((Object) obj);
+					}
+
+					handled = AddToChanges(changes, originalName, list);
 				}
 
 				handled = true;
@@ -316,6 +345,8 @@ namespace RTUEditor
 
 			return handled;
 		}
+
+
 
 		private static bool AddToChanges(Dictionary<string, object> changes, string originalName, object newValue)
 		{

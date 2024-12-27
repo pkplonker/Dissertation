@@ -58,4 +58,18 @@ public static class Extensions
 	}
 
 	public static bool IsCollection(this object obj) => obj is IEnumerable && obj is not string;
+
+	public static object CreateListFromType(this Type type) =>
+		Activator.CreateInstance(typeof(List<>).MakeGenericType(type));
+
+	public static Type GetElementTypeForCollection(this Type type)
+	{
+		var elementType = type.GetElementType();
+		if (elementType == null)
+		{
+			elementType = type.GetGenericArguments()[0];
+		}
+
+		return elementType;
+	}
 }
