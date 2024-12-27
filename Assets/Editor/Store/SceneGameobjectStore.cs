@@ -19,12 +19,14 @@ namespace RTUEditor
 		private readonly RTUScene rtuScene;
 		private Dictionary<string, Clone> clones = new(StringComparer.CurrentCultureIgnoreCase);
 		private GameObjectCloneStrategy gameObjectCloneStrategy = new();
+		private readonly PropertyChangePayloadFactory propertyChangePayloadFactory;
 
 		public SceneGameobjectStore(EditorRtuController controller)
 		{
 			rtuScene = controller.Scene;
 			scene = rtuScene.GetScene();
 			CreateClones(scene.GetRootGameObjects().Select(x => x.transform), parentPath: string.Empty);
+			propertyChangePayloadFactory = new PropertyChangePayloadFactory();
 		}
 
 		// recursive
@@ -68,39 +70,7 @@ namespace RTUEditor
 						{
 							foreach (var change in changes)
 							{
-								// todo move to factory
-								if (change.Value is UnityEngine.GameObject targetGo)
-								{
-									args.Add(new GameObjectPropertyChangeArgs()
-									{
-										GameObjectPath = fullPath,
-										ComponentTypeName = component.GetType().AssemblyQualifiedName,
-										PropertyPath = change.Key,
-										ValuePath = targetGo.GetFullName(),
-									}.GeneratePayload(settings));
-								}
-								else if (change.Value is UnityEngine.Component Targetcomponent)
-								{
-									args.Add(new ComponentPropertyChangeArgs()
-									{
-										GameObjectPath = fullPath,
-										ComponentTypeName = component.GetType().AssemblyQualifiedName,
-										PropertyPath = change.Key,
-										TargetComponentTypeName = Targetcomponent.GetType(),
-										TargetGOPath = Targetcomponent.gameObject.GetFullName(),
-									}.GeneratePayload(settings));
-								}
-								else
-								{
-									args.Add(new PropertyChangeArgs()
-									{
-										GameObjectPath = fullPath,
-										ComponentTypeName = component.GetType().AssemblyQualifiedName,
-										PropertyPath = change.Key,
-										Value = change.Value,
-										ValueType = change.Value.GetType()
-									}.GeneratePayload(settings));
-								}
+								propertyChangePayloadFactory.CreatePayload(settings, args, change, fullPath, component);
 							}
 						}
 						catch (Exception e)
