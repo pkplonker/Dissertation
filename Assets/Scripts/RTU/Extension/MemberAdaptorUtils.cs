@@ -24,27 +24,17 @@ namespace RealTimeUpdateRuntime
 			{
 				throw new Exception("Member not found");
 			}
-
 			member = CreateMemberAdapter(memberInfo);
 
 			return member;
 		}
 
 		private static MemberInfo[] GetMemberInfo(Type type) =>
-			type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-				.Where(field =>
-					(field.IsPublic || field.GetCustomAttribute<SerializeField>() != null) &&
-					field.GetCustomAttribute<NonSerializedAttribute>() == null)
-				.Cast<MemberInfo>()
-				.Concat(
-					type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-						.Where(property =>
-							property.GetCustomAttributes<SerializeField>().Any() &&
-							property.CanRead &&
-							property.GetIndexParameters().Length == 0)
-				)
-				.ToArray();
-
+			type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+				.Concat(type
+					.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+					.OfType<MemberInfo>()).ToArray();
+		
 		public static List<IMemberAdapter> GetMemberAdapters(Type type) =>
 			GetMemberInfo(type).Select(x => CreateMemberAdapter(x)).ToList();
 

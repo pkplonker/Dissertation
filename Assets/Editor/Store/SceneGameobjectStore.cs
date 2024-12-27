@@ -74,7 +74,7 @@ namespace RTUEditor
 									args.Add(new GameObjectPropertyChangeArgs()
 									{
 										GameObjectPath = fullPath,
-										ComponentTypeName = component.GetType().FullName,
+										ComponentTypeName = component.GetType().AssemblyQualifiedName,
 										PropertyPath = change.Key,
 										ValuePath = targetGo.GetFullName(),
 									}.GeneratePayload(settings));
@@ -84,7 +84,7 @@ namespace RTUEditor
 									args.Add(new ComponentPropertyChangeArgs()
 									{
 										GameObjectPath = fullPath,
-										ComponentTypeName = component.GetType().FullName,
+										ComponentTypeName = component.GetType().AssemblyQualifiedName,
 										PropertyPath = change.Key,
 										TargetComponentTypeName = Targetcomponent.GetType(),
 										TargetGOPath = Targetcomponent.gameObject.GetFullName(),
@@ -95,7 +95,7 @@ namespace RTUEditor
 									args.Add(new PropertyChangeArgs()
 									{
 										GameObjectPath = fullPath,
-										ComponentTypeName = component.GetType().FullName,
+										ComponentTypeName = component.GetType().AssemblyQualifiedName,
 										PropertyPath = change.Key,
 										Value = change.Value,
 										ValueType = change.Value.GetType()
@@ -135,6 +135,8 @@ namespace RTUEditor
 			var adaptors = MemberAdaptorUtils.GetMemberAdapters(component.GetType());
 			foreach (var (originalName, oldValue) in originalCloneComponent)
 			{
+				if (originalName.Equals("gameobject", StringComparison.InvariantCultureIgnoreCase) ||
+				    originalName.Equals("transform", StringComparison.InvariantCultureIgnoreCase)) continue;
 				bool handled = false;
 
 				var adaptor = adaptors.FirstOrDefault(x =>
