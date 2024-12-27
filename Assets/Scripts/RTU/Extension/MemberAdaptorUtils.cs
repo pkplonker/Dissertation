@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
 
 namespace RealTimeUpdateRuntime
 {
@@ -29,10 +30,10 @@ namespace RealTimeUpdateRuntime
 		}
 
 		private static MemberInfo[] GetMemberInfo(Type type) =>
-			type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-				.Concat(type
-					.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-					.OfType<MemberInfo>()).ToArray();
+			type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+				.Where(field => field.IsPublic || field.GetCustomAttribute<SerializeField>() != null)
+				.OfType<MemberInfo>()
+				.ToArray();
 
 		public static List<IMemberAdapter> GetMemberAdapters(Type type) =>
 			GetMemberInfo(type).Select(x => CreateMemberAdapter(x)).ToList();
