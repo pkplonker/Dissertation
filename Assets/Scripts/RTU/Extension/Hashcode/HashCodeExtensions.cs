@@ -124,8 +124,17 @@ namespace System
 
 				return;
 			}
-
 			var typeToReflect = originalObject.GetType();
+
+			if (typeToReflect.IsArray)
+			{
+				Array array = (Array)originalObject;
+				foreach (var item in array)
+				{
+					InternalCopy(item, hash, savedHashes, visited);
+				}
+				return;
+			}
 
 			if (IsPrimitive(typeToReflect))
 			{
@@ -138,23 +147,9 @@ namespace System
 				return;
 			}
 
-			if (typeToReflect.IsArray)
-			{
-				var arrayType = typeToReflect.GetElementType();
-				if (!IsPrimitive(arrayType))
-				{
-					Array clonedArray = (Array) originalObject;
-					clonedArray.ForEach((array, indices) =>
-						InternalCopy(clonedArray.GetValue(indices), hash, savedHashes, visited));
-				}
-			}
-
 			visited.Add(originalObject);
 			CopyFields(originalObject, hash, savedHashes, visited, typeToReflect);
 			RecursiveCopyBaseTypePrivateFields(originalObject, hash, savedHashes, visited, typeToReflect);
-
-			//DoHash(cloneObject, hash);
-			//return;
 		}
 
 		private static void RecursiveCopyBaseTypePrivateFields(object originalObject, ULong hash,

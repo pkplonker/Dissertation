@@ -22,7 +22,7 @@ namespace RealTimeUpdateRuntime
 				}
 				catch (Exception e)
 				{
-					RTUDebug.Log($"Failed to set property: {e.Message}");
+					RTUDebug.Log($"Failed to set property: {e.Message} : {e?.InnerException}");
 				}
 			});
 		}

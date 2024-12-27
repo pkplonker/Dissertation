@@ -19,7 +19,7 @@ namespace RealTimeUpdateRuntime
 			writer.WritePropertyName("GameObjectPath");
 			writer.WriteValue(value.gameObject.GetFullName());
 			writer.WritePropertyName("ComponentType");
-			writer.WriteValue(value.GetType().FullName);
+			writer.WriteValue(value.GetType().AssemblyQualifiedName);
 			writer.WriteEndObject();
 		}
 
@@ -55,6 +55,7 @@ namespace RealTimeUpdateRuntime
 
 					if (propertyName == "ComponentType")
 					{
+						reader.Read();
 						componentType = Type.GetType((string) reader.Value);
 					}
 				}

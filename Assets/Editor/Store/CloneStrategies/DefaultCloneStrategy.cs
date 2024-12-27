@@ -26,49 +26,27 @@ namespace RTUEditor.AssetStore
 			foreach (var prop in adaptors)
 			{
 				object val = null;
-				if (prop.MemberType.IsSubclassOf(typeof(Object)))
+
+				try
 				{
-					val = HandleUnityObject(asset, prop);
+					val = prop.GetValue(asset);
 				}
-				else
+				catch { }
+
+				if (val == null)
 				{
-					try
-					{
-						val = prop.GetValue(asset);
-					}
-					catch { }
+					//RTUDebug.LogWarning($"Failed to get value for {prop.Name} to clone dictionary of {asset.name}");
+					continue;
+				}
 
-					if (val == null)
-					{
-						//Debug.LogWarning($"Failed to get value for {prop.Name} to clone dictionary of {asset.name}");
-						continue;
-					}
-
-					if (val.GetType().IsArray)
-					{
-						val = HandleArray(val);
-					}
-					else if (val is IList list)
-					{
-						val = HandleList(val, list);
-					}
-					else if (val is IDictionary dictionary)
-					{
-						//ignore for now?
-					}
-					else if (val is IEnumerable enumerable && !(val is string))
-					{
-						val = HandleCollection(val, enumerable);
-					}
-					else if (val.GetType().IsClass && val.GetType() != typeof(string) && val is not Object)
-					{
-						val = HandleClass(val);
-					}
+				if (val.GetType().IsClass && val.GetType() != typeof(string) && val is not Object)
+				{
+					val = HandleClass(val);
 				}
 
 				if (!clone.TryAdd(prop.Name, val))
 				{
-					//Debug.LogWarning($"Failed to add {prop.Name} to clone dictionary of {asset.name}");
+					//RTUDebug.LogWarning($"Failed to add {prop.Name} to clone dictionary of {asset.name}");
 				}
 			}
 
@@ -81,91 +59,7 @@ namespace RTUEditor.AssetStore
 			{
 				val = val.GetStaticHashCode();
 			}
-			catch(Exception e) { }
-
-			return val;
-		}
-
-		private static object HandleCollection(object val, IEnumerable enumerable)
-		{
-			try
-			{
-				var clonedEnumerable = (IEnumerable) Activator.CreateInstance(val.GetType());
-				var addMethod = clonedEnumerable.GetType().GetMethod("Add");
-				if (addMethod != null)
-				{
-					foreach (var item in enumerable)
-					{
-						addMethod.Invoke(clonedEnumerable, new[] {item});
-					}
-				}
-
-				val = clonedEnumerable;
-			}
-			catch { }
-
-			return val;
-		}
-
-		private static object HandleList(object val, IList list)
-		{
-			try
-			{
-				// Handle lists
-				Type itemType = list.GetType().GetGenericArguments()[0];
-				var clonedList = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(itemType));
-				if (itemType.IsSubclassOf(typeof(Object)))
-				{
-					clonedList = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(typeof(int)));
-					foreach (var item in list)
-					{
-						clonedList.Add(item == null ? null : ((Object) item).GetInstanceID());
-					}
-				}
-				else if (itemType.IsClass && !itemType.Name.Equals("string", StringComparison.InvariantCultureIgnoreCase))
-				{
-					clonedList = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(typeof(ulong)));
-					foreach (var item in list)
-					{
-						clonedList.Add(item?.GetStaticHashCode());
-					}
-				}
-				else
-				{
-					foreach (var item in list)
-					{
-						clonedList.Add(item);
-					}
-				}
-
-				val = clonedList;
-			}
 			catch (Exception e) { }
-
-			return val;
-		}
-
-		private static object HandleArray(object val)
-		{
-			var array = (Array) val;
-			var clonedArray = Array.CreateInstance(array.GetType().GetElementType(), array.Length);
-			Array.Copy(array, clonedArray, array.Length);
-			val = clonedArray;
-			return val;
-		}
-
-		private static object HandleUnityObject(Object asset, IMemberAdapter prop)
-		{
-			object val;
-			var unityObject = prop.GetValue(asset) as UnityEngine.Object;
-			if (unityObject != null)
-			{
-				val = unityObject.GetInstanceID();
-			}
-			else
-			{
-				val = null;
-			}
 
 			return val;
 		}

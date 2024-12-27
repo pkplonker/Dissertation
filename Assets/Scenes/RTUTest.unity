@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.12731715, g: 0.13414735, b: 0.121078536, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028352, g: 0.22571376, b: 0.30692244, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -487,7 +487,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &91243940
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -500,11 +500,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 968109c572bb11547ab6f8ceea73376a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  intField: 8
-  floatField: 7
-  <doubleField>k__BackingField: 3
-  stringField: 7
-  privateStringField: 6
+  intField: 1
+  floatField: 8
+  <doubleField>k__BackingField: 9
+  stringField: 10
+  privateStringField: 11
   <serializedStringProperty>k__BackingField: 3
   vector3Field: {x: 1, y: 2, z: 3}
   quaternionField: {x: 0.026324216, y: 0.01721736, z: 0.008265384, w: 0.999471}
@@ -551,7 +551,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 91243939}
-  m_Material: {fileID: 1176996222}
+  m_Material: {fileID: 773190229}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1020,7 +1020,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!108 &410087040
 Light:
   m_ObjectHideFlags: 0
@@ -1141,7 +1141,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &419011275
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1331,7 +1331,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!64 &672735302
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -1419,6 +1419,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!134 &773190229
+PhysicMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ' (Instance) (Instance) (Instance) (Instance) (Instance)'
+  dynamicFriction: 0.6
+  staticFriction: 0.6
+  bounciness: 0
+  frictionCombine: 0
+  bounceCombine: 0
 --- !u!54 &773190230
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1575,7 +1587,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &832575518
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1917,7 +1929,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1089829615
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2098,7 +2110,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!65 &1365886820
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2541,7 +2553,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!135 &1902618101
 SphereCollider:
   m_ObjectHideFlags: 0
