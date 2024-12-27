@@ -13,7 +13,7 @@ namespace RealTimeUpdateRuntime
 		public IPropertyChangeArgs ProcessInternal<T>(CommandHandlerArgs commandHandlerArgs,
 			out Component component, out string fieldName, out IMemberAdapter member) where T : IPropertyChangeArgs
 		{
-			var args = JsonConvert.DeserializeObject<ComponentPropertyChangeArgs>(commandHandlerArgs.Payload);
+			var args = JsonConvert.DeserializeObject<T>(commandHandlerArgs.Payload);
 			var go = GameObject.Find(args.GameObjectPath);
 			var type = Type.GetType(args.ComponentTypeName);
 			if (type == null)

@@ -15,12 +15,5 @@ namespace RealTimeUpdateRuntime
 
 		public string GeneratePayload(JsonSerializerSettings JSONSettings) =>
 			$"ComponentProperty,\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}";
-
-		public string ValuePath { get; set; }
-
-		public object GetDeserializedValue(JsonSerializerSettings settings)
-		{
-			return null;
-		}
 	}
 }

@@ -27,7 +27,7 @@ namespace RealTimeUpdateRuntime
 						if (comp != null)
 						{
 							member.SetValue(component, comp);
-							RTUDebug.Log($"{fieldName} set to {args.ValuePath} successfully.");
+							RTUDebug.Log($"{fieldName} set to {args.TargetComponentTypeName} successfully.");
 						}
 						else
 						{

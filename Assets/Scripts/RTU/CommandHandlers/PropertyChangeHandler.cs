@@ -4,85 +4,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
-using Unity.VisualScripting;
-using UnityEngine;
 
 namespace RealTimeUpdateRuntime
 {
-	public class PropertyChangeHandler : RTUCommandHandlerBase
+	public class PropertyChangeHandler : PropertyRTUCommandHandlerBase
 	{
-		
 		public override void Process(CommandHandlerArgs commandHandlerArgs, JsonSerializerSettings jsonSettings)
 		{
 			RTUProcessor.Enqueue(() =>
 			{
 				try
 				{
-					var args = JsonConvert.DeserializeObject<PropertyChangeArgs>(commandHandlerArgs.Payload);
-					var go = GameObject.Find(args.GameObjectPath);
-					var type = Type.GetType(args.ComponentTypeName);
-					if (type == null)
-					{
-						throw new Exception("Could not determine property update type");
-					}
-
-					var component = go.GetComponent(type);
-					var propertySplit = args.PropertyPath.Split('.');
-					var fieldName = propertySplit[0];
-					var subFieldName = string.Empty;
-					// todo will this need changing to support nested values?
-					if (propertySplit.Length > 1)
-					{
-						subFieldName = propertySplit[1];
-					}
-
+					var args = ProcessInternal<PropertyChangeArgs>(commandHandlerArgs, out var component,
+						out var fieldName, out var member) as PropertyChangeArgs;
 					var value = args.GetDeserializedValue(jsonSettings);
-					fieldName = fieldName.Trim("m_".ToCharArray());
-					IMemberAdapter member = null;
-					try
-					{
-						member = MemberAdaptorUtils.GetMemberAdapter(type, fieldName);
-					}
-					catch
-					{
-						try
-						{
-							member = MemberAdaptorUtils.GetMemberAdapter(type,
-								new string(fieldName.ToCharArray().Where(c => !Char.IsWhiteSpace(c)).ToArray()));
-						}
-						catch (Exception e)
-						{
-							throw;
-						}
-					}
-
 					var memberType = member.MemberType;
-					bool set = false;
-					if (memberType.IsValueType)
-					{
-						var currentStructValue = member.GetValue(component);
-
-						try
-						{
-							if (ModifyStruct(currentStructValue, subFieldName, value, out var modifiedStruct))
-							{
-								member.SetValue(component, modifiedStruct);
-								set = true;
-								RTUDebug.Log($"{fieldName}.{subFieldName} set to {value} successfully.");
-							}
-						}
-						catch
-						{
-							// this is ok as it could not be a struct with values, but rather an intrinsic struct, such as float, int, bool
-						}
-					}
-
-					if (!set)
-					{
-						var convertedVal = ConvertValue(memberType, value, jsonSettings);
-						member.SetValue(component, convertedVal);
-						RTUDebug.Log($"{fieldName} set to {convertedVal} successfully.");
-					}
+					var convertedVal = ConvertValue(memberType, value, jsonSettings);
+					member.SetValue(component, convertedVal);
+					RTUDebug.Log($"{fieldName} set to {convertedVal} successfully.");
 				}
 				catch (Exception e)
 				{
@@ -130,7 +69,7 @@ namespace RealTimeUpdateRuntime
 			{
 				return JsonConvert.DeserializeObject(value.ToString(), targetType, jsonSettings);
 			}
-			
+
 			if (targetType == typeof(int))
 			{
 				if (value is IConvertible)
@@ -142,7 +81,7 @@ namespace RealTimeUpdateRuntime
 					}
 				}
 			}
-			
+
 			return Convert.ChangeType(value, targetType);
 		}
 	}

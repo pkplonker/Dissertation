@@ -86,8 +86,8 @@ namespace RTUEditor
 										GameObjectPath = fullPath,
 										ComponentTypeName = component.GetType().FullName,
 										PropertyPath = change.Key,
-										ValuePath =
-											@$"{Targetcomponent.gameObject.GetFullName()}\{Targetcomponent.name}",
+										TargetComponentTypeName = Targetcomponent.GetType(),
+										TargetGOPath = Targetcomponent.gameObject.GetFullName(),
 									}.GeneratePayload(settings));
 								}
 								else
@@ -135,8 +135,6 @@ namespace RTUEditor
 			var adaptors = MemberAdaptorUtils.GetMemberAdapters(component.GetType());
 			foreach (var (originalName, oldValue) in originalCloneComponent)
 			{
-				if (originalName.Equals("gameobject", StringComparison.InvariantCultureIgnoreCase) ||
-				    originalName.Equals("transform", StringComparison.InvariantCultureIgnoreCase)) continue;
 				bool handled = false;
 
 				var adaptor = adaptors.FirstOrDefault(x =>
@@ -148,7 +146,7 @@ namespace RTUEditor
 				if (!handled && adaptor != null && ((oldValue != null && oldValue?.GetType() != adaptor.MemberType) ||
 				                                    (newValue != null && newValue?.GetType() != adaptor.MemberType)))
 				{
-					// The parsed type is not the same as the property type and as such (Because we've a class)
+					// The parsed type is not the same as the property type and as such (Because it's a class)
 					if (oldValue is ulong || newValue is ulong)
 					{
 						if (!oldValue?.Equals(newValue) ?? true)
@@ -172,25 +170,40 @@ namespace RTUEditor
 
 				if (!handled && type.IsSubclassOf(typeof(UnityEngine.Object)))
 				{
-					try
+					if (oldValue is int ov && newValue is int nv)
 					{
-						handled = AddToChanges(changes, originalName, adaptor.GetValue(component) as Object);
+						if (ov != nv)
+						{
+							try
+							{
+								handled = AddToChanges(changes, originalName, adaptor.GetValue(component) as Object);
+							}
+							catch { }
+						}
 					}
-					catch { }
+					else
+					{
+						try
+						{
+							handled = AddToChanges(changes, originalName, adaptor.GetValue(component) as Object);
+						}
+						catch { }
+					}
+					
 
 					handled = true;
 				}
-				else if (!handled && newValue is IEnumerable<Object> newEnumerable &&
+				if (!handled && newValue is IEnumerable<Object> newEnumerable &&
 				         oldValue is IEnumerable<Object> originalEnumerable &&
 				         newValue.GetType() != typeof(string))
 				{
 					handled = HandleUnityObjectCollection(originalEnumerable, newEnumerable);
 				}
-				else if (!handled && type.IsArray)
+				if (!handled && type.IsArray)
 				{
 					handled = HandleArray(changes, oldValue, newValue, originalName);
 				}
-				else if (!handled && newValue is IEnumerable newObjectEnumerable &&
+				if (!handled && newValue is IEnumerable newObjectEnumerable &&
 				         oldValue is IEnumerable originalObjectEnumerable &&
 				         newValue.GetType() != typeof(string))
 				{
