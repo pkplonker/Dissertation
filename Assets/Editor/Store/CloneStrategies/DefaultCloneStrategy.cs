@@ -81,7 +81,7 @@ namespace RTUEditor.AssetStore
 			{
 				val = val.GetStaticHashCode();
 			}
-			catch { }
+			catch(Exception e) { }
 
 			return val;
 		}

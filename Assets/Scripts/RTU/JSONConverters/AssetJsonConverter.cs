@@ -1,13 +1,23 @@
 ﻿using System;
 using Newtonsoft.Json;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace RealTimeUpdateRuntime
 {
-	[JSONCustomConverter(typeof(GameObjectJsonConverter))]
-	public class GameObjectJsonConverter : JsonConverter<UnityEngine.GameObject>
+	[JSONCustomConverter(typeof(AssetJsonConverter))]
+	public class AssetJsonConverter : JsonConverter<Object>
 	{
-		public override void WriteJson(JsonWriter writer, GameObject value, JsonSerializer serializer)
+		private readonly ComponentJsonConverter componentJsonConverter;
+		private readonly GameObjectJsonConverter gameObjectJsonConverter;
+
+		public AssetJsonConverter()
+		{
+			gameObjectJsonConverter = new GameObjectJsonConverter();
+			componentJsonConverter = new ComponentJsonConverter();
+		}
+
+		public override void WriteJson(JsonWriter writer, Object value, JsonSerializer serializer)
 		{
 			if (value == null)
 			{
@@ -15,19 +25,42 @@ namespace RealTimeUpdateRuntime
 				return;
 			}
 
-			writer.WriteStartObject();
-			writer.WritePropertyName("GameObjectPath");
-
-			writer.WriteValue(value.GetFullName() ?? string.Empty);
-
-			writer.WriteEndObject();
+			var valueType = value.GetType();
+			if (valueType == typeof(GameObject))
+			{
+				gameObjectJsonConverter.WriteJson(writer, value, serializer);
+			}
+			else if (valueType == typeof(Component) || valueType.IsSubclassOf(typeof(Component)))
+			{
+				componentJsonConverter.WriteJson(writer, value, serializer);
+			}
+			else
+			{
+				writer.WriteStartObject();
+				//todo 
+				writer.WriteEndObject();
+			}
 		}
 
-		public override GameObject ReadJson(JsonReader reader, Type objectType, GameObject existingValue,
+		public override Object ReadJson(JsonReader reader, Type objectType, Object existingValue,
 			bool hasExistingValue,
 			JsonSerializer serializer)
 		{
-			throw new NotImplementedException("Deserialization is not implemented yet.");
+			if (objectType == typeof(GameObject))
+			{
+				return gameObjectJsonConverter.ReadJson(reader, objectType, existingValue as GameObject,
+					hasExistingValue,
+					serializer);
+			}
+
+			if (objectType == typeof(Component) || objectType.IsSubclassOf(typeof(Component)))
+			{
+				return componentJsonConverter.ReadJson(reader, objectType, existingValue as Component,
+					hasExistingValue,
+					serializer);
+			}
+
+			throw new JsonSerializationException("Not implemented ");
 		}
 	}
 }

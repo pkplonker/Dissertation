@@ -4,62 +4,72 @@ using UnityEngine;
 
 namespace RealTimeUpdateRuntime
 {
-	[JSONCustomConverter(typeof(ColorJsonConverter))]
-	public class ColorJsonConverter : JsonConverter<UnityEngine.Color>
+	[JSONCustomConverter(typeof(GameObjectJsonConverter))]
+	public class GameObjectJsonConverter : JsonConverter<UnityEngine.GameObject>
 	{
-		public override void WriteJson(JsonWriter writer, Color value, JsonSerializer serializer)
+		public override void WriteJson(JsonWriter writer, GameObject value, JsonSerializer serializer)
 		{
+			if (value == null)
+			{
+				writer.WriteNull();
+				return;
+			}
+
 			writer.WriteStartObject();
-			writer.WritePropertyName("r");
-			writer.WriteValue(value.r);
-			writer.WritePropertyName("g");
-			writer.WriteValue(value.g);
-			writer.WritePropertyName("b");
-			writer.WriteValue(value.b);
-			writer.WritePropertyName("a");
-			writer.WriteValue(value.a);
+			writer.WritePropertyName("GameObjectPath");
+
+			writer.WriteValue(value.GetFullName() ?? string.Empty);
+
 			writer.WriteEndObject();
 		}
 
-		public override Color ReadJson(JsonReader reader, Type objectType, Color existingValue, bool hasExistingValue,
-			JsonSerializer serializer)
+		public override GameObject ReadJson(JsonReader reader, Type objectType, GameObject existingValue,
+			bool hasExistingValue, JsonSerializer serializer)
 		{
 			if (reader.TokenType == JsonToken.Null)
 			{
-				return Color.clear;
+				return null;
 			}
 
-			var color = new Color();
-			reader.Read();
-
-			while (reader.TokenType == JsonToken.PropertyName)
+			if (reader.TokenType != JsonToken.StartObject)
 			{
-				if (reader.Value != null)
-				{
-					var propertyName = reader.Value.ToString();
-					reader.Read();
+				throw new JsonSerializationException(
+					$"Unexpected token {reader.TokenType} when deserializing GameObject.");
+			}
 
-					switch (propertyName)
+			string gameObjectPath = null;
+
+			while (reader.Read())
+			{
+				if (reader.TokenType == JsonToken.PropertyName)
+				{
+					string propertyName = (string) reader.Value;
+
+					if (propertyName == "GameObjectPath")
 					{
-						case "r":
-							color.r = Convert.ToSingle(reader.Value);
-							break;
-						case "g":
-							color.g = Convert.ToSingle(reader.Value);
-							break;
-						case "b":
-							color.b = Convert.ToSingle(reader.Value);
-							break;
-						case "a":
-							color.a = Convert.ToSingle(reader.Value);
-							break;
+						reader.Read();
+						gameObjectPath = (string) reader.Value;
 					}
 				}
-
-				reader.Read();
+				else if (reader.TokenType == JsonToken.EndObject)
+				{
+					break;
+				}
 			}
 
-			return color;
+			if (string.IsNullOrEmpty(gameObjectPath))
+			{
+				throw new JsonSerializationException("GameObjectPath is missing or empty.");
+			}
+
+			GameObject gameObject = GameObject.Find(gameObjectPath);
+
+			if (gameObject == null)
+			{
+				throw new JsonSerializationException($"GameObject with path '{gameObjectPath}' could not be found.");
+			}
+
+			return gameObject;
 		}
 	}
 }
