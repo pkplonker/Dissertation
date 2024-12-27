@@ -61,6 +61,8 @@ public class ComponentTestScript : MonoBehaviour
 		public string nestedString;
 	}
 
+	
+
 	public NestedClass nestedClassField;
 
 	[SerializeField]
@@ -127,8 +129,10 @@ public class ComponentTestScript : MonoBehaviour
 
 	[SerializeField]
 	private List<Transform> transformList;
+
 	[SerializeField]
 	private List<NestedClass> classList;
+
 	[field: SerializeField]
 	public List<Rigidbody> rigidbodyList { get; private set; }
 
@@ -146,8 +150,8 @@ public class ComponentTestScript : MonoBehaviour
 					Debug.Log(i);
 				}
 			}
-
 		}
+
 		if (cachedStringArray != stringArray)
 		{
 			if (stringArray?.Any() ?? false)
@@ -157,7 +161,6 @@ public class ComponentTestScript : MonoBehaviour
 					Debug.Log(i);
 				}
 			}
-
 		}
 
 		cachedStringArray = stringArray;

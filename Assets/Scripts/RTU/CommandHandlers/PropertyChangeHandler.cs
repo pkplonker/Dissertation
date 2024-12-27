@@ -1,8 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using Newtonsoft.Json;
 
 namespace RealTimeUpdateRuntime
@@ -25,24 +22,11 @@ namespace RealTimeUpdateRuntime
 				}
 				catch (Exception e)
 				{
-					RTUDebug.Log($"Failed to set property: {e.Message}");
+					RTUDebug.Log($"Failed to set property: {e.Message} : {e?.InnerException}");
 				}
 			});
 		}
-
-		private bool ModifyStruct(object structValue, string subFieldName, object newValue, out object newStruct)
-		{
-			Type structType = structValue.GetType();
-
-			FieldInfo subFieldInfo = structType.GetField(subFieldName, BindingFlags.Public | BindingFlags.Instance);
-			newStruct = structType;
-			if (subFieldInfo == null) return false;
-			object convertedValue = Convert.ChangeType(newValue, subFieldInfo.FieldType);
-			newStruct = structValue;
-			subFieldInfo.SetValue(newStruct, convertedValue);
-			return true;
-		}
-
+		
 		private static object ConvertValue(Type targetType, object value, JsonSerializerSettings jsonSettings)
 		{
 			if (value == null || targetType == null)
@@ -52,11 +36,6 @@ namespace RealTimeUpdateRuntime
 			if (value.GetType() == targetType) return value;
 			if (targetType == typeof(bool))
 			{
-				if (value is string strValue)
-				{
-					return strValue == "1" || strValue.Equals("true", StringComparison.OrdinalIgnoreCase);
-				}
-
 				return Convert.ToBoolean(value);
 			}
 

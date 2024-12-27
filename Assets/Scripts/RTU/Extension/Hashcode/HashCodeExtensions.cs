@@ -1,62 +1,98 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using RealTimeUpdateRuntime;
 
-namespace System {
-	public static class HashCodeExtensions {
+namespace System
+{
+	public static class HashCodeExtensions
+	{
 		//private static readonly MethodInfo CloneMethod = typeof(Object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
 
-		private class ReferenceEqualityComparer : EqualityComparer<object> {
-			public override bool Equals(object x, object y) {
+		private class ReferenceEqualityComparer : EqualityComparer<object>
+		{
+			public override bool Equals(object x, object y)
+			{
 				return ReferenceEquals(x, y);
 			}
-			public override int GetHashCode(object obj) {
+
+			public override int GetHashCode(object obj)
+			{
 				if (obj == null) return 0;
 				return obj.GetHashCode();
 			}
 		}
 
-		private static bool IsPrimitive(this Type type) {
+		private static bool IsPrimitive(this Type type)
+		{
 			if (type == typeof(String)) return true;
 			return (type.IsValueType & type.IsPrimitive);
 		}
 
-		public static ulong GetStaticHashCode(this object originalObject) {
+		public static ulong GetStaticHashCode(this object originalObject)
+		{
 			ULong hash = new ULong();
 			Dictionary<String, ulong> savedStringHashes = new Dictionary<string, ulong>();
 			InternalCopy(originalObject, hash, savedStringHashes, new HashSet<object>(new ReferenceEqualityComparer()));
 
-			return (ulong)hash.Value;
+			return (ulong) hash.Value;
 		}
 
-		public static object CastToUnsigned(object number) {
+		public static object CastToUnsigned(object number)
+		{
 			Type type = number.GetType();
-			unchecked {
-				if (type == typeof(int)) return (uint)(int)number;
-				if (type == typeof(long)) return (ulong)(long)number;
+			unchecked
+			{
+				if (type == typeof(int)) return (uint) (int) number;
+				if (type == typeof(long)) return (ulong) (long) number;
 				if (type == typeof(bool)) return Convert.ToUInt32(number);
 				if (type == typeof(char)) return Convert.ToUInt32(number);
-				if (type == typeof(short)) return (ushort)(short)number;
-				if (type == typeof(sbyte)) return (byte)(sbyte)number;
+				if (type == typeof(short)) return (ushort) (short) number;
+				if (type == typeof(sbyte)) return (byte) (sbyte) number;
 			}
+
 			return number;
 		}
 
-		private static ulong? DoHash(object o, ULong hash, Dictionary<string, ulong> savedHashes, bool hashingType = false) {
-			if (o != null) {
-				unchecked {
+		private static ulong? DoHash(object o, ULong hash, Dictionary<string, ulong> savedHashes, bool hashingType = false)
+		{
+			if (o != null)
+			{
+				unchecked
+				{
 					ulong obj = 0;
-					if (o is String || o is double || o is float || o is decimal) {
-						var s = o.ToString();
-						if (savedHashes.ContainsKey(s)) {
-							obj = savedHashes[s];
-						} else {
-							foreach (var c in s)
-								obj += c;
-							savedHashes[s] = obj;
+					
+					if (o is UnityEngine.Object unityObj)
+					{
+						obj = (ulong)unityObj.GetInstanceID();
+					}
+					else if (o is string str)
+					{
+						if (savedHashes.ContainsKey(str))
+						{
+							obj = savedHashes[str];
 						}
-					} else {
-						obj = Convert.ToUInt64(CastToUnsigned(o));
+						else
+						{
+							foreach (var c in str)
+								obj += c;
+							savedHashes[str] = obj;
+						}
+					}
+					else if (o is IConvertible)
+					{
+						try
+						{
+							obj = Convert.ToUInt64(CastToUnsigned(o));
+						}
+						catch
+						{
+							obj = 0;
+						}
+					}
+					else
+					{
+						obj = (ulong)o.GetHashCode();
 					}
 
 					hash.Value = (hash.Value * 397) ^ obj;
@@ -70,87 +106,140 @@ namespace System {
 			return 0;
 		}
 
-		private class ULong {
+		private class ULong
+		{
 			public ulong Value { get; set; }
 		}
 
-		private static void InternalCopy(object originalObject, ULong hash, Dictionary<string, ulong> savedHashes, HashSet<object> visited) {
+		private static void InternalCopy(object originalObject, ULong hash, Dictionary<string, ulong> savedHashes,
+			HashSet<object> visited)
+		{
 			if (originalObject == null) return;
+			if (originalObject is UnityEngine.Object unityObj)
+			{
+				if (unityObj != null)
+				{
+					DoHash(unityObj.GetInstanceID(), hash, savedHashes);
+				}
+
+				return;
+			}
 			var typeToReflect = originalObject.GetType();
 
-			if (IsPrimitive(typeToReflect)) {
+			if (typeToReflect.IsArray)
+			{
+				Array array = (Array)originalObject;
+				foreach (var item in array)
+				{
+					InternalCopy(item, hash, savedHashes, visited);
+				}
+				return;
+			}
+
+			if (IsPrimitive(typeToReflect))
+			{
 				DoHash(originalObject, hash, savedHashes);
 				return;
 			}
 
-			if (visited.Contains(originalObject) || typeof(Delegate).IsAssignableFrom(typeToReflect)) {
+			if (visited.Contains(originalObject) || typeof(Delegate).IsAssignableFrom(typeToReflect))
+			{
 				return;
-			}
-
-			if (typeToReflect.IsArray) {
-				var arrayType = typeToReflect.GetElementType();
-				if (!IsPrimitive(arrayType)) {
-					Array clonedArray = (Array)originalObject;
-					clonedArray.ForEach((array, indices) => InternalCopy(clonedArray.GetValue(indices), hash, savedHashes, visited));
-				}
 			}
 
 			visited.Add(originalObject);
 			CopyFields(originalObject, hash, savedHashes, visited, typeToReflect);
 			RecursiveCopyBaseTypePrivateFields(originalObject, hash, savedHashes, visited, typeToReflect);
-			
-			//DoHash(cloneObject, hash);
-			//return;
 		}
 
-		private static void RecursiveCopyBaseTypePrivateFields(object originalObject, ULong hash, Dictionary<string, ulong> savedHashes, HashSet<object> visited, Type typeToReflect) {
-			if (typeToReflect.BaseType != null) {
+		private static void RecursiveCopyBaseTypePrivateFields(object originalObject, ULong hash,
+			Dictionary<string, ulong> savedHashes, HashSet<object> visited, Type typeToReflect)
+		{
+			if (typeToReflect.BaseType != null)
+			{
 				RecursiveCopyBaseTypePrivateFields(originalObject, hash, savedHashes, visited, typeToReflect.BaseType);
-				CopyFields(originalObject, hash, savedHashes, visited, typeToReflect.BaseType, BindingFlags.Instance | BindingFlags.NonPublic, info => info.IsPrivate);
+				CopyFields(originalObject, hash, savedHashes, visited, typeToReflect.BaseType,
+					BindingFlags.Instance | BindingFlags.NonPublic, info => info.IsPrivate);
 			}
 		}
 
-		private static void CopyFields(object originalObject, ULong hash, Dictionary<string, ulong> savedHashes, HashSet<object> visited, Type typeToReflect, BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy, Func<FieldInfo, bool> filter = null) {
-			foreach (FieldInfo fieldInfo in typeToReflect.GetFields(bindingFlags)) {
-				if (filter != null && filter(fieldInfo) == false)
+		private static void CopyFields(
+			object originalObject,
+			ULong hash,
+			Dictionary<string, ulong> savedHashes,
+			HashSet<object> visited,
+			Type typeToReflect,
+			BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy,
+			Func<FieldInfo, bool> filter = null)
+		{
+			foreach (FieldInfo fieldInfo in typeToReflect.GetFields(bindingFlags))
+			{
+				if (filter != null && !filter(fieldInfo))
 					continue;
-				if (IsPrimitive(fieldInfo.FieldType)) {
-					DoHash(fieldInfo.GetValue(originalObject), hash, savedHashes);
+
+				if (fieldInfo.FieldType.IsPointer || typeof(System.Delegate).IsAssignableFrom(fieldInfo.FieldType))
 					continue;
+
+				try
+				{
+					var value = fieldInfo.GetValue(originalObject);
+
+					if (IsPrimitive(fieldInfo.FieldType))
+					{
+						DoHash(value, hash, savedHashes);
+					}
+					else
+					{
+						InternalCopy(value, hash, savedHashes, visited);
+					}
 				}
-				InternalCopy(fieldInfo.GetValue(originalObject), hash, savedHashes, visited);
+				catch (Exception ex)
+				{
+					RTUDebug.LogWarning($"Failed to get value of field {fieldInfo.Name} in type {typeToReflect.Name} : {ex.Message}");
+				}
 			}
 		}
 
-		private static void ForEach(this Array array, Action<Array, int[]> action) {
+		private static void ForEach(this Array array, Action<Array, int[]> action)
+		{
 			if (array.LongLength == 0) return;
 			ArrayTraverse walker = new ArrayTraverse(array);
 			do action(array, walker.Position);
 			while (walker.Step());
 		}
 
-		private class ArrayTraverse {
+		private class ArrayTraverse
+		{
 			public int[] Position;
 			private int[] maxLengths;
 
-			public ArrayTraverse(Array array) {
+			public ArrayTraverse(Array array)
+			{
 				maxLengths = new int[array.Rank];
-				for (int i = 0; i < array.Rank; ++i) {
+				for (int i = 0; i < array.Rank; ++i)
+				{
 					maxLengths[i] = array.GetLength(i) - 1;
 				}
+
 				Position = new int[array.Rank];
 			}
 
-			public bool Step() {
-				for (int i = 0; i < Position.Length; ++i) {
-					if (Position[i] < maxLengths[i]) {
+			public bool Step()
+			{
+				for (int i = 0; i < Position.Length; ++i)
+				{
+					if (Position[i] < maxLengths[i])
+					{
 						Position[i]++;
-						for (int j = 0; j < i; j++) {
+						for (int j = 0; j < i; j++)
+						{
 							Position[j] = 0;
 						}
+
 						return true;
 					}
 				}
+
 				return false;
 			}
 		}
