@@ -5,11 +5,21 @@ using UnityEngine;
 
 public class ComponentTestScript2 : MonoBehaviour
 {
-    public float Number = 10f;
-
-    public string Word = "Testing123";
-
-    private void Update()
+    [Serializable]
+    public class NestedComplexClass
     {
+        public int nestedInt;
+        public GameObject nestedGameobject;
+        public Transform nestedTransform;
+        public List<Transform> nestedTransforms;
     }
+
+    public NestedComplexClass nestedClassComplexField;
+
+    [SerializeField]
+    private NestedComplexClass privateNestedClassComplexField;
+
+    [field: SerializeField]
+    public NestedComplexClass serializedNestedComplexClass { get; private set; }
+ 
 }
