@@ -112,15 +112,35 @@ namespace RTUEditor.AssetStore
 			try
 			{
 				// Handle lists
-				var clonedList = (IList) Activator.CreateInstance(val.GetType());
-				foreach (var item in list)
+				Type itemType = list.GetType().GetGenericArguments()[0];
+				var clonedList = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(itemType));
+				if (itemType.IsSubclassOf(typeof(Object)))
 				{
-					clonedList.Add(item);
+					clonedList = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(typeof(int)));
+					foreach (var item in list)
+					{
+						clonedList.Add(item == null ? null : ((Object) item).GetInstanceID());
+					}
+				}
+				else if (itemType.IsClass && !itemType.Name.Equals("string", StringComparison.InvariantCultureIgnoreCase))
+				{
+					clonedList = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(typeof(ulong)));
+					foreach (var item in list)
+					{
+						clonedList.Add(item?.GetStaticHashCode());
+					}
+				}
+				else
+				{
+					foreach (var item in list)
+					{
+						clonedList.Add(item);
+					}
 				}
 
 				val = clonedList;
 			}
-			catch { }
+			catch (Exception e) { }
 
 			return val;
 		}

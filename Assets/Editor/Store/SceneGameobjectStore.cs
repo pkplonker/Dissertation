@@ -191,26 +191,28 @@ namespace RTUEditor
 						}
 						catch { }
 					}
-					
 
 					handled = true;
 				}
+
 				if (!handled && newValue is IEnumerable<Object> newEnumerable &&
-				         oldValue is IEnumerable<Object> originalEnumerable &&
-				         newValue.GetType() != typeof(string))
+				    oldValue is IEnumerable<Object> originalEnumerable &&
+				    newValue.GetType() != typeof(string))
 				{
 					handled = HandleUnityObjectCollection(originalEnumerable, newEnumerable);
 				}
+
 				if (!handled && type.IsArray)
 				{
 					handled = HandleArray(changes, oldValue, newValue, originalName);
 				}
+
 				if (!handled && newValue is IEnumerable newObjectEnumerable &&
-				         oldValue is IEnumerable originalObjectEnumerable &&
-				         newValue.GetType() != typeof(string))
+				    oldValue is IEnumerable originalObjectEnumerable &&
+				    newValue.GetType() != typeof(string))
 				{
 					handled = HandleCollection(changes, originalObjectEnumerable, newObjectEnumerable, originalName,
-						newValue);
+						newValue, adaptor.GetValue(component));
 				}
 
 				if (!handled && (type.IsValueType || type != typeof(string)) && !Equals(oldValue, newValue))
@@ -233,7 +235,7 @@ namespace RTUEditor
 		}
 
 		private static bool HandleCollection(Dictionary<string, object> changes, IEnumerable originalObjectEnumerable,
-			IEnumerable newObjectEnumerable, string originalName, object newValue)
+			IEnumerable newObjectEnumerable, string originalName, object newValue, object newValueUnmodified)
 		{
 			bool handled = false;
 			try
@@ -244,16 +246,31 @@ namespace RTUEditor
 				{
 					for (int i = 0; i < originalList.Count; i++)
 					{
-						if (!originalList.ElementAt(i).Equals(newList.ElementAt(i)))
+						var originalObject = originalList.ElementAt(i);
+						var newObject = newList.ElementAt(i);
+						bool valuesAreDifferent;
+						// avoid boxed value ref comparison
+						if (originalObject is ValueType || newObject is ValueType)
 						{
-							handled = AddToChanges(changes, originalName, newValue);
+							valuesAreDifferent = !EqualityComparer<object>.Default.Equals(originalObject, newObject);
+						}
+						else
+						{
+							valuesAreDifferent = !Equals(originalObject, newObject);
+						}
+
+						var staticHashEqual = originalObject?.GetStaticHashCode() == newObject?.GetStaticHashCode();
+
+						if (valuesAreDifferent || !staticHashEqual)
+						{
+							handled = AddToChanges(changes, originalName, newValueUnmodified);
 							break;
 						}
 					}
 				}
 				else
 				{
-					handled = AddToChanges(changes, originalName, newValue);
+					handled = AddToChanges(changes, originalName, newValueUnmodified);
 				}
 
 				handled = true;
