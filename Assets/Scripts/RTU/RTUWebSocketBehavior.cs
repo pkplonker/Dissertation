@@ -27,6 +27,9 @@ namespace RealTimeUpdateRuntime
 			{"property", new PropertyChangeHandler()},
 			{"componentProperty", new ComponentPropertyChangeHandler()},
 			{"gameObjectProperty", new GameObjectPropertyChangeHandler()},
+			{"componentCollectionProperty", new ComponentCollectionPropertyChangeHandler()},
+			{"gameObjectCollectionProperty", new GameObjectCollectionPropertyChangeHandler()},
+
 			{"assetUpdate", new AssetUpdateChangeHandler()}
 		};
 		

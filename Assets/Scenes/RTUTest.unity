@@ -1194,8 +1194,11 @@ MonoBehaviour:
   transformField: {fileID: 0}
   <rigidbdyProperty>k__BackingField: {fileID: 0}
   gameObjectArray: []
-  transformList: []
-  classList: []
+  transformList:
+  - {fileID: 0}
+  classList:
+  - nestedInt: 0
+    nestedString: 9
   <rigidbodyList>k__BackingField: []
 --- !u!65 &419011276
 BoxCollider:
@@ -1204,7 +1207,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 419011274}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 1964602097}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -2452,6 +2455,18 @@ Transform:
   - {fileID: 924186298}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!134 &1964602097
+PhysicMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  dynamicFriction: 0.6
+  staticFriction: 0.6
+  bounciness: 0
+  frictionCombine: 0
+  bounceCombine: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
