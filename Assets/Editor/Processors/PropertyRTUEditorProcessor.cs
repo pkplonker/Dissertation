@@ -30,15 +30,29 @@ namespace RTUEditor
 			// TODO Need to do something about undoing a change as it's not reflected in the modifications callback 
 		}
 
+		Dictionary<GameObject, Clone> clones = new();
+
 		private UndoPropertyModification[] PostprocessModificationsCallback(UndoPropertyModification[] modifications)
 		{
 			if (controller.IsConnected)
 			{
+				clones.Clear();
 				foreach (var modification in modifications)
 				{
 					if (modification.currentValue is PropertyModification pm)
 					{
-						ProcessPropertyModification(pm);
+						Clone clone = null;
+						if (pm.target is Component component)
+						{
+							var go = component.gameObject;
+							if (!clones.TryGetValue(go, out clone))
+							{
+								clone = sceneGameObjectStore.CloneGameObject(go);
+								clones[go] = clone;
+							}
+						}
+
+						ProcessPropertyModification(pm, clone);
 					}
 				}
 			}
@@ -46,9 +60,9 @@ namespace RTUEditor
 			return modifications;
 		}
 
-		private void ProcessPropertyModification(PropertyModification pm)
+		private void ProcessPropertyModification(PropertyModification pm, Clone clone)
 		{
-			if (TryGetChange(pm, JSONSettings, out HashSet<string> changes))
+			if (TryGetChange(pm, JSONSettings, clone, out HashSet<string> changes))
 			{
 				foreach (var change in changes)
 				{
@@ -64,13 +78,13 @@ namespace RTUEditor
 			}
 		}
 
-		public bool TryGetChange(PropertyModification pm, JsonSerializerSettings settings, out HashSet<string> args)
+		public bool TryGetChange(PropertyModification pm, JsonSerializerSettings settings, Clone currentClone,
+			out HashSet<string> args)
 		{
 			args = new HashSet<string>();
 			if (pm.target is Component component)
 			{
 				var go = component.gameObject;
-				var currentClone = sceneGameObjectStore.CloneGameObject(go);
 				var fullPath = go.GetFullName();
 				if (sceneGameObjectStore.TryGetExistingClone(fullPath, out var originalClone))
 				{
@@ -120,14 +134,15 @@ namespace RTUEditor
 				return false;
 			}
 
-			var adaptors = MemberAdaptorUtils.GetMemberAdapters(component.GetType());
+			var adaptors = MemberAdaptorUtils.GetMemberAdaptersAsDict(component.GetType());
+				
 			foreach (var (originalName, oldValue) in originalCloneComponent)
 			{
 				if (originalName.Equals("gameobject", StringComparison.InvariantCultureIgnoreCase) ||
 				    originalName.Equals("transform", StringComparison.InvariantCultureIgnoreCase)) continue;
 
-				var adaptor = adaptors.FirstOrDefault(x =>
-					x.Name.Equals(originalName, StringComparison.InvariantCultureIgnoreCase));
+				if (!adaptors.TryGetValue(originalName, out var adaptor)) continue;
+
 				var type = adaptor.MemberType;
 
 				if (oldValue is Matrix4x4) continue;
@@ -147,7 +162,7 @@ namespace RTUEditor
 			object oldValue, object newValue, string originalName)
 		{
 			if (adaptor != null && ((oldValue != null && oldValue?.GetType() != adaptor.MemberType) ||
-			                                    (newValue != null && newValue?.GetType() != adaptor.MemberType)))
+			                        (newValue != null && newValue?.GetType() != adaptor.MemberType)))
 			{
 				// The parsed type is not the same as the property type and as such (Because it's a class)
 				if (oldValue is ulong || newValue is ulong)

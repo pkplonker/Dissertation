@@ -2,12 +2,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using RealTimeUpdateRuntime;
+using UnityEngine;
 
 namespace System
 {
 	public static class HashCodeExtensions
 	{
-		//private static readonly MethodInfo CloneMethod = typeof(Object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
+		private static Dictionary<Type, FieldInfo[]> cachedFields = new();
 
 		private class ReferenceEqualityComparer : EqualityComparer<object>
 		{
@@ -54,17 +55,18 @@ namespace System
 			return number;
 		}
 
-		private static ulong? DoHash(object o, ULong hash, Dictionary<string, ulong> savedHashes, bool hashingType = false)
+		private static ulong? DoHash(object o, ULong hash, Dictionary<string, ulong> savedHashes,
+			bool hashingType = false)
 		{
 			if (o != null)
 			{
 				unchecked
 				{
 					ulong obj = 0;
-					
+
 					if (o is UnityEngine.Object unityObj)
 					{
-						obj = (ulong)unityObj.GetInstanceID();
+						obj = (ulong) unityObj.GetInstanceID();
 					}
 					else if (o is string str)
 					{
@@ -92,7 +94,7 @@ namespace System
 					}
 					else
 					{
-						obj = (ulong)o.GetHashCode();
+						obj = (ulong) o.GetHashCode();
 					}
 
 					hash.Value = (hash.Value * 397) ^ obj;
@@ -103,6 +105,7 @@ namespace System
 					return hash.Value;
 				}
 			}
+
 			return 0;
 		}
 
@@ -124,15 +127,17 @@ namespace System
 
 				return;
 			}
+
 			var typeToReflect = originalObject.GetType();
 
 			if (typeToReflect.IsArray)
 			{
-				Array array = (Array)originalObject;
+				Array array = (Array) originalObject;
 				foreach (var item in array)
 				{
 					InternalCopy(item, hash, savedHashes, visited);
 				}
+
 				return;
 			}
 
@@ -169,16 +174,17 @@ namespace System
 			Dictionary<string, ulong> savedHashes,
 			HashSet<object> visited,
 			Type typeToReflect,
-			BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy,
+			BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
 			Func<FieldInfo, bool> filter = null)
 		{
-			foreach (FieldInfo fieldInfo in typeToReflect.GetFields(bindingFlags))
+			foreach (FieldInfo fieldInfo in GetFields(typeToReflect, bindingFlags))
 			{
-				if (filter != null && !filter(fieldInfo))
-					continue;
+				if (!fieldInfo.IsPublic && !fieldInfo.IsDefined(typeof(SerializeField), true)) continue;
+				if (fieldInfo.IsDefined(typeof(NonSerializedAttribute), true)) continue;
 
-				if (fieldInfo.FieldType.IsPointer || typeof(System.Delegate).IsAssignableFrom(fieldInfo.FieldType))
-					continue;
+				if (fieldInfo.FieldType.IsPointer || typeof(Delegate).IsAssignableFrom(fieldInfo.FieldType)) continue;
+
+				if (filter != null && !filter(fieldInfo)) continue;
 
 				try
 				{
@@ -195,9 +201,23 @@ namespace System
 				}
 				catch (Exception ex)
 				{
-					RTUDebug.LogWarning($"Failed to get value of field {fieldInfo.Name} in type {typeToReflect.Name} : {ex.Message}");
+					RTUDebug.LogWarning(
+						$"Failed to get value of field {fieldInfo.Name} in type {typeToReflect.Name} : {ex.Message}");
 				}
 			}
+		}
+
+		private static FieldInfo[] GetFields(Type typeToReflect, BindingFlags bindingFlags)
+		{
+			if (cachedFields.ContainsKey(typeToReflect))
+			{
+				return cachedFields[typeToReflect];
+			}
+
+			var newFields = typeToReflect.GetFields(bindingFlags);
+			cachedFields.Add(typeToReflect, newFields);
+
+			return newFields;
 		}
 
 		private static void ForEach(this Array array, Action<Array, int[]> action)

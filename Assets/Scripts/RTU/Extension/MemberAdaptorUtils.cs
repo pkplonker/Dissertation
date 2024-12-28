@@ -6,11 +6,14 @@ using UnityEngine;
 
 namespace RealTimeUpdateRuntime
 {
-	public class MemberAdaptorUtils
+	public static class MemberAdaptorUtils
 	{
+		private static Dictionary<Type, List<IMemberAdapter>> memberAdaptors = new();
+		private static Dictionary<Type, Dictionary<string, IMemberAdapter>> memberAdaptorsDict = new();
+
 		public static IMemberAdapter GetMemberAdapter(Type type, string fieldName)
 		{
-			var members = GetMemberInfo(type);
+			var members = GetMemberAdapters(type);
 			var memberInfo = members.FirstOrDefault(x =>
 				string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase));
 			IMemberAdapter member = null;
@@ -24,19 +27,34 @@ namespace RealTimeUpdateRuntime
 			{
 				throw new Exception("Member not found");
 			}
-			member = CreateMemberAdapter(memberInfo);
 
-			return member;
+			return memberInfo;
 		}
 
 		private static MemberInfo[] GetMemberInfo(Type type) =>
-			type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-				.Concat(type
-					.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-					.OfType<MemberInfo>()).ToArray();
-		
-		public static List<IMemberAdapter> GetMemberAdapters(Type type) =>
-			GetMemberInfo(type).Select(x => CreateMemberAdapter(x)).ToList();
+			type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+				.Where(field =>
+					(field.IsPublic && !field.IsDefined(typeof(HideInInspector), true)) ||
+					(!field.IsPublic && field.IsDefined(typeof(SerializeField), true)))
+				.Concat(
+					type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+						.Where(property =>
+							property.IsDefined(typeof(SerializeField), true))
+						.OfType<MemberInfo>()
+				)
+				.ToArray();
+
+		public static List<IMemberAdapter> GetMemberAdapters(Type type)
+		{
+			if (memberAdaptors.ContainsKey(type))
+			{
+				return memberAdaptors[type];
+			}
+
+			var newMemberAdaptors = GetMemberInfo(type).Select(CreateMemberAdapter).ToList();
+			memberAdaptors.Add(type, newMemberAdaptors);
+			return newMemberAdaptors;
+		}
 
 		private static IMemberAdapter CreateMemberAdapter(MemberInfo memberInfo)
 		{
@@ -46,6 +64,19 @@ namespace RealTimeUpdateRuntime
 				FieldInfo field => new FieldAdapter(field),
 				_ => throw new InvalidOperationException("Unsupported member type.")
 			};
+		}
+
+		public static Dictionary<string, IMemberAdapter> GetMemberAdaptersAsDict(Type type)
+		{
+			if (memberAdaptorsDict.ContainsKey(type))
+			{
+				return memberAdaptorsDict[type];
+			}
+
+			var newMemberAdaptors = GetMemberAdapters(type)
+				.ToDictionary(a => a.Name, StringComparer.InvariantCultureIgnoreCase);
+			memberAdaptorsDict.Add(type, newMemberAdaptors);
+			return newMemberAdaptors;
 		}
 	}
 }
