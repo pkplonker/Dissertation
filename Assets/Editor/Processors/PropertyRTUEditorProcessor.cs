@@ -12,14 +12,16 @@ namespace RTUEditor
 {
 	public class PropertyRTUEditorProcessor : IRTUEditorProcessor
 	{
-		private readonly SceneGameobjectStore sceneGameObjectStore;
 		private readonly JsonSerializerSettings JSONSettings;
-		private readonly IMessageSender controller;
+		private readonly EditorRtuController controller;
+		private Dictionary<GameObject, Clone> clones = new();
+		private readonly SceneGameObjectStore sceneGameObjectStore;
 
 		public PropertyRTUEditorProcessor(EditorRtuController controller)
 		{
-			sceneGameObjectStore = new SceneGameobjectStore(controller);
 			this.controller = controller;
+			sceneGameObjectStore = controller.SceneGameObjectStore;
+
 			Undo.postprocessModifications += PostprocessModificationsCallback;
 			Undo.undoRedoPerformed += OnUndoRedoPerformed;
 			JSONSettings = new JSONSettingsCreator().Create();
@@ -29,8 +31,6 @@ namespace RTUEditor
 		{
 			// TODO Need to do something about undoing a change as it's not reflected in the modifications callback 
 		}
-
-		Dictionary<GameObject, Clone> clones = new();
 
 		private UndoPropertyModification[] PostprocessModificationsCallback(UndoPropertyModification[] modifications)
 		{
@@ -135,7 +135,7 @@ namespace RTUEditor
 			}
 
 			var adaptors = MemberAdaptorUtils.GetMemberAdaptersAsDict(component.GetType());
-				
+
 			foreach (var (originalName, oldValue) in originalCloneComponent)
 			{
 				if (originalName.Equals("gameobject", StringComparison.InvariantCultureIgnoreCase) ||

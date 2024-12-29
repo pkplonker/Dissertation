@@ -37,7 +37,7 @@ namespace RTUEditor
 		}
 
 		public bool IsVisible() => StageUtility.GetCurrentStage() == customStage;
-		public Scene GetScene() => customStage.scene;
+		public Scene? GetScene() => customStage?.scene;
 
 		public void Close()
 		{

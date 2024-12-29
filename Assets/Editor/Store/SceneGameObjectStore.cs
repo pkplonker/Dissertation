@@ -7,18 +7,24 @@ using UnityEngine.SceneManagement;
 
 namespace RTUEditor
 {
-	public class SceneGameobjectStore
+	public class SceneGameObjectStore
 	{
-		private readonly Scene scene;
-		private readonly RTUScene rtuScene;
+		private Scene? scene;
 		private Dictionary<string, Clone> clones = new(StringComparer.CurrentCultureIgnoreCase);
 		private GameObjectCloneStrategy gameObjectCloneStrategy = new();
 
-		public SceneGameobjectStore(EditorRtuController controller)
+		public SceneGameObjectStore(EditorRtuController controller)
 		{
-			rtuScene = controller.Scene;
+			controller.SceneChanged += SceneChanged;
+		}
+
+		private void SceneChanged(RTUScene rtuScene)
+		{
 			scene = rtuScene.GetScene();
-			CreateClones(scene.GetRootGameObjects().Select(x => x.transform), parentPath: string.Empty);
+			if (scene.HasValue)
+			{
+				CreateClones(scene.Value.GetRootGameObjects().Select(x => x.transform), parentPath: string.Empty);
+			}
 		}
 
 		// recursive

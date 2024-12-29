@@ -11,9 +11,22 @@ namespace RTUEditor
 	{
 		private readonly RTUEditorConnection connection;
 		private readonly List<IRTUEditorProcessor> handlers;
-		public RTUScene Scene { get; private set; }
+		public event Action<RTUScene> SceneChanged;
+		private RTUScene scene;
+
+		public RTUScene Scene
+		{
+			get => scene;
+			private set
+			{
+				scene = value;
+				SceneChanged?.Invoke(scene);
+			}
+		}
+
 		private readonly TaskScheduler scheduler;
 		public bool IsConnected => connection?.IsConnected ?? false;
+		public SceneGameObjectStore SceneGameObjectStore { get; private set; }
 
 		private void CloseScene() => Scene.Close();
 
@@ -25,6 +38,7 @@ namespace RTUEditor
 
 		public EditorRtuController()
 		{
+			SceneGameObjectStore = new SceneGameObjectStore(this);
 			handlers = new List<IRTUEditorProcessor>();
 			scheduler = TaskScheduler.FromCurrentSynchronizationContext();
 			connection = new RTUEditorConnection(scheduler);

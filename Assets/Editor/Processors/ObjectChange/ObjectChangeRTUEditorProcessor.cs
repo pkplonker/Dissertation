@@ -9,7 +9,7 @@ namespace RTUEditor.ObjectChange
 	public class ObjectChangeRTUEditorProcessor : IRTUEditorProcessor, IMessageSender
 	{
 		public EditorRtuController controller { get; set; }
-		private Dictionary<ObjectChangeKind, IObjectChangeProcessor> processors;
+		private Dictionary<ObjectChangeKind, IObjectChangeProcessor> objectChangeProcessors;
 		public void SendMessageToGame(string message) => controller.SendMessageToGame(message);
 		public bool IsConnected { get; }
 
@@ -17,17 +17,17 @@ namespace RTUEditor.ObjectChange
 		{
 			this.controller = controller;
 			ObjectChangeEvents.changesPublished += ChangesPublished;
-			CreateProcessors();
+			CreateObjectChangeProcessors();
 		}
 
-		private void CreateProcessors()
+		private void CreateObjectChangeProcessors()
 		{
-			processors = (AppDomain.CurrentDomain.GetAssemblies()
+			objectChangeProcessors = (AppDomain.CurrentDomain.GetAssemblies()
 				.SelectMany(x => x.GetTypes())
 				.Where(x => x.GetInterfaces().Contains(typeof(IObjectChangeProcessor)))
-				.ForEach(x => Debug.Log($"Registering Object Change Processor: {x}"))
+				.ForEach(x => Debug.Log($"Registering Object Change Sub-Processor: {x}"))
 				.Select(x =>
-					(IObjectChangeProcessor) Activator.CreateInstance(x, new object[] {this}))
+					(IObjectChangeProcessor) Activator.CreateInstance(x, new object[] {this.controller}))
 				.ToDictionary(x => x.ChangeType, x => x));
 		}
 
@@ -37,25 +37,25 @@ namespace RTUEditor.ObjectChange
 			for (int i = 0; i < stream.length; ++i)
 			{
 				var type = stream.GetEventType(i);
-				if (processors.TryGetValue(type, out var processor))
+				if (objectChangeProcessors.TryGetValue(type, out var processor))
 				{
 					processor.Process(stream, i);
 				}
 				// switch (type)
 				// {
-				// 	case ObjectChangeKind.ChangeScene:
+				// 	case ObjectChangeKind.ChangeScene: // SceneChangeRTUEditorProcessor
 				// 		stream.GetChangeSceneEvent(i, out var changeSceneEvent);
 				// 		Debug.Log($"{type}: {changeSceneEvent.scene}");
 				// 		break;
 				//
-				// 	case ObjectChangeKind.CreateGameObjectHierarchy:
+				// 	case ObjectChangeKind.CreateGameObjectHierarchy: // CreateGameObjectChangeRTUEditorProcessor
 				// 		stream.GetCreateGameObjectHierarchyEvent(i, out var createGameObjectHierarchyEvent);
 				// 		var newGameObject =
 				// 			EditorUtility.InstanceIDToObject(createGameObjectHierarchyEvent.instanceId) as GameObject;
 				// 		Debug.Log($"{type}: {newGameObject} in scene {createGameObjectHierarchyEvent.scene}.");
 				// 		break;
 				//
-				// 	case ObjectChangeKind.ChangeGameObjectStructureHierarchy:
+				// 	case ObjectChangeKind.ChangeGameObjectStructureHierarchy: // GameObjectStrutureChangeHierachyRTUEditorProcessor
 				// 		stream.GetChangeGameObjectStructureHierarchyEvent(i,
 				// 			out var changeGameObjectStructureHierarchy);
 				// 		var gameObject =
@@ -64,14 +64,14 @@ namespace RTUEditor.ObjectChange
 				// 		Debug.Log($"{type}: {gameObject} in scene {changeGameObjectStructureHierarchy.scene}.");
 				// 		break;
 				//
-				// 	case ObjectChangeKind.ChangeGameObjectStructure:
+				// 	case ObjectChangeKind.ChangeGameObjectStructure: // GameObjectStrutureChangeRTUEditorProcessor
 				// 		stream.GetChangeGameObjectStructureEvent(i, out var changeGameObjectStructure);
 				// 		var gameObjectStructure =
 				// 			EditorUtility.InstanceIDToObject(changeGameObjectStructure.instanceId) as GameObject;
 				// 		Debug.Log($"{type}: {gameObjectStructure} in scene {changeGameObjectStructure.scene}.");
 				// 		break;
 				//
-				// 	case ObjectChangeKind.ChangeGameObjectParent:
+				// 	case ObjectChangeKind.ChangeGameObjectParent: //GameObjectParentChangeRTUEditorProcessor
 				// 		stream.GetChangeGameObjectParentEvent(i, out var changeGameObjectParent);
 				// 		var gameObjectChanged =
 				// 			EditorUtility.InstanceIDToObject(changeGameObjectParent.instanceId) as GameObject;
@@ -84,7 +84,7 @@ namespace RTUEditor.ObjectChange
 				// 			$"{type}: {gameObjectChanged} from {previousParentGo} to {newParentGo} from scene {changeGameObjectParent.previousScene} to scene {changeGameObjectParent.newScene}.");
 				// 		break;
 				//
-				// 	case ObjectChangeKind.ChangeGameObjectOrComponentProperties:
+				// 	case ObjectChangeKind.ChangeGameObjectOrComponentProperties: // ignore as handled via other method
 				// 		stream.GetChangeGameObjectOrComponentPropertiesEvent(i, out var changeGameObjectOrComponent);
 				// 		var goOrComponent = EditorUtility.InstanceIDToObject(changeGameObjectOrComponent.instanceId);
 				// 		if (goOrComponent is GameObject go)
@@ -100,7 +100,7 @@ namespace RTUEditor.ObjectChange
 				//
 				// 		break;
 				//
-				// 	case ObjectChangeKind.DestroyGameObjectHierarchy:
+				// 	case ObjectChangeKind.DestroyGameObjectHierarchy: // DestroyGameObjectHierachyChangeRTUEditorProcessor
 				// 		stream.GetDestroyGameObjectHierarchyEvent(i, out var destroyGameObjectHierarchyEvent);
 				// 		// The destroyed GameObject can not be converted with EditorUtility.InstanceIDToObject as it has already been destroyed.
 				// 		var destroyParentGo =

@@ -10,13 +10,13 @@ namespace RTUEditor.ObjectChange
 		private readonly AssetChangePayloadStrategyFactory assetChangePayloadStrategyFactory;
 		public ObjectChangeKind ChangeType => ObjectChangeKind.ChangeAssetObjectProperties;
 
-		public AssetPropertyChangeRTUEditorProcessor(IMessageSender messageSender)
+		public AssetPropertyChangeRTUEditorProcessor(EditorRtuController controller)
 		{
-			this.MessageSender = messageSender;
+			this.controller = controller;
 			assetChangePayloadStrategyFactory = new AssetChangePayloadStrategyFactory();
 		}
 
-		public IMessageSender MessageSender { get; }
+		public IMessageSender controller { get; }
 
 		public void Process(ObjectChangeEventStream stream, int streamIdx)
 		{
@@ -31,7 +31,7 @@ namespace RTUEditor.ObjectChange
 				{
 					if (assetChangePayloadStrategyFactory.GeneratePayload(databaseClone,currentClone, type, out var payload))
 					{
-						MessageSender.SendMessageToGame(payload);
+						controller.SendMessageToGame(payload);
 						Debug.Log(
 							$"AssetPropertyChanged: {changeAsset} at {changeAssetPath} in scene {changeAssetObjectPropertiesEvent.scene}.");
 					}
