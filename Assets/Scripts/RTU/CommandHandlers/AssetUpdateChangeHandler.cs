@@ -11,6 +11,8 @@ namespace RealTimeUpdateRuntime
 {
 	public class AssetUpdateChangeHandler : RTUCommandHandlerBase
 	{
+		public override string Tag { get; } = "assetUpdate";
+
 		public override void Process(CommandHandlerArgs commandHandlerArgs, JsonSerializerSettings jsonSettings)
 		{
 			RTUProcessor.Enqueue(() =>
@@ -77,6 +79,7 @@ namespace RealTimeUpdateRuntime
 				}
 			});
 		}
+
 
 		private bool ModifyStruct(object structValue, string subFieldName, string newValue, out object newStruct)
 		{

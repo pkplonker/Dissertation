@@ -9,12 +9,13 @@ namespace RealTimeUpdateRuntime
 #else
 		private const bool IsDebugEnabled = false;
 #endif
+		public const string PREMESSAGE = "RTU: ";
 
 		public static void Log(string message)
 		{
 			if (IsDebugEnabled)
 			{
-				UnityEngine.Debug.Log(message);
+				UnityEngine.Debug.Log(PREMESSAGE+message);
 			}
 		}
 
@@ -22,7 +23,7 @@ namespace RealTimeUpdateRuntime
 		{
 			if (IsDebugEnabled)
 			{
-				UnityEngine.Debug.LogWarning(message);
+				UnityEngine.Debug.LogWarning(PREMESSAGE+message);
 			}
 		}
 
@@ -30,7 +31,7 @@ namespace RealTimeUpdateRuntime
 		{
 			if (IsDebugEnabled)
 			{
-				UnityEngine.Debug.LogError(message);
+				UnityEngine.Debug.LogError(PREMESSAGE+message);
 			}
 		}
 

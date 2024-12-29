@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using Newtonsoft.Json;
+using UnityEditor;
 using UnityEngine;
 
 namespace RTUEditor.ObjectChange
@@ -6,14 +7,14 @@ namespace RTUEditor.ObjectChange
 	public class DestroyGameObjectHierachyChangeRTUEditorProcessor : IObjectChangeProcessor
 	{
 		public ObjectChangeKind ChangeType => ObjectChangeKind.DestroyGameObjectHierarchy;
-		public IMessageSender RTUController { get; }
+		public IEditorRtuController RTUController { get; }
 
-		public DestroyGameObjectHierachyChangeRTUEditorProcessor(EditorRtuController controller)
+		public DestroyGameObjectHierachyChangeRTUEditorProcessor(IEditorRtuController controller)
 		{
 			this.RTUController = controller;
 		}
 
-		public void Process(ObjectChangeEventStream stream, int streamIdx)
+		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings)
 		{
 			stream.GetDestroyGameObjectHierarchyEvent(streamIdx, out var destroyGameObjectHierarchyEvent);
 			// The destroyed GameObject can not be converted with EditorUtility.InstanceIDToObject as it has already been destroyed.

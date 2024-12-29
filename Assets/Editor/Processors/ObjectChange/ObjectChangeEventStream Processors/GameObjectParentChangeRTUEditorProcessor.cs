@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
 using UnityEditor;
@@ -9,14 +10,14 @@ namespace RTUEditor.ObjectChange
 	public class GameObjectParentChangeRTUEditorProcessor : IObjectChangeProcessor
 	{
 		public ObjectChangeKind ChangeType => ObjectChangeKind.ChangeGameObjectParent;
-		public IMessageSender RTUController { get; }
+		public IEditorRtuController RTUController { get; }
 
-		public GameObjectParentChangeRTUEditorProcessor(EditorRtuController controller)
+		public GameObjectParentChangeRTUEditorProcessor(IEditorRtuController controller)
 		{
 			this.RTUController = controller;
 		}
 
-		public void Process(ObjectChangeEventStream stream, int streamIdx)
+		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings)
 		{
 			stream.GetChangeGameObjectParentEvent(streamIdx, out var changeGameObjectParent);
 			var gameObjectChanged =

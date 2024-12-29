@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using RealTimeUpdateRuntime;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -11,7 +13,7 @@ namespace RTUEditor
 	{
 		private RTUSceneStage customStage;
 		private readonly TaskScheduler scheduler;
-
+		public event Action<Scene?> SceneCreated; 
 		public RTUScene(TaskScheduler scheduler)
 		{
 			this.scheduler = scheduler;
@@ -33,6 +35,8 @@ namespace RTUEditor
 					SceneManager.MoveGameObjectToScene(clonedObject, scene);
 					clonedObject.transform.position = rootObj.transform.position;
 				}
+
+				SceneCreated?.Invoke(scene);
 			}, scheduler);
 		}
 

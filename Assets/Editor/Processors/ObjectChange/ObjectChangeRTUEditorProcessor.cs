@@ -8,12 +8,12 @@ namespace RTUEditor.ObjectChange
 {
 	public class ObjectChangeRTUEditorProcessor : IRTUEditorProcessor, IMessageSender
 	{
-		public EditorRtuController controller { get; set; }
+		public IEditorRtuController controller { get; set; }
 		private Dictionary<ObjectChangeKind, IObjectChangeProcessor> objectChangeProcessors;
 		public void SendMessageToGame(string message) => controller.SendMessageToGame(message);
 		public bool IsConnected { get; }
 
-		public ObjectChangeRTUEditorProcessor(EditorRtuController controller)
+		public ObjectChangeRTUEditorProcessor(IEditorRtuController controller)
 		{
 			this.controller = controller;
 			ObjectChangeEvents.changesPublished += ChangesPublished;
@@ -39,7 +39,7 @@ namespace RTUEditor.ObjectChange
 				var type = stream.GetEventType(i);
 				if (objectChangeProcessors.TryGetValue(type, out var processor))
 				{
-					processor.Process(stream, i);
+					processor.Process(stream, i, controller.JsonSettings);
 				}
 				// switch (type)
 				// {

@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
 using UnityEngine;
 
 namespace RTUEditor
 {
-	public class EditorRtuController : IMessageSender
+	public class EditorRtuController : IEditorRtuController
 	{
 		private readonly RTUEditorConnection connection;
 		private readonly List<IRTUEditorProcessor> handlers;
@@ -27,8 +29,9 @@ namespace RTUEditor
 		private readonly TaskScheduler scheduler;
 		public bool IsConnected => connection?.IsConnected ?? false;
 		public SceneGameObjectStore SceneGameObjectStore { get; private set; }
+		public JsonSerializerSettings JsonSettings { get; private set; }
 
-		private void CloseScene() => Scene.Close();
+		private void CloseScene() => Scene?.Close();
 
 		public void ShowScene()
 		{
@@ -42,6 +45,7 @@ namespace RTUEditor
 			handlers = new List<IRTUEditorProcessor>();
 			scheduler = TaskScheduler.FromCurrentSynchronizationContext();
 			connection = new RTUEditorConnection(scheduler);
+			JsonSettings = new JSONSettingsCreator().Create();
 		}
 
 		public void SendMessageToGame(string message) => connection.SendMessageToGame(message);

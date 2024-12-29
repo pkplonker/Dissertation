@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using Newtonsoft.Json;
+using UnityEditor;
 using UnityEngine;
 
 namespace RTUEditor.ObjectChange
@@ -6,14 +7,14 @@ namespace RTUEditor.ObjectChange
 	public class GameObjectStrutureChangeHierachyRTUEditorProcessor : IObjectChangeProcessor
 	{
 		public ObjectChangeKind ChangeType => ObjectChangeKind.ChangeGameObjectStructureHierarchy;
-		public IMessageSender RTUController { get; }
+		public IEditorRtuController RTUController { get; }
 
-		public GameObjectStrutureChangeHierachyRTUEditorProcessor(EditorRtuController controller)
+		public GameObjectStrutureChangeHierachyRTUEditorProcessor(IEditorRtuController controller)
 		{
 			this.RTUController = controller;
 		}
 
-		public void Process(ObjectChangeEventStream stream, int streamIdx)
+		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings)
 		{
 			stream.GetChangeGameObjectStructureHierarchyEvent(streamIdx,
 				out var changeGameObjectStructureHierarchy);

@@ -12,6 +12,7 @@ namespace RTUEditor
 		private Scene? scene;
 		private Dictionary<string, Clone> clones = new(StringComparer.CurrentCultureIgnoreCase);
 		private GameObjectCloneStrategy gameObjectCloneStrategy = new();
+		private RTUScene rtuScene;
 
 		public SceneGameObjectStore(EditorRtuController controller)
 		{
@@ -20,7 +21,19 @@ namespace RTUEditor
 
 		private void SceneChanged(RTUScene rtuScene)
 		{
-			scene = rtuScene.GetScene();
+			if (this.rtuScene != null)
+			{
+				rtuScene.SceneCreated -= OnSceneChanged;
+			}
+
+			this.rtuScene = rtuScene;
+			rtuScene.SceneCreated += OnSceneChanged;
+			
+		}
+
+		private void OnSceneChanged(Scene? scene)
+		{
+			this.scene = scene;
 			if (scene.HasValue)
 			{
 				CreateClones(scene.Value.GetRootGameObjects().Select(x => x.transform), parentPath: string.Empty);
