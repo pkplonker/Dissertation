@@ -1,20 +1,13 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
-using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace RTUEditor.AssetStore
 {
 	public class DefaultCloneStrategy : ICloneStrategy
 	{
-		private static Dictionary<Type, List<IMemberAdapter>> memberAdaptorCollection = new();
-
 		public virtual Clone Clone(Object asset, string path) => CloneInternal(asset, asset.GetType(),
 			new Clone(path, StringComparer.InvariantCultureIgnoreCase));
 

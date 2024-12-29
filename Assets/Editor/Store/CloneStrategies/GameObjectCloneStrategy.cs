@@ -15,7 +15,7 @@ namespace RTUEditor.AssetStore
 			clone.components = go.GetComponents(typeof(Component))
 				.Select(x => componentCloneStrategyFactory.GetCloneStrategy(x)?.Clone(x, x.GetType().ToString()))
 				.OfType<ComponentClone>()
-				.ToHashSet();
+				.ToList();
 			return clone;
 		}
 	}
