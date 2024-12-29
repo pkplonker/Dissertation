@@ -32,18 +32,11 @@ namespace RealTimeUpdateRuntime
 		}
 
 		private static MemberInfo[] GetMemberInfo(Type type) =>
-			type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-				.Where(field =>
-					(field.IsPublic && !field.IsDefined(typeof(HideInInspector), true)) ||
-					(!field.IsPublic && field.IsDefined(typeof(SerializeField), true)))
-				.Concat(
-					type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-						.Where(property =>
-							property.IsDefined(typeof(SerializeField), true))
-						.OfType<MemberInfo>()
-				)
-				.ToArray();
-
+			type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+				.Concat(type
+					.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+					.OfType<MemberInfo>()).ToArray();
+		
 		public static List<IMemberAdapter> GetMemberAdapters(Type type)
 		{
 			if (memberAdaptors.ContainsKey(type))
@@ -51,6 +44,7 @@ namespace RealTimeUpdateRuntime
 				return memberAdaptors[type];
 			}
 
+			
 			var newMemberAdaptors = GetMemberInfo(type).Select(CreateMemberAdapter).ToList();
 			memberAdaptors.Add(type, newMemberAdaptors);
 			return newMemberAdaptors;
@@ -74,7 +68,7 @@ namespace RealTimeUpdateRuntime
 			}
 
 			var newMemberAdaptors = GetMemberAdapters(type)
-				.ToDictionary(a => a.Name, StringComparer.InvariantCultureIgnoreCase);
+				.ToDictionary(a => a.Name, x => x, StringComparer.InvariantCultureIgnoreCase);
 			memberAdaptorsDict.Add(type, newMemberAdaptors);
 			return newMemberAdaptors;
 		}
