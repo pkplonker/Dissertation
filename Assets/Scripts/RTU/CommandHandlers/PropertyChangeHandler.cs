@@ -8,7 +8,7 @@ namespace RealTimeUpdateRuntime
 {
 	public class PropertyChangeHandler : RTUCommandHandlerBase
 	{
-		public override string Tag { get; } = "property";
+		public override string Tag { get; } = PropertyChangeArgs.MESSAGE_IDENTIFER;
 
 		public override void Process(CommandHandlerArgs commandHandlerArgs, JsonSerializerSettings jsonSettings)
 		{

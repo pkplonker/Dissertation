@@ -9,7 +9,7 @@ namespace RealTimeUpdateRuntime
 {
 	public class DestroyGameObjectChangeHandler : RTUCommandHandlerBase
 	{
-		public override string Tag { get; } = "ComponentChange";
+		public override string Tag { get; } = DestroyGameObjectChangeArgs.MESSAGE_IDENTIFER;
 
 		public override void Process(CommandHandlerArgs commandHandlerArgs, JsonSerializerSettings jsonSettings)
 		{
@@ -20,6 +20,13 @@ namespace RealTimeUpdateRuntime
 					var args = JsonConvert.DeserializeObject<DestroyGameObjectChangeArgs>(commandHandlerArgs.Payload,
 						jsonSettings);
 					var go = GameObject.Find(args.ParentGameObjectPath);
+					if (go == null)
+					{
+						throw new Exception("unable to locate gameobject");
+					}
+					//Object.Destroy(go);
+					string gameObjectName = string.Empty;
+					RTUDebug.Log("Destroyed gameobject {gameObjectName}");
 				}
 				catch (Exception e)
 				{

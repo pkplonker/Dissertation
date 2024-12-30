@@ -8,7 +8,7 @@ namespace RealTimeUpdateRuntime
 {
 	public class RefreshComponentHandler : RTUCommandHandlerBase
 	{
-		public override string Tag { get; } = "RefreshComponent";
+		public override string Tag { get; } = RefreshComponentChangeArgs.MESSAGE_IDENTIFER;
 
 		public override void Process(CommandHandlerArgs commandHandlerArgs, JsonSerializerSettings jsonSettings)
 		{

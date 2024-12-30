@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Newtonsoft.Json;
 using UnityEngine;
 
@@ -6,7 +7,7 @@ namespace RealTimeUpdateRuntime
 {
 	public class CreateGameObjectChangeHandler : RTUCommandHandlerBase
 	{
-		public override string Tag { get; } = "ComponentChange";
+		public override string Tag { get; } = CreateGameObjectChangeArgs.MESSAGE_IDENTIFER;
 
 		public override void Process(CommandHandlerArgs commandHandlerArgs, JsonSerializerSettings jsonSettings)
 		{
@@ -16,12 +17,25 @@ namespace RealTimeUpdateRuntime
 				{
 					var args = JsonConvert.DeserializeObject<CreateGameObjectChangeArgs>(commandHandlerArgs.Payload,
 						jsonSettings);
-					var go = GameObject.Find(args.GameObjectPath);
-					
+					var go = new GameObject();
+					var pathElements =args.GameObjectPath.Split('/');
+					go.name = pathElements.Last();
+					if (pathElements.Count() > 1)
+					{
+						var parentPath = String.Join('/', pathElements);
+						var parent = GameObject.Find(parentPath);
+						if (parent == null)
+						{
+							throw new Exception("Unable to locate parent for object creation");
+						}
+
+						go.transform.parent = parent.transform;
+					}
+					RTUDebug.Log($"Added GameObject : {go.GetFullName()}");
 				}
 				catch (Exception e)
 				{
-					RTUDebug.Log($"Failed to add GameObject : {e.Message}");
+					RTUDebug.LogWarning($"Failed to add GameObject : {e.Message}");
 				}
 			});
 		}

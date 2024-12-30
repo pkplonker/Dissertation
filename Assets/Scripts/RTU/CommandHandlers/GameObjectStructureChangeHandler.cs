@@ -8,7 +8,7 @@ namespace RealTimeUpdateRuntime
 {
 	public class GameObjectStructureChangeHandler : RTUCommandHandlerBase
 	{
-		public override string Tag { get; } = "ComponentChange";
+		public override string Tag { get; } = GameObjectStructureChangeArgs.MESSAGE_IDENTIFER;
 
 		public override void Process(CommandHandlerArgs commandHandlerArgs, JsonSerializerSettings jsonSettings)
 		{

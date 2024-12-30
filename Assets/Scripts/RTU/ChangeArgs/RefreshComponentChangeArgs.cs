@@ -7,12 +7,13 @@ namespace RealTimeUpdateRuntime
 	[Serializable]
 	public class RefreshComponentChangeArgs : IChangeArgs
 	{
+		public static string MESSAGE_IDENTIFER = "RefreshComponent";
 		public string GameObjectPath { get; set; } = string.Empty;
 		public string ComponentTypeName { get; set; } = string.Empty;
 		public Dictionary<string, object> Members { get; set; }
 
 		public string GeneratePayload(JsonSerializerSettings JSONSettings) =>
-			$"RefreshComponent\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}";
+			$"{MESSAGE_IDENTIFER}\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}";
 
 		public Dictionary<string, object> GetDeserializedMembers(JsonSerializerSettings settings)
 		{

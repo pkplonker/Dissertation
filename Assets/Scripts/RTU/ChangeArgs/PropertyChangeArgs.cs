@@ -6,12 +6,13 @@ namespace RealTimeUpdateRuntime
 	[Serializable]
 	public class PropertyChangeArgs : IPropertyChangeArgs
 	{
+		public static string MESSAGE_IDENTIFER = "Property";
 		public string GameObjectPath { get; set; } = string.Empty;
 		public string ComponentTypeName { get; set; } = string.Empty;
 		public string PropertyPath { get; set; } = string.Empty;
 
 		public string GeneratePayload(JsonSerializerSettings JSONSettings) =>
-			$"property\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}";
+			$"{MESSAGE_IDENTIFER}\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}";
 
 		public string ValueTypeName { get; set; }
 		public object Value { get; set; }
