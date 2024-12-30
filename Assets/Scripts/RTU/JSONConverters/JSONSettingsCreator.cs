@@ -16,8 +16,7 @@ namespace RealTimeUpdateRuntime
 
 		public JSONSettingsCreator()
 		{
-			customConverters = AppDomain.CurrentDomain.GetAssemblies()
-				.SelectMany(assembly => assembly.GetTypes())
+			customConverters =TypeRepository.GetTypes()
 				.Where(type => type.GetCustomAttribute<JSONCustomConverterAttribute>() != null)
 				.Select(type => type.GetCustomAttribute<JSONCustomConverterAttribute>())
 				.ToList();

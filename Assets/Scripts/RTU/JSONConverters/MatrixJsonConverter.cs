@@ -2,11 +2,12 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace RealTimeUpdateRuntime
 {
 	//modified from https://github.com/ianmacgillivray/Json-NET-for-Unity/blob/master/Source/Newtonsoft.Json/Converters/Matrix4x4Converter.cs
-
+	[Preserve]
 	[JSONCustomConverter(typeof(MatrixJsonConverter))]
 	public class MatrixJsonConverter : JsonConverter<Matrix4x4>
 	{

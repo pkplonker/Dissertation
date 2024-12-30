@@ -28,8 +28,7 @@ namespace RealTimeUpdateRuntime
 		public void CreateChangeHandlers()
 		{
 			commandHandlers.Clear();
-			var x = AppDomain.CurrentDomain.GetAssemblies()
-				.SelectMany(x => x.GetTypes())
+			var x = TypeRepository.GetTypes()
 				.Where(x => x.GetInterfaces().Contains(typeof(IRTUCommandHandler)) && !x.IsAbstract)
 				.ForEach(x => RTUDebug.Log($"Registering Runtime Handlers: {x}"))
 				.Select(x =>

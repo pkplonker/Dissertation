@@ -1,20 +1,28 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
-using UnityEngine;
+using UnityEngine.Scripting;
 using Object = UnityEngine.Object;
 
 namespace RealTimeUpdateRuntime
 {
+	[Preserve]
 	[JSONCustomConverter(typeof(AssetJsonConverter))]
 	public class AssetJsonConverter : JsonConverter<Object>
 	{
-		private readonly ComponentJsonConverter componentJsonConverter;
-		private readonly GameObjectJsonConverter gameObjectJsonConverter;
+		private readonly Dictionary<Type, JsonConverter> converters;
 
 		public AssetJsonConverter()
 		{
-			gameObjectJsonConverter = new GameObjectJsonConverter();
-			componentJsonConverter = new ComponentJsonConverter();
+			converters = TypeRepository.GetTypes()
+				.Where(x =>
+				{
+					if (!x.IsSubclassOf(typeof(JsonConverter)) || (!(x.BaseType?.IsGenericType ?? false))) return false;
+					var genericType = x.BaseType.GenericTypeArguments.FirstOrDefault();
+					return genericType != null && genericType.IsSubclassOf(typeof(UnityEngine.Object));
+				}).ToDictionary(x => x.BaseType.GenericTypeArguments.FirstOrDefault(),
+					x => Activator.CreateInstance(x) as JsonConverter);
 		}
 
 		public override void WriteJson(JsonWriter writer, Object value, JsonSerializer serializer)
@@ -26,13 +34,9 @@ namespace RealTimeUpdateRuntime
 			}
 
 			var valueType = value.GetType();
-			if (valueType == typeof(GameObject))
+			if (converters.TryGetValue(valueType, out var converter))
 			{
-				gameObjectJsonConverter.WriteJson(writer, value, serializer);
-			}
-			else if (valueType == typeof(Component) || valueType.IsSubclassOf(typeof(Component)))
-			{
-				componentJsonConverter.WriteJson(writer, value, serializer);
+				converter.WriteJson(writer, value, serializer);
 			}
 			else
 			{
@@ -46,18 +50,9 @@ namespace RealTimeUpdateRuntime
 			bool hasExistingValue,
 			JsonSerializer serializer)
 		{
-			if (objectType == typeof(GameObject))
+			if (converters.TryGetValue(objectType, out var converter))
 			{
-				return gameObjectJsonConverter.ReadJson(reader, objectType, existingValue as GameObject,
-					hasExistingValue,
-					serializer);
-			}
-
-			if (objectType == typeof(Component) || objectType.IsSubclassOf(typeof(Component)))
-			{
-				return componentJsonConverter.ReadJson(reader, objectType, existingValue as Component,
-					hasExistingValue,
-					serializer);
+				return converter.ReadJson(reader, objectType, existingValue, serializer) as Object;
 			}
 
 			throw new JsonSerializationException("Not implemented ");
