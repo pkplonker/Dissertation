@@ -19,7 +19,7 @@ namespace RealTimeUpdateRuntime
 					var args = JsonConvert.DeserializeObject<RefreshComponentChangeArgs>(commandHandlerArgs.Payload,
 						jsonSettings);
 					var go = GameObject.Find(args.GameObjectPath);
-					var componentType = Type.GetType(args.ComponentTypeName);
+					var componentType = args.ComponentTypeName.GetTypeIncludingUnity();
 					var adaptors = MemberAdaptorUtils.GetMemberAdaptersAsDict(componentType);
 					if (go.TryGetComponent(componentType, out var component))
 					{

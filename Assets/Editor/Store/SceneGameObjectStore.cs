@@ -59,6 +59,12 @@ namespace RTUEditor
 		public Clone CloneGameObject(GameObject go)
 			=> gameObjectCloneStrategy.Clone(go, go.GetFullName());
 
+		public Clone CloneGameObjectAndStore(GameObject go)
+		{
+			var clone = CloneGameObject(go);
+			AddClone(go.GetFullName(), clone as GameObjectClone);
+			return clone;
+		}
 		private static string GetSceneFullName(GameObject go, string parentPath) =>
 			parentPath == string.Empty ? go.name : parentPath + $"/{go.name}";
 

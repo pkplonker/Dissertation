@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
+using RTUEditor.AssetStore;
 using UnityEditor;
 using UnityEngine;
 
@@ -24,7 +25,8 @@ namespace RTUEditor.ObjectChange
 			{
 				GameObjectPath = newGameObject.GetFullName()
 			}.GeneratePayload(jsonSettings);
-			sceneGameObjectStore.CloneGameObject(newGameObject);
+			var clone = sceneGameObjectStore.CloneGameObjectAndStore(newGameObject);
+			(clone as GameObjectClone).components.Clear(); // We need to clear the components so that the subsiquent "ChangeGameObjectStructure" commands add the components for us
 			RTUController.SendMessageToGame(payload);
 			RTUDebug.Log($"{ChangeType}: {newGameObject}.");
 		}

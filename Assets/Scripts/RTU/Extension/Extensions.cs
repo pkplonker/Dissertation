@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -71,5 +72,19 @@ public static class Extensions
 		}
 
 		return elementType;
+	}
+
+	//https://discussions.unity.com/t/system-type-gettype-transform-not-work/406299/5
+	public static Type GetTypeIncludingUnity(this string TypeName)
+	{
+		var type = Type.GetType(TypeName);
+
+		if (type != null)
+			return type;
+
+		var assemblyName = TypeName.Substring(0, TypeName.IndexOf('.'));
+
+		var assembly = Assembly.LoadWithPartialName(assemblyName);
+		return assembly == null ? null : assembly.GetType(TypeName);
 	}
 }

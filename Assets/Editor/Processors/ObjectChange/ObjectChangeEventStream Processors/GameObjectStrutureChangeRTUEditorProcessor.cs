@@ -26,7 +26,7 @@ namespace RTUEditor.ObjectChange
 			stream.GetChangeGameObjectStructureEvent(streamIdx, out var changeGameObjectStructure);
 			var gameObject =
 				EditorUtility.InstanceIDToObject(changeGameObjectStructure.instanceId) as GameObject;
-			Debug.Log($"{ChangeType}: {gameObject} in scene {changeGameObjectStructure.scene}.");
+			RTUDebug.Log($"{ChangeType}: {gameObject} in scene {changeGameObjectStructure.scene}.");
 
 			var fullPath = gameObject.GetFullName();
 
@@ -52,7 +52,7 @@ namespace RTUEditor.ObjectChange
 					}
 					catch (Exception e)
 					{
-						RTUDebug.LogError($"Failed to generate property change payload string {e.Message}");
+						RTUDebug.LogError($"Failed to generate GameObject structure change {e.Message}");
 					}
 				}
 			}
@@ -74,7 +74,7 @@ namespace RTUEditor.ObjectChange
 					payloads.Add(new GameObjectStructureChangeArgs
 					{
 						GameObjectPath = fullPath,
-						ComponentTypeName = difference.Name,
+						ComponentTypeName = difference.Type,
 						IsAdd = false
 					});
 				}
@@ -91,14 +91,14 @@ namespace RTUEditor.ObjectChange
 					payloads.Add(new GameObjectStructureChangeArgs
 					{
 						GameObjectPath = fullPath,
-						ComponentTypeName = difference.Name,
+						ComponentTypeName = difference.Type,
 						IsAdd = true
 					});
 					
 					payloads.Add(new RefreshComponentChangeArgs
 					{
 						GameObjectPath = fullPath,
-						ComponentTypeName = difference.Name,
+						ComponentTypeName = difference.Type,
 						Members = difference,
 					});
 					

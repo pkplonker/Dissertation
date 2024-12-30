@@ -19,11 +19,28 @@ namespace RealTimeUpdateRuntime
 					var args = JsonConvert.DeserializeObject<GameObjectStructureChangeArgs>(commandHandlerArgs.Payload,
 						jsonSettings);
 					var go = GameObject.Find(args.GameObjectPath);
-					var componentType = Type.GetType(args.ComponentTypeName);
+					var componentType = args.ComponentTypeName.GetTypeIncludingUnity();
+					if (args.ComponentTypeName.Equals("UnityEngine.Transform",
+						    StringComparison.InvariantCultureIgnoreCase))
+					{
+						// ignore transform as all GameObjects inherently have a transform.
+						return;
+					}
+
+					if (componentType == null)
+					{
+						throw new Exception("Failed to determine type for GameObject structure change");
+					}
+
 					if (args.IsAdd)
 					{
-						go.AddComponent(componentType);
-						RTUDebug.Log($"Added {args.ComponentTypeName} to {go.name}");
+						var c = go.AddComponent(componentType);
+						if (c != null)
+							RTUDebug.Log($"Added {args.ComponentTypeName} to {go.name}");
+						else
+						{
+							throw new Exception($"Failed to add component {componentType}");
+						}
 					}
 					else
 					{

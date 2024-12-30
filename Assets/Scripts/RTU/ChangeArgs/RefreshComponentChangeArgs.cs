@@ -18,7 +18,8 @@ namespace RealTimeUpdateRuntime
 		public Dictionary<string, object> GetDeserializedMembers(JsonSerializerSettings settings)
 		{
 			if (Members == null) return null;
-			var adaptors = MemberAdaptorUtils.GetMemberAdaptersAsDict(Type.GetType(ComponentTypeName));
+			var type = ComponentTypeName.GetTypeIncludingUnity();
+			var adaptors = MemberAdaptorUtils.GetMemberAdaptersAsDict(type);
 			var result = new Dictionary<string, object>();
 			foreach (var (name, value) in Members)
 			{
