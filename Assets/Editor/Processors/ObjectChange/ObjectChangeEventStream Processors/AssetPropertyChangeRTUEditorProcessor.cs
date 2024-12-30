@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using Newtonsoft.Json;
+using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
 using UnityEditor;
 using UnityEngine;
@@ -18,7 +19,8 @@ namespace RTUEditor.ObjectChange
 			assetChangePayloadStrategyFactory = new AssetChangePayloadStrategyFactory();
 		}
 
-		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings)
+		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings,
+			SceneGameObjectStore sceneGameObjectStore)
 		{
 			{
 				stream.GetChangeAssetObjectPropertiesEvent(streamIdx, out var changeAssetObjectPropertiesEvent);
@@ -34,18 +36,18 @@ namespace RTUEditor.ObjectChange
 							    out var payload))
 						{
 							controller.SendMessageToGame(payload);
-							Debug.Log(
+							RTUDebug.Log(
 								$"AssetPropertyChanged: {changeAsset} at {changeAssetPath} in scene {changeAssetObjectPropertiesEvent.scene}.");
 						}
 					}
 					else
 					{
-						Debug.LogWarning($"Failed to generate clone for current asset {changeAssetPath}");
+						RTUDebug.LogWarning($"Failed to generate clone for current asset {changeAssetPath}");
 					}
 				}
 				else
 				{
-					Debug.LogWarning("Failed to get asset for path");
+					RTUDebug.LogWarning("Failed to get asset for path");
 				}
 			}
 		}

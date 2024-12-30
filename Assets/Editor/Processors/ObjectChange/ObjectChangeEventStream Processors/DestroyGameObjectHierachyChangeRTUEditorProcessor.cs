@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json;
+using RealTimeUpdateRuntime;
 using UnityEditor;
 using UnityEngine;
 
@@ -14,14 +17,31 @@ namespace RTUEditor.ObjectChange
 			this.RTUController = controller;
 		}
 
-		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings)
+		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings,
+			SceneGameObjectStore sceneGameObjectStore)
 		{
 			stream.GetDestroyGameObjectHierarchyEvent(streamIdx, out var destroyGameObjectHierarchyEvent);
-			// The destroyed GameObject can not be converted with EditorUtility.InstanceIDToObject as it has already been destroyed.
-			var destroyParentGo =
+			GameObject destroyParentGo =
 				EditorUtility.InstanceIDToObject(destroyGameObjectHierarchyEvent.parentInstanceId) as
 					GameObject;
-			Debug.Log(
+			string parentGameObjectPath = string.Empty;
+			List<GameObject> currentChildrenGos = null;
+			if (destroyParentGo != null)
+			{
+				parentGameObjectPath = destroyParentGo.GetFullName();
+				currentChildrenGos = destroyParentGo.GetComponentsInChildren<Transform>().Select(x => x.gameObject)
+					.Where(x => x != destroyParentGo)
+					.ToList();
+			}
+
+			var payload = new DestroyGameObjectChangeArgs()
+			{
+				ParentGameObjectPath = parentGameObjectPath,
+				CurrentChildren = currentChildrenGos?.Select(x => x.name).ToList() ?? null,
+			}.GeneratePayload(jsonSettings);
+			sceneGameObjectStore.RemoveClone(destroyGameObjectHierarchyEvent.instanceId);
+			RTUController.SendMessageToGame(payload);
+			RTUDebug.Log(
 				$"{ChangeType}: {destroyGameObjectHierarchyEvent.instanceId} with parent {destroyParentGo} in scene {destroyGameObjectHierarchyEvent.scene}.");
 		}
 	}

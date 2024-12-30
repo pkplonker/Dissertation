@@ -1,7 +1,5 @@
-﻿using System.IO;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
-using RTUEditor.AssetStore;
 using UnityEditor;
 using UnityEngine;
 
@@ -17,11 +15,18 @@ namespace RTUEditor.ObjectChange
 			this.RTUController = controller;
 		}
 
-		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings)		{
+		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings, SceneGameObjectStore sceneGameObjectStore)
+		{
 			stream.GetCreateGameObjectHierarchyEvent(streamIdx, out var createGameObjectHierarchyEvent);
 			var newGameObject =
 				EditorUtility.InstanceIDToObject(createGameObjectHierarchyEvent.instanceId) as GameObject;
-			Debug.Log($"{ChangeType}: {newGameObject} in scene {createGameObjectHierarchyEvent.scene}.");
+			var payload = new CreateGameObjectChangeArgs()
+			{
+				GameObjectPath = newGameObject.GetFullName()
+			}.GeneratePayload(jsonSettings);
+			sceneGameObjectStore.CloneGameObject(newGameObject);
+			RTUController.SendMessageToGame(payload);
+			RTUDebug.Log($"{ChangeType}: {newGameObject}.");
 		}
 	}
 }

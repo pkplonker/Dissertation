@@ -14,7 +14,7 @@ namespace RTUEditor.ObjectChange
 			this.RTUController = controller;
 		}
 
-		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings)
+		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings, SceneGameObjectStore sceneGameObjectStore)
 		{
 			stream.GetChangeGameObjectStructureHierarchyEvent(streamIdx,
 				out var changeGameObjectStructureHierarchy);

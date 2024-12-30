@@ -8,5 +8,6 @@ namespace RTUEditor.AssetStore
 		public GameObjectClone(string name) : base(name) { }
 		public GameObjectClone(string name, StringComparer StringComparer) : base(name, StringComparer) { }
 		public List<ComponentClone> components = new();
+		public int InstanceID { get; set; }
 	}
 }

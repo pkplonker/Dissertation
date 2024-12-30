@@ -39,7 +39,7 @@ namespace RTUEditor.ObjectChange
 				var type = stream.GetEventType(i);
 				if (objectChangeProcessors.TryGetValue(type, out var processor))
 				{
-					processor.Process(stream, i, controller.JsonSettings);
+					processor.Process(stream, i, controller.JsonSettings, controller.SceneGameObjectStore);
 				}
 				// switch (type)
 				// {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -28,7 +29,6 @@ namespace RTUEditor
 
 			this.rtuScene = rtuScene;
 			rtuScene.SceneCreated += OnSceneChanged;
-			
 		}
 
 		private void OnSceneChanged(Scene? scene)
@@ -65,5 +65,28 @@ namespace RTUEditor
 		public bool TryGetExistingClone(string name, out Clone result) => clones.TryGetValue(name, out result);
 
 		public void AddClone(string fullPath, GameObjectClone newClone) => clones[fullPath] = newClone;
+
+		public void RemoveClone(int instanceId)
+		{
+			if (scene == null)
+			{
+				RTUDebug.LogWarning("Trying to remove gameobject when no scene is set in scene store");
+				return;
+			}
+
+			KeyValuePair<string, Clone> clone = clones.FirstOrDefault(x =>
+			{
+				if (x.Value is GameObjectClone goc)
+				{
+					return goc.InstanceID == instanceId;
+				}
+
+				return false;
+			});
+			if (clone.Equals(default(KeyValuePair<string, Clone>)) || !clones.Remove(clone.Key))
+			{
+				RTUDebug.LogWarning($"Failed to destroy clone for {instanceId}");
+			}
+		}
 	}
 }
