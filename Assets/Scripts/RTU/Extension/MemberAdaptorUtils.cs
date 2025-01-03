@@ -33,6 +33,7 @@ namespace RealTimeUpdateRuntime
 
 		private static MemberInfo[] GetMemberInfo(Type type) =>
 			type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+				.Where(x=>x.CanWrite)
 				.Concat(type
 					.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
 					.OfType<MemberInfo>()).ToArray();

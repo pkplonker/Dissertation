@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace RealTimeUpdateRuntime
@@ -10,8 +11,9 @@ namespace RealTimeUpdateRuntime
 
 		public string GameObjectPath { get; set; } = string.Empty;
 
-		public string GeneratePayload(JsonSerializerSettings JSONSettings) =>
-			$"{MESSAGE_IDENTIFER}\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}";
-		
+		public List<string> GeneratePayload(JsonSerializerSettings JSONSettings) => new()
+		{
+			$"{MESSAGE_IDENTIFER}\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}"
+		};
 	}
 }

@@ -97,14 +97,15 @@ namespace RTUEditor
 						{
 							foreach (var change in changes)
 							{
-								args.Add(new PropertyChangeArgs()
+								var arg = new PropertyChangeArgs()
 								{
 									GameObjectPath = fullPath,
 									ComponentTypeName = component.GetType().AssemblyQualifiedName,
 									PropertyPath = change.Key,
 									Value = change.Value,
 									ValueType = change.Value.GetType()
-								}.GeneratePayload(settings));
+								};
+								args.AddRange(arg.GeneratePayload(settings));
 							}
 						}
 						catch (Exception e)

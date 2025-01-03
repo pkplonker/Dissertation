@@ -16,7 +16,8 @@ namespace RTUEditor.ObjectChange
 			this.RTUController = controller;
 		}
 
-		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings, SceneGameObjectStore sceneGameObjectStore)
+		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings,
+			SceneGameObjectStore sceneGameObjectStore)
 		{
 			stream.GetCreateGameObjectHierarchyEvent(streamIdx, out var createGameObjectHierarchyEvent);
 			var newGameObject =
@@ -26,8 +27,14 @@ namespace RTUEditor.ObjectChange
 				GameObjectPath = newGameObject.GetFullName()
 			}.GeneratePayload(jsonSettings);
 			var clone = sceneGameObjectStore.CloneGameObjectAndStore(newGameObject);
-			(clone as GameObjectClone).components.Clear(); // We need to clear the components so that the subsiquent "ChangeGameObjectStructure" commands add the components for us
-			RTUController.SendMessageToGame(payload);
+			(clone as GameObjectClone).components
+				.Clear(); // We need to clear the components so that the subsiquent "ChangeGameObjectStructure" commands add the components for us
+
+			foreach (var load in payload)
+			{
+				RTUController.SendMessageToGame(load);
+			}
+
 			RTUDebug.Log($"{ChangeType}: {newGameObject}.");
 		}
 	}

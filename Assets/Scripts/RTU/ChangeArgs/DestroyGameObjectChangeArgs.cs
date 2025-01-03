@@ -11,8 +11,9 @@ namespace RealTimeUpdateRuntime
 		public string ParentGameObjectPath { get; set; } = string.Empty;
 		public List<string> CurrentChildren { get; set; }
 
-		public string GeneratePayload(JsonSerializerSettings JSONSettings) =>
-			$"{MESSAGE_IDENTIFER}\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}";
-		
+		public List<string> GeneratePayload(JsonSerializerSettings JSONSettings) => new()
+		{
+			$"{MESSAGE_IDENTIFER}\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}"
+		};
 	}
 }

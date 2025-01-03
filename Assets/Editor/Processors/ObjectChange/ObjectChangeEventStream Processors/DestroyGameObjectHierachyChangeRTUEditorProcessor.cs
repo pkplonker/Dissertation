@@ -40,7 +40,11 @@ namespace RTUEditor.ObjectChange
 				CurrentChildren = currentChildrenGos?.Select(x => x.name).ToList() ?? null,
 			}.GeneratePayload(jsonSettings);
 			sceneGameObjectStore.RemoveClone(destroyGameObjectHierarchyEvent.instanceId);
-			RTUController.SendMessageToGame(payload);
+			foreach (var load in payload)
+			{
+				RTUController.SendMessageToGame(load);
+			}
+
 			RTUDebug.Log(
 				$"{ChangeType}: {destroyGameObjectHierarchyEvent.instanceId} with parent {destroyParentGo} in scene {destroyGameObjectHierarchyEvent.scene}.");
 		}

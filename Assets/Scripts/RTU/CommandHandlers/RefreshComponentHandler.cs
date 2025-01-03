@@ -23,7 +23,8 @@ namespace RealTimeUpdateRuntime
 					var adaptors = MemberAdaptorUtils.GetMemberAdaptersAsDict(componentType);
 					if (go.TryGetComponent(componentType, out var component))
 					{
-						foreach ((var name, var value) in args.GetDeserializedMembers(jsonSettings))
+						var members = args.GetDeserializedMembers(jsonSettings);
+						foreach ((var name, var value) in members)
 						{
 							if (adaptors.TryGetValue(name, out var adaptor))
 							{

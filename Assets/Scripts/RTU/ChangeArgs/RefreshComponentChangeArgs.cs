@@ -12,8 +12,8 @@ namespace RealTimeUpdateRuntime
 		public string ComponentTypeName { get; set; } = string.Empty;
 		public Dictionary<string, object> Members { get; set; }
 
-		public string GeneratePayload(JsonSerializerSettings JSONSettings) =>
-			$"{MESSAGE_IDENTIFER}\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}";
+		public List<string> GeneratePayload(JsonSerializerSettings JSONSettings) => new()
+			{$"{MESSAGE_IDENTIFER}\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}"};
 
 		public Dictionary<string, object> GetDeserializedMembers(JsonSerializerSettings settings)
 		{
@@ -36,7 +36,17 @@ namespace RealTimeUpdateRuntime
 					}
 					else
 					{
-						result.Add(name, JsonConvert.DeserializeObject(value.ToString(), targetType, settings));
+						if (value != null)
+						{
+							try
+							{
+								result.Add(name, JsonConvert.DeserializeObject(value.ToString(), targetType, settings));
+							}
+							catch (Exception e)
+							{
+								RTUDebug.LogError($"Failed to deserialize {name} of type {type} : {value.ToString()}");
+							}
+						}
 					}
 				}
 			}

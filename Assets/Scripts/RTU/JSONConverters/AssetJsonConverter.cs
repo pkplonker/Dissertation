@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
+using UnityEngine;
 using UnityEngine.Scripting;
 using Object = UnityEngine.Object;
+using Type = System.Type;
 
 namespace RealTimeUpdateRuntime
 {
@@ -12,6 +14,7 @@ namespace RealTimeUpdateRuntime
 	public class AssetJsonConverter : JsonConverter<Object>
 	{
 		private readonly Dictionary<Type, JsonConverter> converters;
+		private readonly JsonConverter defaultComponentConverter;
 
 		public AssetJsonConverter()
 		{
@@ -23,6 +26,8 @@ namespace RealTimeUpdateRuntime
 					return genericType != null && genericType.IsSubclassOf(typeof(UnityEngine.Object));
 				}).ToDictionary(x => x.BaseType.GenericTypeArguments.FirstOrDefault(),
 					x => Activator.CreateInstance(x) as JsonConverter);
+			defaultComponentConverter = converters[typeof(UnityEngine.Component)];
+			
 		}
 
 		public override void WriteJson(JsonWriter writer, Object value, JsonSerializer serializer)
@@ -37,12 +42,28 @@ namespace RealTimeUpdateRuntime
 			if (converters.TryGetValue(valueType, out var converter))
 			{
 				converter.WriteJson(writer, value, serializer);
+				return;
+			}
+
+			var potentialConverter = converters.FirstOrDefault(x => valueType.IsSubclassOf(x.Key));
+			if (!potentialConverter.Equals(default(KeyValuePair<Type,JsonConverter>)))
+			{
+				potentialConverter.Value.WriteJson(writer, value, serializer);
+			}
+			else if (valueType.IsSubclassOf(typeof(Component)))
+			{
+				defaultComponentConverter.WriteJson(writer, value, serializer);
 			}
 			else
 			{
-				writer.WriteStartObject();
-				//todo 
-				writer.WriteEndObject();
+				try
+				{
+					serializer.Serialize(writer, value);
+				}
+				catch (Exception e)
+				{
+					RTUDebug.LogWarning($"Failed to serialize type {valueType} in AssetJSONConverter {e.Message}");
+				}
 			}
 		}
 
@@ -55,7 +76,20 @@ namespace RealTimeUpdateRuntime
 				return converter.ReadJson(reader, objectType, existingValue, serializer) as Object;
 			}
 
-			throw new JsonSerializationException("Not implemented ");
+			if (objectType.IsSubclassOf(typeof(Component)))
+			{
+				return defaultComponentConverter.ReadJson(reader, objectType, existingValue, serializer) as Object;
+			}
+
+			try
+			{
+				return serializer.Deserialize(reader, objectType) as Object;
+			}
+			catch (Exception e)
+			{
+				RTUDebug.LogWarning($"Failed to deserialize type {objectType} in AssetJSONConverter {e.Message}");
+				return null;
+			}
 		}
 	}
 }
