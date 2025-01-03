@@ -16,7 +16,6 @@ namespace RTUEditor
 		private readonly EditorRtuController controller;
 		private Dictionary<GameObject, Clone> clones = new();
 		private readonly SceneGameObjectStore sceneGameObjectStore;
-		private readonly PropertyChangeArgsFactory propertyChangeArgsFactory;
 
 		public PropertyRTUEditorProcessor(EditorRtuController controller)
 		{
@@ -26,7 +25,6 @@ namespace RTUEditor
 			Undo.postprocessModifications += PostprocessModificationsCallback;
 			Undo.undoRedoPerformed += OnUndoRedoPerformed;
 			JSONSettings = new JSONSettingsCreator().Create();
-			propertyChangeArgsFactory = new();
 		}
 
 		private void OnUndoRedoPerformed()
@@ -99,11 +97,15 @@ namespace RTUEditor
 						{
 							foreach (var change in changes)
 							{
-								var arg = propertyChangeArgsFactory.Get(fullPath,
-									component.GetType().AssemblyQualifiedName,
-									change);
-								var payload = arg.GeneratePayload(settings);
-								args.AddRange(payload);
+								var arg = new PropertyChangeArgs()
+								{
+									GameObjectPath = fullPath,
+									ComponentTypeName = component.GetType().AssemblyQualifiedName,
+									PropertyPath = change.Key,
+									Value = change.Value,
+									ValueType = change.Value.GetType()
+								};
+								args.AddRange(arg.GeneratePayload(settings));
 							}
 						}
 						catch (Exception e)

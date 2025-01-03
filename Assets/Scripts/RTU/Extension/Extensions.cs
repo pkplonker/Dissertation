@@ -97,7 +97,7 @@ public static class Extensions
 	}
 
 	//https://stackoverflow.com/questions/51315918/how-to-encodetopng-compressed-textures-in-unity
-	public static Texture2D Decompress(this Texture2D source)
+	public static Texture2D Decompress(this Texture source)
 	{
 		RenderTexture renderTex = RenderTexture.GetTemporary(
 			source.width,

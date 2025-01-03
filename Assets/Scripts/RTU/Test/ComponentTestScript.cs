@@ -139,33 +139,33 @@ public class ComponentTestScript : MonoBehaviour
 	private int[] cachedIntArray = null;
 	private string[] cachedStringArray = null;
 
-	private void Update()
-	{
-		if (cachedIntArray != intArray)
-		{
-			if (intArray?.Any() ?? false)
-			{
-				foreach (var i in intArray)
-				{
-					Debug.Log(i);
-				}
-			}
-		}
-
-		if (cachedStringArray != stringArray)
-		{
-			if (stringArray?.Any() ?? false)
-			{
-				foreach (var i in stringArray)
-				{
-					Debug.Log(i);
-				}
-			}
-		}
-
-		cachedStringArray = stringArray;
-		cachedIntArray = intArray;
-	}
+	// private void Update()
+	// {
+	// 	if (cachedIntArray != intArray)
+	// 	{
+	// 		if (intArray?.Any() ?? false)
+	// 		{
+	// 			foreach (var i in intArray)
+	// 			{
+	// 				Debug.Log(i);
+	// 			}
+	// 		}
+	// 	}
+	//
+	// 	if (cachedStringArray != stringArray)
+	// 	{
+	// 		if (stringArray?.Any() ?? false)
+	// 		{
+	// 			foreach (var i in stringArray)
+	// 			{
+	// 				Debug.Log(i);
+	// 			}
+	// 		}
+	// 	}
+	//
+	// 	cachedStringArray = stringArray;
+	// 	cachedIntArray = intArray;
+	// }
 
 	private void Reset()
 	{

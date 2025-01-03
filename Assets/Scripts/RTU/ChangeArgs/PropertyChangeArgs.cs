@@ -18,7 +18,7 @@ namespace RealTimeUpdateRuntime
 			{$"{MESSAGE_IDENTIFER}\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}"};
 
 		public string ValueTypeName { get; set; }
-		public object Value { get; set; }
+		public virtual object Value { get; set; }
 
 		[JsonIgnore]
 		public Type ValueType

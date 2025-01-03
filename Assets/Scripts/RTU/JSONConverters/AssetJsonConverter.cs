@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Scripting;
 using Object = UnityEngine.Object;
+using Type = System.Type;
 
 namespace RealTimeUpdateRuntime
 {
@@ -26,6 +27,7 @@ namespace RealTimeUpdateRuntime
 				}).ToDictionary(x => x.BaseType.GenericTypeArguments.FirstOrDefault(),
 					x => Activator.CreateInstance(x) as JsonConverter);
 			defaultComponentConverter = converters[typeof(UnityEngine.Component)];
+			
 		}
 
 		public override void WriteJson(JsonWriter writer, Object value, JsonSerializer serializer)
@@ -40,6 +42,13 @@ namespace RealTimeUpdateRuntime
 			if (converters.TryGetValue(valueType, out var converter))
 			{
 				converter.WriteJson(writer, value, serializer);
+				return;
+			}
+
+			var potentialConverter = converters.FirstOrDefault(x => valueType.IsSubclassOf(x.Key));
+			if (!potentialConverter.Equals(default(KeyValuePair<Type,JsonConverter>)))
+			{
+				potentialConverter.Value.WriteJson(writer, value, serializer);
 			}
 			else if (valueType.IsSubclassOf(typeof(Component)))
 			{
@@ -78,7 +87,7 @@ namespace RealTimeUpdateRuntime
 			}
 			catch (Exception e)
 			{
-				RTUDebug.LogWarning($"Failed to serialize type {objectType} in AssetJSONConverter {e.Message}");
+				RTUDebug.LogWarning($"Failed to deserialize type {objectType} in AssetJSONConverter {e.Message}");
 				return null;
 			}
 		}

@@ -29,9 +29,7 @@ namespace RealTimeUpdateRuntime
 			writer.WritePropertyName("mainTexture");
 			if (value.mainTexture != null)
 			{
-				writer.WriteStartObject();
 				serializer.Serialize(writer, value.mainTexture);
-				writer.WriteEndObject();
 			}
 			else
 			{
@@ -43,20 +41,32 @@ namespace RealTimeUpdateRuntime
 			writer.WritePropertyName("mainTextureScale");
 			serializer.Serialize(writer, value.mainTextureScale);
 
-			writer.WritePropertyName("properties");
-			writer.WriteStartObject();
-			foreach (string propertyName in value.GetTexturePropertyNames())
 			{
-				var texture = value.GetTexture(propertyName);
-				if (texture != null)
+				writer.WritePropertyName("properties");
+				writer.WriteStartObject();
+				foreach (string propertyName in value.GetTexturePropertyNames())
 				{
-					writer.WritePropertyName(propertyName);
-					serializer.Serialize(writer, texture);
+					var texture = value.GetTexture(propertyName);
+					if (texture != null)
+					{
+						writer.WritePropertyName(propertyName);
+						serializer.Serialize(writer, texture);
+					}
 				}
+
+				writer.WriteEndObject();
+			}
+			writer.WritePropertyName("shaderKeywords");
+			serializer.Serialize(writer, value.shaderKeywords);
+
+			writer.WritePropertyName("enabledKeywords");
+			writer.WriteStartArray();
+			foreach (string keyword in value.shaderKeywords)
+			{
+				writer.WriteValue(keyword);
 			}
 
-			writer.WriteEndObject();
-
+			writer.WriteEndArray();
 			writer.WriteEndObject();
 		}
 
@@ -77,6 +87,19 @@ namespace RealTimeUpdateRuntime
 				material.color = obj["color"].ToObject<Color>();
 			}
 
+			if (obj["shaderKeywords"] != null)
+			{
+				var shaderKeywords = obj["shaderKeywords"].ToObject<string[]>();
+				if (shaderKeywords != null)
+				{
+					foreach (var keyword in shaderKeywords)
+					{
+						material.EnableKeyword(keyword);
+					}
+				}
+			}
+
+			var names = material.GetTexturePropertyNames();
 			foreach (var property in obj.Properties())
 			{
 				if (property.Name == "mainTexture" || property.Name == "properties")
@@ -88,7 +111,22 @@ namespace RealTimeUpdateRuntime
 						var texture = serializer.Deserialize<Texture>(textureObj.CreateReader());
 						if (texture != null)
 						{
-							material.SetTexture(property.Name, texture);
+							if (texture is Texture2D texture2D)
+							{
+								if (property.Name == "mainTexture")
+								{
+									material.mainTexture = texture2D;
+								}
+								else
+								{
+									material.SetTexture(property.Name == "mainTexture" ? "_MainTex" : property.Name,
+										texture2D);
+								}
+							}
+							else
+							{
+								RTUDebug.LogWarning("Deserialized texture is not a Texture2D.");
+							}
 						}
 					}
 				}

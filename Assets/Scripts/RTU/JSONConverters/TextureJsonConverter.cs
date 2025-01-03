@@ -8,10 +8,10 @@ using UnityEngine.Scripting;
 namespace RealTimeUpdateRuntime
 {
 	[Preserve]
-	[JSONCustomConverter(typeof(Texture2DJsonConverter))]
-	public class Texture2DJsonConverter : JsonConverter<UnityEngine.Texture2D>
+	[JSONCustomConverter(typeof(TextureJsonConverter))]
+	public class TextureJsonConverter : JsonConverter<UnityEngine.Texture>
 	{
-		public override void WriteJson(JsonWriter writer, Texture2D value, JsonSerializer serializer)
+		public override void WriteJson(JsonWriter writer, Texture value, JsonSerializer serializer)
 		{
 #if UNITY_EDITOR
 			if (value == null)
@@ -47,14 +47,19 @@ namespace RealTimeUpdateRuntime
 			textureObj["imageData"] = base64Data;
 			textureObj["width"] = value.width;
 			textureObj["height"] = value.height;
-			textureObj["format"] = value.format.ToString();
+			if (value is Texture2D texture2D)
+			{
+				textureObj["format"] = texture2D.format.ToString();
+			}
+
 			textureObj["mipmapCount"] = value.mipmapCount;
+			textureObj["name"] = value.name;
 
 			textureObj.WriteTo(writer);
 #endif
 		}
 
-		public override Texture2D ReadJson(JsonReader reader, Type objectType, Texture2D existingValue,
+		public override Texture ReadJson(JsonReader reader, Type objectType, Texture existingValue,
 			bool hasExistingValue, JsonSerializer serializer)
 		{
 			if (reader.TokenType == JsonToken.Null) return null;
@@ -86,6 +91,12 @@ namespace RealTimeUpdateRuntime
 				texture.anisoLevel = (int) textureObj["anisoLevel"];
 			}
 
+			if (textureObj.ContainsKey("name"))
+			{
+				texture.name = (string) textureObj["name"];
+			}
+
+			texture.Apply();
 			return texture;
 		}
 	}
