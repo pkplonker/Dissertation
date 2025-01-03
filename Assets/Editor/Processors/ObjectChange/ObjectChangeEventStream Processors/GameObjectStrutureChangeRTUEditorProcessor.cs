@@ -21,7 +21,8 @@ namespace RTUEditor.ObjectChange
 			this.sceneGameObjectStore = controller.SceneGameObjectStore;
 		}
 
-		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings, SceneGameObjectStore sceneGameObjectStore)
+		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings,
+			SceneGameObjectStore sceneGameObjectStore)
 		{
 			stream.GetChangeGameObjectStructureEvent(streamIdx, out var changeGameObjectStructure);
 			var gameObject =
@@ -45,7 +46,11 @@ namespace RTUEditor.ObjectChange
 						foreach (var change in changes)
 						{
 							var payload = change.GeneratePayload(jsonSettings);
-							RTUController.SendMessageToGame(payload);
+							foreach (var load in payload)
+							{
+								RTUController.SendMessageToGame(load);
+							}
+
 							RTUDebug.Log(
 								$"GameObject component changed {fullPath}.");
 						}
@@ -95,14 +100,13 @@ namespace RTUEditor.ObjectChange
 						ComponentTypeName = difference.Type,
 						IsAdd = true
 					});
-					
+
 					payloads.Add(new RefreshComponentChangeArgs
 					{
 						GameObjectPath = fullPath,
 						ComponentTypeName = difference.Type,
 						Members = difference.GetMembersAsJsonCompatible(gameObject),
 					});
-					
 				}
 
 				return true;

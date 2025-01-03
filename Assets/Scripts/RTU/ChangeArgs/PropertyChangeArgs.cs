@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
+using Object = UnityEngine.Object;
 
 namespace RealTimeUpdateRuntime
 {
+	[CustomPropertyChangeArgs(typeof(object))] //default
 	[Serializable]
 	public class PropertyChangeArgs : IPropertyChangeArgs
 	{
@@ -11,8 +14,8 @@ namespace RealTimeUpdateRuntime
 		public string ComponentTypeName { get; set; } = string.Empty;
 		public string PropertyPath { get; set; } = string.Empty;
 
-		public string GeneratePayload(JsonSerializerSettings JSONSettings) =>
-			$"{MESSAGE_IDENTIFER}\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}";
+		public List<string> GeneratePayload(JsonSerializerSettings JSONSettings) => new List<string>()
+			{$"{MESSAGE_IDENTIFER}\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}"};
 
 		public string ValueTypeName { get; set; }
 		public object Value { get; set; }

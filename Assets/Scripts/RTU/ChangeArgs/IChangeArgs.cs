@@ -1,9 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace RealTimeUpdateRuntime
 {
 	public interface IChangeArgs
 	{
-		public string GeneratePayload(JsonSerializerSettings JSONSettings);
+		public List<string>  GeneratePayload(JsonSerializerSettings JSONSettings);
 	}
 }

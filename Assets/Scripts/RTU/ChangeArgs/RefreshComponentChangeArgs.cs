@@ -12,8 +12,8 @@ namespace RealTimeUpdateRuntime
 		public string ComponentTypeName { get; set; } = string.Empty;
 		public Dictionary<string, object> Members { get; set; }
 
-		public string GeneratePayload(JsonSerializerSettings JSONSettings) =>
-			$"{MESSAGE_IDENTIFER}\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}";
+		public List<string> GeneratePayload(JsonSerializerSettings JSONSettings) => new()
+			{$"{MESSAGE_IDENTIFER}\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}"};
 
 		public Dictionary<string, object> GetDeserializedMembers(JsonSerializerSettings settings)
 		{

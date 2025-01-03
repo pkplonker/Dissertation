@@ -11,6 +11,6 @@ namespace RealTimeUpdateRuntime
 		public Dictionary<string, object> Changes { get; set; }
 		public string Path { get; set; }
 		public string Type { get; set; }
-		public string GeneratePayload(JsonSerializerSettings JSONSettings) => throw new NotImplementedException();
+		public List<string> GeneratePayload(JsonSerializerSettings JSONSettings) => throw new NotImplementedException();
 	}
 }
