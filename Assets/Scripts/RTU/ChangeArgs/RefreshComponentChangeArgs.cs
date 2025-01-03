@@ -36,7 +36,17 @@ namespace RealTimeUpdateRuntime
 					}
 					else
 					{
-						result.Add(name, JsonConvert.DeserializeObject(value.ToString(), targetType, settings));
+						if (value != null)
+						{
+							try
+							{
+								result.Add(name, JsonConvert.DeserializeObject(value.ToString(), targetType, settings));
+							}
+							catch (Exception e)
+							{
+								RTUDebug.LogError($"Failed to deserialize {name} of type {type} : {value.ToString()}");
+							}
+						}
 					}
 				}
 			}

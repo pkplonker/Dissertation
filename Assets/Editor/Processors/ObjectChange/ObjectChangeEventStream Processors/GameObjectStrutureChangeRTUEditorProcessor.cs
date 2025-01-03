@@ -36,7 +36,7 @@ namespace RTUEditor.ObjectChange
 			{
 				if (originalClone is GameObjectClone originalGameobjectClone &&
 				    currentClone is GameObjectClone currentGameobjectClone &&
-				    HasChange(originalGameobjectClone, currentGameobjectClone, fullPath,
+				    HasChange(originalGameobjectClone, currentGameobjectClone, fullPath, gameObject,
 					    out List<IChangeArgs> changes))
 				{
 					sceneGameObjectStore.AddClone(fullPath, currentGameobjectClone);
@@ -61,6 +61,7 @@ namespace RTUEditor.ObjectChange
 		private bool HasChange(GameObjectClone originalGameobjectClone,
 			GameObjectClone currentGameobjectClone,
 			string fullPath,
+			GameObject gameObject,
 			out List<IChangeArgs> payloads)
 		{
 			payloads = new List<IChangeArgs>();
@@ -99,7 +100,7 @@ namespace RTUEditor.ObjectChange
 					{
 						GameObjectPath = fullPath,
 						ComponentTypeName = difference.Type,
-						Members = difference,
+						Members = difference.GetMembersAsJsonCompatible(gameObject),
 					});
 					
 				}
