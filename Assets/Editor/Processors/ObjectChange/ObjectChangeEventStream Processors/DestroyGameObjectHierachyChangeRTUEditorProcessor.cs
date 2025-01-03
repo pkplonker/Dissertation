@@ -21,32 +21,21 @@ namespace RTUEditor.ObjectChange
 			SceneGameObjectStore sceneGameObjectStore)
 		{
 			stream.GetDestroyGameObjectHierarchyEvent(streamIdx, out var destroyGameObjectHierarchyEvent);
-			GameObject destroyParentGo =
-				EditorUtility.InstanceIDToObject(destroyGameObjectHierarchyEvent.parentInstanceId) as
-					GameObject;
-			string parentGameObjectPath = string.Empty;
-			List<GameObject> currentChildrenGos = null;
-			if (destroyParentGo != null)
-			{
-				parentGameObjectPath = destroyParentGo.GetFullName();
-				currentChildrenGos = destroyParentGo.GetComponentsInChildren<Transform>().Select(x => x.gameObject)
-					.Where(x => x != destroyParentGo)
-					.ToList();
-			}
+
+			sceneGameObjectStore.TryRemoveClone(destroyGameObjectHierarchyEvent.instanceId, out var goName);
 
 			var payload = new DestroyGameObjectChangeArgs()
 			{
-				ParentGameObjectPath = parentGameObjectPath,
-				CurrentChildren = currentChildrenGos?.Select(x => x.name).ToList() ?? null,
+				GameObjectName = goName,
 			}.GeneratePayload(jsonSettings);
-			sceneGameObjectStore.RemoveClone(destroyGameObjectHierarchyEvent.instanceId);
+			
 			foreach (var load in payload)
 			{
 				RTUController.SendMessageToGame(load);
 			}
 
 			RTUDebug.Log(
-				$"{ChangeType}: {destroyGameObjectHierarchyEvent.instanceId} with parent {destroyParentGo} in scene {destroyGameObjectHierarchyEvent.scene}.");
+				$"{ChangeType}: {destroyGameObjectHierarchyEvent.instanceId} in scene {destroyGameObjectHierarchyEvent.scene}.");
 		}
 	}
 }

@@ -65,6 +65,7 @@ namespace RTUEditor
 			AddClone(go.GetFullName(), clone as GameObjectClone);
 			return clone;
 		}
+
 		private static string GetSceneFullName(GameObject go, string parentPath) =>
 			parentPath == string.Empty ? go.name : parentPath + $"/{go.name}";
 
@@ -72,12 +73,13 @@ namespace RTUEditor
 
 		public void AddClone(string fullPath, GameObjectClone newClone) => clones[fullPath] = newClone;
 
-		public void RemoveClone(int instanceId)
+		public bool TryRemoveClone(int instanceId, out string name)
 		{
+			name = string.Empty;
 			if (scene == null)
 			{
 				RTUDebug.LogWarning("Trying to remove gameobject when no scene is set in scene store");
-				return;
+				return false;
 			}
 
 			KeyValuePair<string, Clone> clone = clones.FirstOrDefault(x =>
@@ -89,10 +91,14 @@ namespace RTUEditor
 
 				return false;
 			});
+			name = (clone.Value as GameObjectClone)?.Name ?? String.Empty;
 			if (clone.Equals(default(KeyValuePair<string, Clone>)) || !clones.Remove(clone.Key))
 			{
 				RTUDebug.LogWarning($"Failed to destroy clone for {instanceId}");
+				return false;
 			}
+
+			return true;
 		}
 	}
 }

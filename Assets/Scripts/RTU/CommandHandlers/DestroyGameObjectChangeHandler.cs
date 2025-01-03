@@ -1,6 +1,7 @@
 using System;
 using Newtonsoft.Json;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace RealTimeUpdateRuntime
 {
@@ -16,15 +17,17 @@ namespace RealTimeUpdateRuntime
 				{
 					var args = JsonConvert.DeserializeObject<DestroyGameObjectChangeArgs>(commandHandlerArgs.Payload,
 						jsonSettings);
-					var go = GameObject.Find(args.ParentGameObjectPath);
+					var go = GameObject.Find(args.GameObjectName);
+
 					if (go == null)
 					{
-						throw new Exception("unable to locate gameobject");
+						throw new Exception("unable to locate GameObject");
 					}
-					//Object.Destroy(go);
-					// todo
-					string gameObjectName = string.Empty;
-					RTUDebug.Log("Destroyed gameobject {gameObjectName}");
+
+					var goName = go.name;
+					Object.Destroy(go);
+
+					RTUDebug.Log($"Destroyed GameObject {goName}");
 				}
 				catch (Exception e)
 				{
