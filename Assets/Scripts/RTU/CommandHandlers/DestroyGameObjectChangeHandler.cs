@@ -22,6 +22,7 @@ namespace RealTimeUpdateRuntime
 						throw new Exception("unable to locate gameobject");
 					}
 					//Object.Destroy(go);
+					// todo
 					string gameObjectName = string.Empty;
 					RTUDebug.Log("Destroyed gameobject {gameObjectName}");
 				}
