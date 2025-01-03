@@ -30,16 +30,15 @@ namespace RealTimeUpdateRuntime
 			if (value.mainTexture != null)
 			{
 				serializer.Serialize(writer, value.mainTexture);
+				writer.WritePropertyName("mainTextureOffset");
+				serializer.Serialize(writer, value.mainTextureOffset);
+				writer.WritePropertyName("mainTextureScale");
+				serializer.Serialize(writer, value.mainTextureScale);
 			}
 			else
 			{
 				writer.WriteNull();
 			}
-
-			writer.WritePropertyName("mainTextureOffset");
-			serializer.Serialize(writer, value.mainTextureOffset);
-			writer.WritePropertyName("mainTextureScale");
-			serializer.Serialize(writer, value.mainTextureScale);
 
 			{
 				writer.WritePropertyName("properties");
