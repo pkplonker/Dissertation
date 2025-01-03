@@ -30,8 +30,7 @@ namespace RealTimeUpdateRuntime
 			if (value.mainTexture != null)
 			{
 				writer.WriteStartObject();
-				writer.WritePropertyName("name");
-				writer.WriteValue(value.mainTexture.name);
+				serializer.Serialize(writer, value.mainTexture);
 				writer.WriteEndObject();
 			}
 			else
@@ -52,10 +51,7 @@ namespace RealTimeUpdateRuntime
 				if (texture != null)
 				{
 					writer.WritePropertyName(propertyName);
-					writer.WriteStartObject();
-					writer.WritePropertyName("name");
-					writer.WriteValue(texture.name);
-					writer.WriteEndObject();
+					serializer.Serialize(writer, texture);
 				}
 			}
 
@@ -73,7 +69,6 @@ namespace RealTimeUpdateRuntime
 			}
 
 			var obj = JObject.Load(reader);
-			
 			var shaderName = obj["shader"]?.ToString() ?? "Lit";
 			var material = new Material(Shader.Find(shaderName));
 
@@ -82,13 +77,20 @@ namespace RealTimeUpdateRuntime
 				material.color = obj["color"].ToObject<Color>();
 			}
 
-			if (obj["mainTexture"] != null)
+			foreach (var property in obj.Properties())
 			{
-				var textureObj = obj["mainTexture"] as JObject;
-				if (textureObj != null && textureObj["name"] != null)
+				if (property.Name == "mainTexture" || property.Name == "properties")
 				{
-					var textureName = textureObj["name"].ToString();
-					// todo material.mainTexture = Resources.Load<Texture>(textureName);
+					var textureObj = property.Value as JObject;
+
+					if (textureObj != null)
+					{
+						var texture = serializer.Deserialize<Texture>(textureObj.CreateReader());
+						if (texture != null)
+						{
+							material.SetTexture(property.Name, texture);
+						}
+					}
 				}
 			}
 
@@ -100,26 +102,6 @@ namespace RealTimeUpdateRuntime
 			if (obj["mainTextureScale"] != null)
 			{
 				material.mainTextureScale = obj["mainTextureScale"].ToObject<Vector2>();
-			}
-
-			if (obj["properties"] != null)
-			{
-				var properties = obj["properties"] as JObject;
-				if (properties != null)
-				{
-					foreach (var property in properties.Properties())
-					{
-						if (property.Value is JObject textureObj && textureObj["name"] != null)
-						{
-							var textureName = textureObj["name"].ToString();
-							var texture = Resources.Load<Texture>(textureName);
-							if (texture != null)
-							{
-								material.SetTexture(property.Name, texture);
-							}
-						}
-					}
-				}
 			}
 
 			return material;

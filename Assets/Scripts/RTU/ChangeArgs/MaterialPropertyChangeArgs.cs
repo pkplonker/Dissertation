@@ -1,21 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace RealTimeUpdateRuntime
 {
-	[CustomPropertyChangeArgs(typeof(object))] //default
+	[CustomPropertyChangeArgs(typeof(Material))]
 	[Serializable]
-	public class PropertyChangeArgs : IPropertyChangeArgs
+	public class MaterialPropertyChangeArgs : PropertyChangeArgs
 	{
-		public static string MESSAGE_IDENTIFER = "Property";
-		public string GameObjectPath { get; set; } = string.Empty;
-		public string ComponentTypeName { get; set; } = string.Empty;
-		public string PropertyPath { get; set; } = string.Empty;
+		public override List<string> GeneratePayload(JsonSerializerSettings JSONSettings)
+		{
+			var x = base.GeneratePayload(JSONSettings);
 
-		public virtual List<string> GeneratePayload(JsonSerializerSettings JSONSettings) => new List<string>()
-			{$"{MESSAGE_IDENTIFER}\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}"};
+			return x;
+		}
 
 		public string ValueTypeName { get; set; }
 		public object Value { get; set; }

@@ -99,9 +99,11 @@ namespace RTUEditor
 						{
 							foreach (var change in changes)
 							{
-								args.AddRange(propertyChangeArgsFactory.Get(fullPath,
+								var arg = propertyChangeArgsFactory.Get(fullPath,
 									component.GetType().AssemblyQualifiedName,
-									change).GeneratePayload(settings));
+									change);
+								var payload = arg.GeneratePayload(settings);
+								args.AddRange(payload);
 							}
 						}
 						catch (Exception e)
