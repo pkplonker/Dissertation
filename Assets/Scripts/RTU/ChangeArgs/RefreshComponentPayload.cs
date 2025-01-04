@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 namespace RealTimeUpdateRuntime
 {
 	[Serializable]
-	public class RefreshComponentChangeArgs : IChangeArgs
+	public class RefreshComponentPayload : IPayload
 	{
 		public static string MESSAGE_IDENTIFER = "RefreshComponent";
 		public string GameObjectPath { get; set; } = string.Empty;

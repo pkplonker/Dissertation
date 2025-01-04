@@ -38,18 +38,14 @@ namespace RTUEditor.ObjectChange
 				if (originalClone is GameObjectClone originalGameObjectClone &&
 				    currentClone is GameObjectClone currentGameObjectClone &&
 				    HasChange(originalGameObjectClone, currentGameObjectClone, fullPath, gameObject,
-					    out List<IChangeArgs> changes))
+					    out List<IPayload> changes))
 				{
 					sceneGameObjectStore.AddClone(fullPath, currentGameObjectClone);
 					try
 					{
-						foreach (var change in changes)
+						foreach (var payload in changes)
 						{
-							var payload = change.GeneratePayload(jsonSettings);
-							foreach (var load in payload)
-							{
-								RTUController.SendMessageToGame(load);
-							}
+							RTUController.SendPayloadToGame(payload);
 
 							RTUDebug.Log(
 								$"GameObject component changed {fullPath}.");
@@ -67,9 +63,9 @@ namespace RTUEditor.ObjectChange
 			GameObjectClone currentGameobjectClone,
 			string fullPath,
 			GameObject gameObject,
-			out List<IChangeArgs> payloads)
+			out List<IPayload> payloads)
 		{
-			payloads = new List<IChangeArgs>();
+			payloads = new List<IPayload>();
 			var comparer = new ComponentCloneTypeComparerer();
 			var removedDifferences =
 				originalGameobjectClone.components.Except(currentGameobjectClone.components, comparer);
@@ -77,7 +73,7 @@ namespace RTUEditor.ObjectChange
 			{
 				foreach (var difference in removedDifferences)
 				{
-					payloads.Add(new GameObjectStructureChangeArgs
+					payloads.Add(new GameObjectStructurePayload
 					{
 						GameObjectPath = fullPath,
 						ComponentTypeName = difference.Type,
@@ -94,14 +90,14 @@ namespace RTUEditor.ObjectChange
 			{
 				foreach (var difference in addedDifferences)
 				{
-					payloads.Add(new GameObjectStructureChangeArgs
+					payloads.Add(new GameObjectStructurePayload
 					{
 						GameObjectPath = fullPath,
 						ComponentTypeName = difference.Type,
 						IsAdd = true
 					});
 
-					payloads.Add(new RefreshComponentChangeArgs
+					payloads.Add(new RefreshComponentPayload
 					{
 						GameObjectPath = fullPath,
 						ComponentTypeName = difference.Type,

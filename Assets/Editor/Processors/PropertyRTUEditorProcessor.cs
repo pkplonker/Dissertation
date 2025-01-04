@@ -62,13 +62,13 @@ namespace RTUEditor
 
 		private void ProcessPropertyModification(PropertyModification pm, Clone clone)
 		{
-			if (TryGetChange(pm, JSONSettings, clone, out HashSet<string> changes))
+			if (TryGetChange(pm, JSONSettings, clone, out HashSet<IPayload> changes))
 			{
 				foreach (var change in changes)
 				{
 					try
 					{
-						controller.SendMessageToGame(change);
+						controller.SendPayloadToGame(change);
 					}
 					catch (Exception e)
 					{
@@ -79,9 +79,9 @@ namespace RTUEditor
 		}
 
 		public bool TryGetChange(PropertyModification pm, JsonSerializerSettings settings, Clone currentClone,
-			out HashSet<string> args)
+			out HashSet<IPayload> args)
 		{
-			args = new HashSet<string>();
+			args = new HashSet<IPayload>();
 			if (pm.target is Component component)
 			{
 				if (ComponentChange(settings, currentClone, args, component)) return true;
@@ -95,7 +95,7 @@ namespace RTUEditor
 			return false;
 		}
 
-		private bool GameObjectChange(JsonSerializerSettings settings, PropertyModification pm, HashSet<string> args,
+		private bool GameObjectChange(JsonSerializerSettings settings, PropertyModification pm, HashSet<IPayload> args,
 			GameObject gameObject)
 		{
 			GameObjectClone currentClone = null;
@@ -115,14 +115,13 @@ namespace RTUEditor
 					{
 						foreach (var change in changes)
 						{
-							var arg = new GameObjectPropertyChangeArgs()
+							args.Add(new GameObjectPropertyPayload()
 							{
 								GameObjectPath = originalName, // in case this is what has changed
 								PropertyPath = change.Key,
 								Value = change.Value,
 								ValueType = change.Value.GetType()
-							};
-							args.AddRange(arg.GeneratePayload(settings));
+							});
 						}
 					}
 					catch (Exception e)
@@ -141,7 +140,7 @@ namespace RTUEditor
 			return false;
 		}
 
-		private bool ComponentChange(JsonSerializerSettings settings, Clone currentClone, HashSet<string> args,
+		private bool ComponentChange(JsonSerializerSettings settings, Clone currentClone, HashSet<IPayload> args,
 			Component component)
 		{
 			var go = component.gameObject;
@@ -157,15 +156,14 @@ namespace RTUEditor
 					{
 						foreach (var change in changes)
 						{
-							var arg = new ComponentPropertyChangeArgs()
+							args.Add(new ComponentPropertyPayload()
 							{
 								GameObjectPath = fullPath,
 								ComponentTypeName = component.GetType().AssemblyQualifiedName,
 								PropertyPath = change.Key,
 								Value = change.Value,
 								ValueType = change.Value.GetType()
-							};
-							args.AddRange(arg.GeneratePayload(settings));
+							});
 						}
 					}
 					catch (Exception e)

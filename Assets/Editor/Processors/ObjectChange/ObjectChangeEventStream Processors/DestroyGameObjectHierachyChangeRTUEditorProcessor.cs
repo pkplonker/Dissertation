@@ -24,15 +24,10 @@ namespace RTUEditor.ObjectChange
 
 			sceneGameObjectStore.TryRemoveClone(destroyGameObjectHierarchyEvent.instanceId, out var goName);
 
-			var payload = new DestroyGameObjectChangeArgs()
+			RTUController.SendPayloadToGame(new DestroyGameObjectPayload()
 			{
 				GameObjectName = goName,
-			}.GeneratePayload(jsonSettings);
-			
-			foreach (var load in payload)
-			{
-				RTUController.SendMessageToGame(load);
-			}
+			});
 
 			RTUDebug.Log(
 				$"{ChangeType}: {destroyGameObjectHierarchyEvent.instanceId} in scene {destroyGameObjectHierarchyEvent.scene}.");

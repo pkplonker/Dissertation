@@ -48,7 +48,13 @@ namespace RTUEditor
 			JsonSettings = new JSONSettingsCreator().Create();
 		}
 
-		public void SendMessageToGame(string message) => connection.SendMessageToGame(message);
+		public void SendPayloadToGame(IPayload payload)
+		{
+			foreach (var message in payload.GeneratePayload(JsonSettings))
+			{
+				connection.SendMessageToGame(message);
+			}
+		}
 
 		public void Disconnect()
 		{

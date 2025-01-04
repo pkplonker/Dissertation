@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 namespace RealTimeUpdateRuntime
 {
 	[Serializable]
-	public class GameObjectPropertyChangeArgs : IChangeArgs
+	public class GameObjectPropertyPayload : IPayload
 	{
 		public static string MESSAGE_IDENTIFER = "GameObjectProperty";
 		public string GameObjectPath { get; set; } = string.Empty;

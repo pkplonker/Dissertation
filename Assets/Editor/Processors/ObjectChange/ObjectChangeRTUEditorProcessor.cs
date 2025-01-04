@@ -7,11 +7,11 @@ using UnityEngine;
 
 namespace RTUEditor.ObjectChange
 {
-	public class ObjectChangeRTUEditorProcessor : IRTUEditorProcessor, IMessageSender
+	public class ObjectChangeRTUEditorProcessor : IRTUEditorProcessor
 	{
 		public IEditorRtuController controller { get; set; }
 		private Dictionary<ObjectChangeKind, IObjectChangeProcessor> objectChangeProcessors;
-		public void SendMessageToGame(string message) => controller.SendMessageToGame(message);
+		
 		public bool IsConnected { get; }
 
 		public ObjectChangeRTUEditorProcessor(IEditorRtuController controller)

@@ -26,16 +26,11 @@ namespace RTUEditor.ObjectChange
 			var newParentGo =
 				EditorUtility.InstanceIDToObject(changeGameObjectParent.newParentInstanceId) as GameObject;
 
-			var payload = new ReparentGameObjectChangeArgs()
+			RTUController.SendPayloadToGame(new ReparentGameObjectPayload()
 			{
 				GameObjectName = gameObjectChanged.name,
 				NewParentGameObjectName = newParentGo?.name ?? string.Empty,
-			}.GeneratePayload(jsonSettings);
-
-			foreach (var load in payload)
-			{
-				RTUController.SendMessageToGame(load);
-			}
+			});
 
 			RTUDebug.Log(
 				$"{ChangeType}: {gameObjectChanged} to {newParentGo} from scene {changeGameObjectParent.previousScene} to scene {changeGameObjectParent.newScene}.");

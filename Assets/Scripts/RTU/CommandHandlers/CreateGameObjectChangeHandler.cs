@@ -7,7 +7,7 @@ namespace RealTimeUpdateRuntime
 {
 	public class CreateGameObjectChangeHandler : RTUCommandHandlerBase
 	{
-		public override string Tag { get; } = CreateGameObjectChangeArgs.MESSAGE_IDENTIFER;
+		public override string Tag { get; } = CreateGameObjectPayload.MESSAGE_IDENTIFER;
 
 		public override void Process(CommandHandlerArgs commandHandlerArgs, JsonSerializerSettings jsonSettings)
 		{
@@ -15,7 +15,7 @@ namespace RealTimeUpdateRuntime
 			{
 				try
 				{
-					var args = JsonConvert.DeserializeObject<CreateGameObjectChangeArgs>(commandHandlerArgs.Payload,
+					var args = JsonConvert.DeserializeObject<CreateGameObjectPayload>(commandHandlerArgs.Payload,
 						jsonSettings);
 					var go = new GameObject();
 					var pathElements =args.GameObjectPath.Split('/');

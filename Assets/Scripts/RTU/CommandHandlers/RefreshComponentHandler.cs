@@ -8,7 +8,7 @@ namespace RealTimeUpdateRuntime
 {
 	public class RefreshComponentHandler : RTUCommandHandlerBase
 	{
-		public override string Tag { get; } = RefreshComponentChangeArgs.MESSAGE_IDENTIFER;
+		public override string Tag { get; } = RefreshComponentPayload.MESSAGE_IDENTIFER;
 
 		public override void Process(CommandHandlerArgs commandHandlerArgs, JsonSerializerSettings jsonSettings)
 		{
@@ -16,7 +16,7 @@ namespace RealTimeUpdateRuntime
 			{
 				try
 				{
-					var args = JsonConvert.DeserializeObject<RefreshComponentChangeArgs>(commandHandlerArgs.Payload,
+					var args = JsonConvert.DeserializeObject<RefreshComponentPayload>(commandHandlerArgs.Payload,
 						jsonSettings);
 					var go = GameObject.Find(args.GameObjectPath);
 					var componentType = args.ComponentTypeName.GetTypeIncludingUnity();

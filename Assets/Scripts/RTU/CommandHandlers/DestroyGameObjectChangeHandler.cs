@@ -7,7 +7,7 @@ namespace RealTimeUpdateRuntime
 {
 	public class DestroyGameObjectChangeHandler : RTUCommandHandlerBase
 	{
-		public override string Tag { get; } = DestroyGameObjectChangeArgs.MESSAGE_IDENTIFER;
+		public override string Tag { get; } = DestroyGameObjectPayload.MESSAGE_IDENTIFER;
 
 		public override void Process(CommandHandlerArgs commandHandlerArgs, JsonSerializerSettings jsonSettings)
 		{
@@ -15,7 +15,7 @@ namespace RealTimeUpdateRuntime
 			{
 				try
 				{
-					var args = JsonConvert.DeserializeObject<DestroyGameObjectChangeArgs>(commandHandlerArgs.Payload,
+					var args = JsonConvert.DeserializeObject<DestroyGameObjectPayload>(commandHandlerArgs.Payload,
 						jsonSettings);
 					var go = GameObject.Find(args.GameObjectName);
 

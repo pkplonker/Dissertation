@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace RealTimeUpdateRuntime
 {
-	public interface IPropertyChangeArgs : IChangeArgs
+	public interface IPropertyPayload : IPayload
 	{
 		public string GameObjectPath { get; set; }
 		public string ComponentTypeName { get; set; }

@@ -5,12 +5,14 @@ using Newtonsoft.Json;
 namespace RealTimeUpdateRuntime
 {
 	[Serializable]
-	public class AssetPropertyChangeEventArgs: IChangeArgs
+	public class AssetPropertyChangeEventArgs : IPayload
 	{
-		public static string MESSAGE_IDENTIFER = "AssetProperty";
+		public static string MESSAGE_IDENTIFER = "AssetUpdate";
 		public Dictionary<string, object> Changes { get; set; }
 		public string Path { get; set; }
 		public string Type { get; set; }
-		public List<string> GeneratePayload(JsonSerializerSettings JSONSettings) => throw new NotImplementedException();
+
+		public virtual List<string> GeneratePayload(JsonSerializerSettings JSONSettings) => new()
+			{$"{MESSAGE_IDENTIFER}\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}"};
 	}
 }

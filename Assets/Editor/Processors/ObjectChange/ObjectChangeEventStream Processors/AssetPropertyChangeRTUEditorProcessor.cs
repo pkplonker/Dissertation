@@ -34,7 +34,7 @@ namespace RTUEditor.ObjectChange
 						if (assetChangePayloadStrategyFactory.GeneratePayload(databaseClone, currentClone, type,
 							    out var payload))
 						{
-							controller.SendMessageToGame(payload);
+							controller.SendPayloadToGame(payload);
 							RTUDebug.Log(
 								$"AssetPropertyChanged: {changeAsset} at {changeAssetPath} in scene {changeAssetObjectPropertiesEvent.scene}.");
 						}

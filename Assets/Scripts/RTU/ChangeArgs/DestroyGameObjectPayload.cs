@@ -5,11 +5,10 @@ using Newtonsoft.Json;
 namespace RealTimeUpdateRuntime
 {
 	[Serializable]
-	public class CreateGameObjectChangeArgs : IChangeArgs
+	public class DestroyGameObjectPayload : IPayload
 	{
-		public static string MESSAGE_IDENTIFER = "CreateGameObject";
-
-		public string GameObjectPath { get; set; } = string.Empty;
+		public static string MESSAGE_IDENTIFER = "DestroyGameObject";
+		public string GameObjectName { get; set; }
 
 		public List<string> GeneratePayload(JsonSerializerSettings JSONSettings) => new()
 		{
