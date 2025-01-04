@@ -37,7 +37,7 @@ namespace RTUEditor.ObjectChange
 				RTUController.SendMessageToGame(load);
 			}
 
-			Debug.Log(
+			RTUDebug.Log(
 				$"{ChangeType}: {gameObjectChanged} to {newParentGo} from scene {changeGameObjectParent.previousScene} to scene {changeGameObjectParent.newScene}.");
 		}
 	}

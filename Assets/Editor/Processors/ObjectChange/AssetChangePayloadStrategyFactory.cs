@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
-using UnityEngine;
 
 namespace RTUEditor.ObjectChange
 {
@@ -32,7 +32,7 @@ namespace RTUEditor.ObjectChange
 					}
 					catch (Exception e)
 					{
-						Debug.LogError($"Failed to serialize {argsData} due to : {e.Message}");
+						RTUDebug.LogError($"Failed to serialize {argsData} due to : {e.Message}");
 					}
 
 					payload = $"assetUpdate,\n{argsData}";
@@ -40,7 +40,7 @@ namespace RTUEditor.ObjectChange
 				}
 			}
 
-			Debug.LogWarning($"Failed to generate payload for {currentClone}");
+			RTUDebug.LogWarning($"Failed to generate payload for {currentClone}");
 
 			return false;
 		}

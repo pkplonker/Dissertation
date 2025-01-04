@@ -70,7 +70,7 @@ namespace RTUEditor
 			}
 			catch (Exception e)
 			{
-				Debug.LogError($"Failed to close scene on disconnect: {e.Message}");
+				RTUDebug.LogError($"Failed to close scene on disconnect: {e.Message}");
 			}
 
 			try
@@ -79,7 +79,7 @@ namespace RTUEditor
 			}
 			catch (Exception e)
 			{
-				Debug.LogError($"Failed to execute disconnection callback: {e.Message}");
+				RTUDebug.LogError($"Failed to execute disconnection callback: {e.Message}");
 			}
 		}
 
@@ -94,7 +94,7 @@ namespace RTUEditor
 				}
 				catch (Exception e)
 				{
-					Debug.LogError($"Failed to setup editor for connection: {e.Message}");
+					RTUDebug.LogError($"Failed to setup editor for connection: {e.Message}");
 					connection.Disconnect();
 				}
 
@@ -104,7 +104,7 @@ namespace RTUEditor
 				}
 				catch (Exception e)
 				{
-					Debug.LogError($"Failed to execute connection callback: {e.Message}");
+					RTUDebug.LogError($"Failed to execute connection callback: {e.Message}");
 					connection.Disconnect();
 				}
 			};
@@ -116,7 +116,7 @@ namespace RTUEditor
 			handlers.AddRange(AppDomain.CurrentDomain.GetAssemblies()
 				.SelectMany(x => x.GetTypes())
 				.Where(x => x.GetInterfaces().Contains(typeof(IRTUEditorProcessor)))
-				.ForEach(x => Debug.Log($"Registering Editor Handlers: {x}"))
+				.ForEach(x => RTUDebug.Log($"Registering Editor Handlers: {x}"))
 				.Select(x =>
 					(IRTUEditorProcessor) Activator.CreateInstance(x, new object[] {this}))
 				.ToList());

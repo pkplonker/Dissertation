@@ -11,7 +11,7 @@ namespace RealTimeUpdateRuntime
 #endif
 		public const string PREMESSAGE = "RTU: ";
 
-		public static void Log(string message)
+		public static void Log(object message)
 		{
 			if (IsDebugEnabled)
 			{
@@ -19,7 +19,7 @@ namespace RealTimeUpdateRuntime
 			}
 		}
 
-		public static void LogWarning(string message)
+		public static void LogWarning(object message)
 		{
 			if (IsDebugEnabled)
 			{
@@ -27,7 +27,7 @@ namespace RealTimeUpdateRuntime
 			}
 		}
 
-		public static void LogError(string message)
+		public static void LogError(object message)
 		{
 			if (IsDebugEnabled)
 			{

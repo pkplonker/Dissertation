@@ -22,6 +22,7 @@ namespace RTUEditor
 
 		private void OnGUI()
 		{
+			EditorGUILayout.BeginHorizontal();
 			gamePath = EditorGUILayout.TextField("Game Exe Path", gamePath);
 
 			if (GUILayout.Button("Run Game"))
@@ -51,6 +52,10 @@ namespace RTUEditor
 				}
 			}
 
+			EditorGUILayout.EndHorizontal();
+			EditorGUILayout.BeginHorizontal();
+			ip = EditorGUILayout.TextField("IP Address", ip);
+
 			if (controller.IsConnected)
 			{
 				if (GUILayout.Button("Disconnect from Game"))
@@ -66,8 +71,8 @@ namespace RTUEditor
 				}
 			}
 
-			ip = EditorGUILayout.TextField("IP Address", ip);
-
+			EditorGUILayout.EndHorizontal();
+			EditorGUILayout.BeginHorizontal();
 			if (GUILayout.Button("Send Test Data to Game"))
 			{
 				controller.SendMessageToGame("Hello, Game!");
@@ -78,7 +83,6 @@ namespace RTUEditor
 				controller.ShowScene();
 			}
 
-			GUILayout.Label("---------Debug---------------");
 			if (GUILayout.Button("Reload processors"))
 			{
 				controller.CreateProcessors();
@@ -89,7 +93,7 @@ namespace RTUEditor
 				RTUAssetStore.GenerateDictionary();
 			}
 
-			GUILayout.Label(controller.IsConnected ? "Connected" : "Disconnected");
+			EditorGUILayout.EndHorizontal();
 		}
 	}
 }

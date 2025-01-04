@@ -35,12 +35,12 @@ namespace RTUEditor.ObjectChange
 
 			if (sceneGameObjectStore.TryGetExistingClone(fullPath, out var originalClone))
 			{
-				if (originalClone is GameObjectClone originalGameobjectClone &&
-				    currentClone is GameObjectClone currentGameobjectClone &&
-				    HasChange(originalGameobjectClone, currentGameobjectClone, fullPath, gameObject,
+				if (originalClone is GameObjectClone originalGameObjectClone &&
+				    currentClone is GameObjectClone currentGameObjectClone &&
+				    HasChange(originalGameObjectClone, currentGameObjectClone, fullPath, gameObject,
 					    out List<IChangeArgs> changes))
 				{
-					sceneGameObjectStore.AddClone(fullPath, currentGameobjectClone);
+					sceneGameObjectStore.AddClone(fullPath, currentGameObjectClone);
 					try
 					{
 						foreach (var change in changes)

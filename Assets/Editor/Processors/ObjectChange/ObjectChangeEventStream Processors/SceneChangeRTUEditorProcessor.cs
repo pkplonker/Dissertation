@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using RealTimeUpdateRuntime;
 using UnityEditor;
 using UnityEngine;
 
@@ -17,7 +18,7 @@ namespace RTUEditor.ObjectChange
 		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings, SceneGameObjectStore sceneGameObjectStore)
 		{
 			stream.GetChangeSceneEvent(streamIdx, out var changeSceneEvent);
-			Debug.Log($"{ChangeType}: {changeSceneEvent.scene}");
+			RTUDebug.Log($"{ChangeType}: {changeSceneEvent.scene}");
 		}
 	}
 }

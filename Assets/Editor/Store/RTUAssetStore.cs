@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using RealTimeUpdateRuntime;
 using UnityEditor;
 using UnityEngine;
 
@@ -41,19 +42,19 @@ namespace RTUEditor.AssetStore
 					x.EndsWith(assetType, StringComparison.InvariantCultureIgnoreCase));
 				if (!paths.Any())
 				{
-					Debug.LogWarning($"Failed to locate any assets of type {assetType}");
+					RTUDebug.LogWarning($"Failed to locate any assets of type {assetType}");
 				}
 
 				foreach (var path in paths)
 				{
 					if (!GenerateClone(path, assetType, out var assetClone))
 					{
-						Debug.LogWarning($"Failed to generate clone for {path}");
+						RTUDebug.LogWarning($"Failed to generate clone for {path}");
 					}
 
 					if (!assetDict[assetType].TryAdd(path, assetClone))
 					{
-						Debug.LogWarning($"Failed to add {path} as element already exists");
+						RTUDebug.LogWarning($"Failed to add {path} as element already exists");
 					}
 				}
 			}

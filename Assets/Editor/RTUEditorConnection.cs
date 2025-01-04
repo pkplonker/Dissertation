@@ -63,7 +63,6 @@ namespace RTUEditor
 				RTUDebug.LogError("Not connected to the game server.");
 				return;
 			}
-			//RTUDebug.Log($"Sending Message: {message}");
 			socket.Send(Encoding.UTF8.GetBytes(message));
 		}
 
