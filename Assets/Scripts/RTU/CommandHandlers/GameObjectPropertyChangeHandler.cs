@@ -6,9 +6,9 @@ using UnityEngine;
 
 namespace RealTimeUpdateRuntime
 {
-	public class PropertyChangeHandler : RTUCommandHandlerBase
+	public class GameObjectPropertyChangeHandler : RTUCommandHandlerBase
 	{
-		public override string Tag { get; } = ComponentPropertyChangeArgs.MESSAGE_IDENTIFER;
+		public override string Tag { get; } = GameObjectPropertyChangeArgs.MESSAGE_IDENTIFER;
 
 		public override void Process(CommandHandlerArgs commandHandlerArgs, JsonSerializerSettings jsonSettings)
 		{
@@ -16,17 +16,17 @@ namespace RealTimeUpdateRuntime
 			{
 				try
 				{
-					var args = ProcessInternal<ComponentPropertyChangeArgs>(commandHandlerArgs, out var component,
-						out var fieldName, out var member) as ComponentPropertyChangeArgs;
+					var args = ProcessInternal(commandHandlerArgs, out var fieldName, out var member);
 					var value = args.GetDeserializedValue(jsonSettings);
 					var memberType = member.MemberType;
 					var convertedVal = ConvertValue(memberType, value, jsonSettings);
-					member.SetValue(component, convertedVal);
+					var go = GameObject.Find(args.GameObjectPath);
+					member.SetValue(go, convertedVal);
 					RTUDebug.Log($"{fieldName} set to {convertedVal} successfully.");
 				}
 				catch (Exception e)
 				{
-					RTUDebug.Log($"Failed to set property: {e.Message} : {e?.InnerException}");
+					RTUDebug.Log($"Failed to set GameObject property: {e.Message} : {e?.InnerException}");
 				}
 			});
 		}
@@ -68,31 +68,25 @@ namespace RealTimeUpdateRuntime
 			return Convert.ChangeType(value, targetType);
 		}
 
-		public IPropertyChangeArgs ProcessInternal<T>(CommandHandlerArgs commandHandlerArgs,
-			out Component component, out string fieldName, out IMemberAdapter member) where T : IPropertyChangeArgs
+		public GameObjectPropertyChangeArgs ProcessInternal(CommandHandlerArgs commandHandlerArgs,
+			out string fieldName, out IMemberAdapter member)
 		{
-			var args = JsonConvert.DeserializeObject<T>(commandHandlerArgs.Payload);
+			var args = JsonConvert.DeserializeObject<GameObjectPropertyChangeArgs>(commandHandlerArgs.Payload);
 			var go = GameObject.Find(args.GameObjectPath);
-			var type = Type.GetType(args.ComponentTypeName);
-			if (type == null)
-			{
-				throw new Exception("Could not determine property update type");
-			}
 
-			component = go.GetComponent(type);
 			fieldName = args.PropertyPath;
 
 			fieldName = fieldName.Trim("m_".ToCharArray());
 			member = null;
 			try
 			{
-				member = MemberAdaptorUtils.GetMemberAdapter(type, fieldName);
+				member = MemberAdaptorUtils.GetMemberAdapter(typeof(GameObject), fieldName);
 			}
 			catch
 			{
 				try
 				{
-					member = MemberAdaptorUtils.GetMemberAdapter(type,
+					member = MemberAdaptorUtils.GetMemberAdapter(typeof(GameObject),
 						new string(fieldName.ToCharArray().Where(c => !Char.IsWhiteSpace(c)).ToArray()));
 				}
 				catch (Exception e) { }

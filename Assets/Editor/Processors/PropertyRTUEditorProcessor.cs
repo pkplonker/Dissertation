@@ -84,44 +84,124 @@ namespace RTUEditor
 			args = new HashSet<string>();
 			if (pm.target is Component component)
 			{
-				var go = component.gameObject;
-				var fullPath = go.GetFullName();
-				if (sceneGameObjectStore.TryGetExistingClone(fullPath, out var originalClone))
-				{
-					if (originalClone is GameObjectClone originalGameobjectClone &&
-					    currentClone is GameObjectClone currentGameobjectClone &&
-					    HasChange(originalGameobjectClone, currentGameobjectClone, component, out var changes))
-					{
-						sceneGameObjectStore.AddClone(fullPath, currentGameobjectClone);
-						try
-						{
-							foreach (var change in changes)
-							{
-								var arg = new PropertyChangeArgs()
-								{
-									GameObjectPath = fullPath,
-									ComponentTypeName = component.GetType().AssemblyQualifiedName,
-									PropertyPath = change.Key,
-									Value = change.Value,
-									ValueType = change.Value.GetType()
-								};
-								args.AddRange(arg.GeneratePayload(settings));
-							}
-						}
-						catch (Exception e)
-						{
-							RTUDebug.LogError($"Failed to generate property change payload string {e.Message}");
-						}
+				if (ComponentChange(settings, currentClone, args, component)) return true;
+			}
 
-						return true;
+			if (pm.target is GameObject gameObject)
+			{
+				if (GameObjectChange(settings, pm, args, gameObject)) return true;
+			}
+
+			return false;
+		}
+
+		private bool GameObjectChange(JsonSerializerSettings settings, PropertyModification pm, HashSet<string> args,
+			GameObject gameObject)
+		{
+			GameObjectClone currentClone = null;
+			if (pm.target is GameObject targetGameObject)
+			{
+				currentClone = sceneGameObjectStore.CloneGameObject(targetGameObject) as GameObjectClone;
+			}
+
+			if (sceneGameObjectStore.TryGetExistingGameObjectClone(gameObject.GetInstanceID(),
+				    out var originalClone))
+			{
+				if (HasGameObjectChange(originalClone, currentClone, out var changes))
+				{
+					sceneGameObjectStore.TryRemoveClone(gameObject.GetInstanceID(), out var originalName);
+					sceneGameObjectStore.AddClone(gameObject.GetFullName(), currentClone);
+					try
+					{
+						foreach (var change in changes)
+						{
+							var arg = new GameObjectPropertyChangeArgs()
+							{
+								GameObjectPath = originalName, // in case this is what has changed
+								PropertyPath = change.Key,
+								Value = change.Value,
+								ValueType = change.Value.GetType()
+							};
+							args.AddRange(arg.GeneratePayload(settings));
+						}
 					}
+					catch (Exception e)
+					{
+						RTUDebug.LogError($"Failed to generate GameObject property change payload string {e.Message}");
+					}
+
+					return true;
+				}
+			}
+			else
+			{
+				RTUDebug.LogWarning($"Unable to locate current GameObject clone for {currentClone?.Name}");
+			}
+
+			return false;
+		}
+
+		private bool ComponentChange(JsonSerializerSettings settings, Clone currentClone, HashSet<string> args,
+			Component component)
+		{
+			var go = component.gameObject;
+			var fullPath = go.GetFullName();
+			if (sceneGameObjectStore.TryGetExistingGameObjectClone(go.GetInstanceID(), out var originalClone))
+			{
+				if (originalClone is GameObjectClone originalGameobjectClone &&
+				    currentClone is GameObjectClone currentGameobjectClone &&
+				    HasComponentChange(originalGameobjectClone, currentGameobjectClone, component, out var changes))
+				{
+					sceneGameObjectStore.AddClone(fullPath, currentGameobjectClone);
+					try
+					{
+						foreach (var change in changes)
+						{
+							var arg = new ComponentPropertyChangeArgs()
+							{
+								GameObjectPath = fullPath,
+								ComponentTypeName = component.GetType().AssemblyQualifiedName,
+								PropertyPath = change.Key,
+								Value = change.Value,
+								ValueType = change.Value.GetType()
+							};
+							args.AddRange(arg.GeneratePayload(settings));
+						}
+					}
+					catch (Exception e)
+					{
+						RTUDebug.LogError($"Failed to generate property change payload string {e.Message}");
+					}
+
+					return true;
 				}
 			}
 
 			return false;
 		}
 
-		protected virtual bool HasChange(GameObjectClone originalClone, GameObjectClone currentClone,
+		private bool HasGameObjectChange(Clone originalClone, GameObjectClone currentClone,
+			out Dictionary<string, object> changes)
+		{
+			changes = new Dictionary<string, object>();
+			var adaptors = MemberAdaptorUtils.GetMemberAdaptersAsDict(typeof(GameObject));
+			foreach (var (originalName, oldValue) in originalClone)
+			{
+				if (!adaptors.TryGetValue(originalName, out var adaptor)) continue;
+
+				var type = adaptor.MemberType;
+
+				if (!currentClone.TryGetValue(originalName, out var newValue)) continue;
+				if (oldValue == null && newValue == null) continue;
+
+				if (HandleValueType(changes, type, oldValue, newValue, originalName)) continue;
+				if (HandleClass(changes, type, oldValue, newValue, originalName)) continue;
+			}
+
+			return changes.Any();
+		}
+
+		protected virtual bool HasComponentChange(GameObjectClone originalClone, GameObjectClone currentClone,
 			Component component,
 			out Dictionary<string, object> changes)
 		{

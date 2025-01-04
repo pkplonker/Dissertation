@@ -7,7 +7,7 @@ namespace RealTimeUpdateRuntime
 {
 	[CustomPropertyChangeArgs(typeof(object))] //default
 	[Serializable]
-	public class PropertyChangeArgs : IPropertyChangeArgs
+	public class ComponentPropertyChangeArgs : IPropertyChangeArgs
 	{
 		public static string MESSAGE_IDENTIFER = "Property";
 		public string GameObjectPath { get; set; } = string.Empty;

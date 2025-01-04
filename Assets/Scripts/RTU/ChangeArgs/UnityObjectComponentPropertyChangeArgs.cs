@@ -6,7 +6,7 @@ namespace RealTimeUpdateRuntime
 {
 	[CustomPropertyChangeArgs(typeof(Object))]
 	[Serializable]
-	public class UnityObjectPropertyChangeArgs : PropertyChangeArgs
+	public class UnityObjectComponentPropertyChangeArgs : ComponentPropertyChangeArgs
 	{
 		public override List<string> GeneratePayload(JsonSerializerSettings JSONSettings) => new List<string>()
 			{$"{MESSAGE_IDENTIFER}\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}"};

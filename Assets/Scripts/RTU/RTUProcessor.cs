@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -17,6 +16,11 @@ namespace RealTimeUpdateRuntime
 		private WebSocketServer webSocketServer;
 		private static readonly Queue<Action> ExecutionQueue = new Queue<Action>();
 		public TaskScheduler Schedular { get; private set; }
+
+		private void Awake()
+		{
+			gameObject.hideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector;
+		}
 
 		void Start()
 		{

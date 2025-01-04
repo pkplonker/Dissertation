@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using RealTimeUpdateRuntime;
 using UnityEditor;
 using UnityEngine;
 
@@ -21,7 +22,7 @@ namespace RTUEditor.ObjectChange
 			var gameObject =
 				EditorUtility.InstanceIDToObject(changeGameObjectStructureHierarchy.instanceId) as
 					GameObject;
-			Debug.Log($"{ChangeType}: {gameObject} in scene {changeGameObjectStructureHierarchy.scene}.");
+			RTUDebug.Log($"{ChangeType}: {gameObject} in scene {changeGameObjectStructureHierarchy.scene}.");
 		}
 	}
 }

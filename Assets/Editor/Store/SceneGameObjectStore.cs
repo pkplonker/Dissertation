@@ -71,6 +71,12 @@ namespace RTUEditor
 
 		public bool TryGetExistingClone(string name, out Clone result) => clones.TryGetValue(name, out result);
 
+		public bool TryGetExistingGameObjectClone(int instanceId, out Clone result)
+		{
+			result = clones.Values.OfType<GameObjectClone>().FirstOrDefault(x => x.InstanceID == instanceId);
+			return result != null;
+		}
+
 		public void AddClone(string fullPath, GameObjectClone newClone) => clones[fullPath] = newClone;
 
 		public bool TryRemoveClone(int instanceId, out string name)
@@ -100,5 +106,7 @@ namespace RTUEditor
 
 			return true;
 		}
+
+		public IReadOnlyList<Clone> GetReadOnlyClones() => clones.Values.ToList().AsReadOnly();
 	}
 }

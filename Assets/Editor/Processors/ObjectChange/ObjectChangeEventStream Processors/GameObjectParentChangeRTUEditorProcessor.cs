@@ -17,18 +17,28 @@ namespace RTUEditor.ObjectChange
 			this.RTUController = controller;
 		}
 
-		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings, SceneGameObjectStore sceneGameObjectStore)
+		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings,
+			SceneGameObjectStore sceneGameObjectStore)
 		{
 			stream.GetChangeGameObjectParentEvent(streamIdx, out var changeGameObjectParent);
 			var gameObjectChanged =
 				EditorUtility.InstanceIDToObject(changeGameObjectParent.instanceId) as GameObject;
 			var newParentGo =
 				EditorUtility.InstanceIDToObject(changeGameObjectParent.newParentInstanceId) as GameObject;
-			var previousParentGo =
-				EditorUtility.InstanceIDToObject(changeGameObjectParent.previousParentInstanceId) as
-					GameObject;
+
+			var payload = new ReparentGameObjectChangeArgs()
+			{
+				GameObjectName = gameObjectChanged.name,
+				NewParentGameObjectName = newParentGo?.name ?? string.Empty,
+			}.GeneratePayload(jsonSettings);
+
+			foreach (var load in payload)
+			{
+				RTUController.SendMessageToGame(load);
+			}
+
 			Debug.Log(
-				$"{ChangeType}: {gameObjectChanged} from {previousParentGo} to {newParentGo} from scene {changeGameObjectParent.previousScene} to scene {changeGameObjectParent.newScene}.");
+				$"{ChangeType}: {gameObjectChanged} to {newParentGo} from scene {changeGameObjectParent.previousScene} to scene {changeGameObjectParent.newScene}.");
 		}
 	}
 }
