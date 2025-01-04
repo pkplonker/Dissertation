@@ -11,13 +11,16 @@ namespace RealTimeUpdateRuntime
 {
 	public class AssetUpdateChangeHandler : RTUCommandHandlerBase
 	{
+		public override string Tag { get; } = AssetPropertyChangeEventArgs.MESSAGE_IDENTIFER;
+
 		public override void Process(CommandHandlerArgs commandHandlerArgs, JsonSerializerSettings jsonSettings)
 		{
 			RTUProcessor.Enqueue(() =>
 			{
 				try
 				{
-					var args = JsonConvert.DeserializeObject<AssetPropertyChangeEventArgs>(commandHandlerArgs.Payload, jsonSettings);
+					var args = JsonConvert.DeserializeObject<AssetPropertyChangeEventArgs>(commandHandlerArgs.Payload,
+						jsonSettings);
 					switch (args.Type.ToLower())
 					{
 						case "mat":
@@ -43,10 +46,11 @@ namespace RealTimeUpdateRuntime
 									try
 									{
 										var value = change.Value;
-										if(change.Value is JArray a )
+										if (change.Value is JArray a)
 										{
 											value = a.ToObject(member?.MemberType);
 										}
+
 										member?.SetValue(mat, value);
 									}
 									catch (Exception e)
@@ -76,40 +80,6 @@ namespace RealTimeUpdateRuntime
 					RTUDebug.Log($"Failed to set property: {e.Message}");
 				}
 			});
-		}
-
-		private bool ModifyStruct(object structValue, string subFieldName, string newValue, out object newStruct)
-		{
-			Type structType = structValue.GetType();
-
-			FieldInfo subFieldInfo = structType.GetField(subFieldName, BindingFlags.Public | BindingFlags.Instance);
-			newStruct = structType;
-			if (subFieldInfo == null) return false;
-			object convertedValue = Convert.ChangeType(newValue, subFieldInfo.FieldType);
-			newStruct = structValue;
-			subFieldInfo.SetValue(newStruct, convertedValue);
-			return true;
-		}
-
-		private static object ConvertValue(Type targetType, object value)
-		{
-			try
-			{
-				return Convert.ChangeType(value, targetType);
-			}
-			catch (InvalidCastException)
-			{
-				throw new InvalidCastException(
-					$"Cannot convert value '{value}' of type {targetType} to {targetType}.");
-			}
-			catch (FormatException)
-			{
-				throw new FormatException($"Invalid format for value '{value}' when converting to {targetType}.");
-			}
-			catch (Exception ex)
-			{
-				throw new Exception($"Failed to convert value '{value}' to {targetType}: {ex.Message}");
-			}
 		}
 	}
 }

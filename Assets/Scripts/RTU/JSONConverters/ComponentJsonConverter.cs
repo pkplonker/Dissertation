@@ -1,9 +1,11 @@
 ﻿using System;
 using Newtonsoft.Json;
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace RealTimeUpdateRuntime
 {
+	[Preserve]
 	[JSONCustomConverter(typeof(ComponentJsonConverter))]
 	public class ComponentJsonConverter : JsonConverter<UnityEngine.Component>
 	{

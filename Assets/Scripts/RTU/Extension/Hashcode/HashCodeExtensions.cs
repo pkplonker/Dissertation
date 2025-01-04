@@ -177,9 +177,9 @@ namespace System
 			BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
 			Func<FieldInfo, bool> filter = null)
 		{
-			foreach (FieldInfo fieldInfo in GetFields(typeToReflect, bindingFlags))
+			var fields = GetFields(typeToReflect, bindingFlags);
+			foreach (FieldInfo fieldInfo in fields)
 			{
-				if (!fieldInfo.IsPublic && !fieldInfo.IsDefined(typeof(SerializeField), true)) continue;
 				if (fieldInfo.IsDefined(typeof(NonSerializedAttribute), true)) continue;
 
 				if (fieldInfo.FieldType.IsPointer || typeof(Delegate).IsAssignableFrom(fieldInfo.FieldType)) continue;

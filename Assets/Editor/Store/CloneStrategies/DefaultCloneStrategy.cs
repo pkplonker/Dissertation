@@ -15,7 +15,7 @@ namespace RTUEditor.AssetStore
 		{
 			var adaptors = MemberAdaptorUtils.GetMemberAdapters(type)
 				.Where(x => !excludedProperties?.Any(e =>
-					string.Equals(e, x.Name, StringComparison.InvariantCultureIgnoreCase)) ?? false);
+					string.Equals(e, x.Name, StringComparison.InvariantCultureIgnoreCase)) ?? true);
 			foreach (var prop in adaptors)
 			{
 				object val = null;

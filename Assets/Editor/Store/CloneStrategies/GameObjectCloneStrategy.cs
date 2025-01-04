@@ -12,6 +12,7 @@ namespace RTUEditor.AssetStore
 		{
 			if (asset is not GameObject go) return null;
 			var clone = CloneInternal(asset, asset.GetType(), new GameObjectClone(path)) as GameObjectClone;
+			clone.InstanceID = go.GetInstanceID();
 			clone.components = go.GetComponents(typeof(Component))
 				.Select(x => componentCloneStrategyFactory.GetCloneStrategy(x)?.Clone(x, x.GetType().ToString()))
 				.OfType<ComponentClone>()

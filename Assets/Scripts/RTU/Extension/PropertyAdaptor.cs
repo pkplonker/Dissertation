@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using UnityEngine;
 
 namespace RealTimeUpdateRuntime
 {
@@ -13,6 +14,32 @@ namespace RealTimeUpdateRuntime
 		}
 
 		public object GetValue(object component)
+		{
+			if (component is MeshFilter meshFilter)
+			{
+				if (property.Name.Equals("mesh", StringComparison.InvariantCultureIgnoreCase))
+				{
+					return meshFilter.sharedMesh;
+				}
+			}
+
+			if (component.GetType().IsSubclassOf(typeof(Renderer)) && component is Renderer renderer)
+			{
+				if (property.Name.Equals("material", StringComparison.InvariantCultureIgnoreCase))
+				{
+					return renderer.sharedMaterial;
+				}
+
+				if (property.Name.Equals("materials", StringComparison.InvariantCultureIgnoreCase))
+				{
+					return renderer.sharedMaterials;
+				}
+			}
+
+			return GetValueInternal(component);
+		}
+
+		public object GetValueInternal(object component)
 		{
 			try
 			{

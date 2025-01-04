@@ -7,7 +7,7 @@ namespace RTUEditor.AssetStore
 	public class Clone : Dictionary<string, object>
 	{
 		public string Name { get; private set; }
-		public string Type => Path.GetExtension(Name).Trim('.').ToLowerInvariant();
+		public virtual string Type => Path.GetExtension(Name).Trim('.').ToLowerInvariant();
 
 		public Clone(string name, StringComparer StringComparer) : base(StringComparer)
 		{

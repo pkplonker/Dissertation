@@ -19,20 +19,24 @@ namespace RealTimeUpdateRuntime
 		//reflection to create a runtime method of the templated func and use that to instantiate. https://stackoverflow.com/questions/2604743/setting-generic-type-at-runtime
 		public RTUWebSocketBehavior()
 		{
-			jsonSettings =  new JSONSettingsCreator().Create();
+			jsonSettings = new JSONSettingsCreator().Create();
+			CreateChangeHandlers();
 		}
 
-		private readonly Dictionary<string, IRTUCommandHandler> commandHandlers = new(StringComparer.InvariantCultureIgnoreCase)
-		{
-			{"property", new PropertyChangeHandler()},
-			{"componentProperty", new ComponentPropertyChangeHandler()},
-			{"gameObjectProperty", new GameObjectPropertyChangeHandler()},
-			{"componentCollectionProperty", new ComponentCollectionPropertyChangeHandler()},
-			{"gameObjectCollectionProperty", new GameObjectCollectionPropertyChangeHandler()},
+		private Dictionary<string, IRTUCommandHandler> commandHandlers = new(StringComparer.InvariantCultureIgnoreCase);
 
-			{"assetUpdate", new AssetUpdateChangeHandler()}
-		};
-		
+		public void CreateChangeHandlers()
+		{
+			commandHandlers.Clear();
+			var x = TypeRepository.GetTypes()
+				.Where(x => x.GetInterfaces().Contains(typeof(IRTUCommandHandler)) && !x.IsAbstract)
+				.ForEach(x => RTUDebug.Log($"Registering Runtime Handlers: {x}"))
+				.Select(x =>
+					(IRTUCommandHandler) Activator.CreateInstance(x, new object[] { })).ToList();
+			commandHandlers = x
+				.ToDictionary(x => x.Tag, x => x, StringComparer.InvariantCultureIgnoreCase);
+		}
+
 		protected override void OnMessage(MessageEventArgs args)
 		{
 			try
@@ -71,7 +75,7 @@ namespace RealTimeUpdateRuntime
 			{
 				try
 				{
-					var index = message.IndexOf(',');
+					var index = message.IndexOf('\n');
 					string messageType = null;
 					string payload = string.Empty;
 
