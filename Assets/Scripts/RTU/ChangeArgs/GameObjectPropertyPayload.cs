@@ -24,6 +24,8 @@ namespace RealTimeUpdateRuntime
 			set => ValueTypeName = value?.AssemblyQualifiedName;
 		}
 
+		public int InstanceID { get; set; }
+
 		public object GetDeserializedValue(JsonSerializerSettings settings)
 		{
 			if (Value == null || string.IsNullOrEmpty(ValueTypeName))

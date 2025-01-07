@@ -115,8 +115,9 @@ namespace RTUEditor
 					{
 						foreach (var change in changes)
 						{
-							args.Add(new GameObjectPropertyPayload()
+							args.Add(new GameObjectPropertyPayload
 							{
+								InstanceID = currentClone.InstanceID,
 								GameObjectPath = originalName, // in case this is what has changed
 								PropertyPath = change.Key,
 								Value = change.Value,

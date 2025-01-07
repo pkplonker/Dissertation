@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
-using UnityEngine;
+using UnityEditor;
 
 namespace RTUEditor
 {
@@ -27,6 +27,7 @@ namespace RTUEditor
 		}
 
 		private readonly TaskScheduler scheduler;
+		private PayloadRecorder payloadRecorder;
 		public bool IsConnected => connection?.IsConnected ?? false;
 		public SceneGameObjectStore SceneGameObjectStore { get; private set; }
 		public JsonSerializerSettings JsonSettings { get; private set; }
@@ -46,6 +47,7 @@ namespace RTUEditor
 			scheduler = TaskScheduler.FromCurrentSynchronizationContext();
 			connection = new RTUEditorConnection(scheduler);
 			JsonSettings = new JSONSettingsCreator().Create();
+			payloadRecorder = new PayloadRecorder(JsonSettings);
 		}
 
 		public void SendPayloadToGame(IPayload payload)
@@ -54,6 +56,8 @@ namespace RTUEditor
 			{
 				connection.SendMessageToGame(message);
 			}
+
+			payloadRecorder.Record(payload);
 		}
 
 		public void Disconnect()
@@ -73,6 +77,7 @@ namespace RTUEditor
 			try
 			{
 				CloseScene();
+				payloadRecorder.Finish();
 			}
 			catch (Exception e)
 			{
@@ -95,8 +100,10 @@ namespace RTUEditor
 			{
 				try
 				{
+					Selection.objects = null;
 					ShowScene();
 					CreateProcessors();
+					payloadRecorder.Start();
 				}
 				catch (Exception e)
 				{
