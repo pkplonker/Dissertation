@@ -32,5 +32,6 @@ namespace RTUEditor
 		}
 
 		protected override List<string> GetColumnHeaders() => new() {"GameObject", "Property", "Values"};
+		public override void Replay() { }
 	}
 }

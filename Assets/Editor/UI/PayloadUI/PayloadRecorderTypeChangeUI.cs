@@ -6,7 +6,14 @@ using UnityEngine;
 
 namespace RTUEditor
 {
-	public abstract class PayloadRecorderTypeChangeUI<T> where T : IPayload
+	public abstract class PayloadRecorderTypeChangeUI
+	{
+		public abstract bool Draw();
+
+		public abstract void Replay();
+	}
+
+	public abstract class PayloadRecorderTypeChangeUI<T> : PayloadRecorderTypeChangeUI where T : IPayload
 	{
 		private List<bool> toggles = new();
 		protected IReadOnlyList<T> filteredPayloads;
@@ -21,7 +28,7 @@ namespace RTUEditor
 
 		protected abstract void ExtractPayloads(IReadOnlyList<IPayload> payloads);
 
-		public bool Draw()
+		public override bool Draw()
 		{
 			if (!filteredPayloads.Any()) return false;
 			show = EditorGUILayout.Foldout(show, name + $"({filteredPayloads.Count})");
