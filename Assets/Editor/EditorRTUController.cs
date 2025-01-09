@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
-using Unity.VisualScripting;
 using UnityEditor;
 
 namespace RTUEditor

@@ -2,7 +2,6 @@
 using System.Text;
 using System.Threading.Tasks;
 using RealTimeUpdateRuntime;
-using UnityEngine;
 using WebSocketSharp;
 
 namespace RTUEditor
