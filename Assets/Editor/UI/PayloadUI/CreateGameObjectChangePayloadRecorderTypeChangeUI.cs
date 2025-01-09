@@ -11,7 +11,8 @@ namespace RTUEditor
 	public class
 		CreateGameObjectChangePayloadRecorderTypeChangeUI : PayloadRecorderTypeChangeUI<CreateGameObjectPayload>
 	{
-		private List<GameObjectStructurePayload> componentPayloads;
+		private List<GameObjectStructurePayload> componentCreationPayloads;
+		private List<RefreshComponentPayload> componentRefreshPayloads;
 		protected override string name { get; } = "Create GameObject Changes";
 
 		public CreateGameObjectChangePayloadRecorderTypeChangeUI(IReadOnlyList<IPayload> payloads,
@@ -21,10 +22,14 @@ namespace RTUEditor
 		{
 			this.originalPayloads = payloads.OfType<CreateGameObjectPayload>().ToList();
 			this.filteredPayloads = originalPayloads; // no need to filter as they don't "stack"
-			componentPayloads = payloads.OfType<GameObjectStructurePayload>().Where(x =>
+			componentCreationPayloads = payloads.OfType<GameObjectStructurePayload>().Where(x =>
 					filteredPayloads.Any(y =>
 						y.GameObjectPath.Equals(x.GameObjectPath, StringComparison.InvariantCultureIgnoreCase) &&
 						x.IsAdd))
+				.ToList();
+			componentRefreshPayloads = payloads.OfType<RefreshComponentPayload>().Where(x =>
+					filteredPayloads.Any(y =>
+						y.GameObjectPath.Equals(x.GameObjectPath, StringComparison.InvariantCultureIgnoreCase)))
 				.ToList();
 		}
 
@@ -60,10 +65,14 @@ namespace RTUEditor
 						go.transform.parent = parent.transform;
 					}
 
-					var structureChanges = componentPayloads.Where(x =>
-						x.GameObjectPath.Equals(payload.GameObjectPath,
-							StringComparison.InvariantCultureIgnoreCase));
-					structureChanges.ForEach(GameObjectStructureChangePayloadRecorderTypeChangeUI.PerformReplay);
+					componentCreationPayloads.Where(x =>
+							x.GameObjectPath.Equals(payload.GameObjectPath,
+								StringComparison.InvariantCultureIgnoreCase))
+						.ForEach(GameObjectStructureChangePayloadRecorderTypeChangeUI.PerformReplay);
+					componentRefreshPayloads.Where(x =>
+							x.GameObjectPath.Equals(payload.GameObjectPath,
+								StringComparison.InvariantCultureIgnoreCase))
+						.ForEach(x => RefreshComponentHandler.Perform(jsonSettings, x));
 				}
 				catch (Exception e)
 				{

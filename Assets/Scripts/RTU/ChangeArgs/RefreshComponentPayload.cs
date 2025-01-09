@@ -40,7 +40,11 @@ namespace RealTimeUpdateRuntime
 						{
 							try
 							{
+#if UNITY_EDITOR
+								result.Add(name, value);
+#else
 								result.Add(name, JsonConvert.DeserializeObject(value.ToString(), targetType, settings));
+#endif
 							}
 							catch (Exception e)
 							{
