@@ -60,12 +60,25 @@ namespace RTUEditor
 
 			if (hasShownContent && GUILayout.Button("Submit"))
 			{
-				foreach (var changeUI in changeUIs)
+				if (EditorUtility.DisplayDialog("This action is irreversible",
+					    "Are you sure you want to replay selected changes?", "Yes", "Cancel"))
 				{
-					changeUI?.Replay();
-				}
+					foreach (var changeUI in changeUIs)
+					{
+						changeUI?.Replay();
+					}
 
-				Close();
+					Close();
+				}
+			}
+
+			if (GUILayout.Button("Close"))
+			{
+				if (EditorUtility.DisplayDialog("All changes will be lost", "Are you sure you want to close?", "Close",
+					    "Cancel"))
+				{
+					Close();
+				}
 			}
 		}
 
