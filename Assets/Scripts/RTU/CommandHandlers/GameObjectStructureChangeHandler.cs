@@ -18,44 +18,58 @@ namespace RealTimeUpdateRuntime
 				{
 					var args = JsonConvert.DeserializeObject<GameObjectStructurePayload>(commandHandlerArgs.Payload,
 						jsonSettings);
-					var go = GameObject.Find(args.GameObjectPath);
-					var componentType = args.ComponentTypeName.GetTypeIncludingUnity();
-					if (args.ComponentTypeName.Equals("UnityEngine.Transform",
-						    StringComparison.InvariantCultureIgnoreCase))
-					{
-						// ignore transform as all GameObjects inherently have a transform.
-						return;
-					}
-
-					if (componentType == null)
-					{
-						throw new Exception("Failed to determine type for GameObject structure change");
-					}
-
-					if (args.IsAdd)
-					{
-						var c = go.AddComponent(componentType);
-						if (c != null)
-							RTUDebug.Log($"Added {args.ComponentTypeName} to {go.name}");
-						else
-						{
-							throw new Exception($"Failed to add component {componentType}");
-						}
-					}
-					else
-					{
-						if (go.TryGetComponent(componentType, out var component))
-						{
-							Object.Destroy(component);
-							RTUDebug.Log($"Removed {args.ComponentTypeName} from {go.name}");
-						}
-					}
+					Perform(args);
 				}
 				catch (Exception e)
 				{
 					RTUDebug.Log($"Failed to update GameObject structure: {e.Message} : {e?.InnerException}");
 				}
 			});
+		}
+
+		public static bool Perform(GameObjectStructurePayload args)
+		{
+			var go = GameObject.Find(args.GameObjectPath);
+			var componentType = args.ComponentTypeName.GetTypeIncludingUnity();
+			if (args.ComponentTypeName.Equals("UnityEngine.Transform",
+				    StringComparison.InvariantCultureIgnoreCase))
+			{
+				// ignore transform as all GameObjects inherently have a transform.
+				// todo this should be filtered out editor side
+				return true;
+			}
+
+			if (componentType == null)
+			{
+				throw new Exception("Failed to determine type for GameObject structure change");
+			}
+
+			if (args.IsAdd)
+			{
+				var c = go.AddComponent(componentType);
+				if (c != null)
+					RTUDebug.Log($"Added {args.ComponentTypeName} to {go.name}");
+				else
+				{
+					throw new Exception($"Failed to add component {componentType}");
+				}
+			}
+			else
+			{
+				if (go.TryGetComponent(componentType, out var component))
+				{
+#if UNITY_EDITOR
+					Object.DestroyImmediate(component);
+
+#else
+					Object.Destroy(component);
+
+#endif
+					RTUDebug.Log($"Removed {args.ComponentTypeName} from {go.name}");
+				}
+			}
+
+			return false;
 		}
 	}
 }

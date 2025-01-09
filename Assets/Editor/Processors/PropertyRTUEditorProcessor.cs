@@ -308,5 +308,15 @@ namespace RTUEditor
 
 		private static ComponentClone GetComponentFromClone(GameObjectClone clone, Component component) =>
 			clone?.components?.ToList().FirstOrDefault(x => x.Name == component.GetType().ToString());
+
+		public void Dispose()
+		{
+			try
+			{
+				Undo.postprocessModifications -= PostprocessModificationsCallback;
+				Undo.undoRedoPerformed -= OnUndoRedoPerformed;
+			}
+			catch { }
+		}
 	}
 }

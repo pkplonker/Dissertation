@@ -11,7 +11,7 @@ namespace RTUEditor.ObjectChange
 	{
 		public IEditorRtuController controller { get; set; }
 		private Dictionary<ObjectChangeKind, IObjectChangeProcessor> objectChangeProcessors;
-		
+
 		public bool IsConnected { get; }
 
 		public ObjectChangeRTUEditorProcessor(IEditorRtuController controller)
@@ -39,6 +39,7 @@ namespace RTUEditor.ObjectChange
 			{
 				var type = stream.GetEventType(i);
 				RTUDebug.Log(type.ToString());
+				RTUDebug.Log(this.GetHashCode());
 				if (objectChangeProcessors.TryGetValue(type, out var processor))
 				{
 					processor.Process(stream, i, controller.JsonSettings, controller.SceneGameObjectStore);
@@ -83,6 +84,15 @@ namespace RTUEditor.ObjectChange
 				// 		break;
 				// }
 			}
+		}
+
+		public void Dispose()
+		{
+			try
+			{
+				ObjectChangeEvents.changesPublished -= ChangesPublished;
+			}
+			catch { }
 		}
 	}
 }

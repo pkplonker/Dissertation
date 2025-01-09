@@ -131,6 +131,11 @@ namespace RTUEditor
 
 		public void CreateProcessors()
 		{
+			foreach (var handler in handlers.OfType<IDisposable>())
+			{
+				handler.Dispose();
+			}
+
 			handlers.Clear();
 			handlers.AddRange(AppDomain.CurrentDomain.GetAssemblies()
 				.SelectMany(x => x.GetTypes())
