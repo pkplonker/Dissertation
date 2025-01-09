@@ -2,7 +2,7 @@
 
 namespace RTUEditor
 {
-	public interface IRTUEditorProcessor 
+	public interface IRTUEditorProcessor : IDisposable
 	{
 	}
 }

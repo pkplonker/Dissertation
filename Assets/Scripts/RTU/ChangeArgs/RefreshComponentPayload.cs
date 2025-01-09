@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 namespace RealTimeUpdateRuntime
 {
 	[Serializable]
-	public class RefreshComponentChangeArgs : IChangeArgs
+	public class RefreshComponentPayload : IPayload
 	{
 		public static string MESSAGE_IDENTIFER = "RefreshComponent";
 		public string GameObjectPath { get; set; } = string.Empty;
@@ -40,7 +40,11 @@ namespace RealTimeUpdateRuntime
 						{
 							try
 							{
+#if UNITY_EDITOR
+								result.Add(name, value);
+#else
 								result.Add(name, JsonConvert.DeserializeObject(value.ToString(), targetType, settings));
+#endif
 							}
 							catch (Exception e)
 							{

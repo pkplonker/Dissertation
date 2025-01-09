@@ -1,8 +1,10 @@
-﻿namespace RTUEditor
+﻿using RealTimeUpdateRuntime;
+
+namespace RTUEditor
 {
 	public interface IMessageSender
 	{
-		public void SendMessageToGame(string message);
+		public void SendPayloadToGame(IPayload payload);
 		public bool IsConnected { get; }
 	}
 }

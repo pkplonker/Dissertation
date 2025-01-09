@@ -8,7 +8,7 @@ namespace RealTimeUpdateRuntime
 {
 	public class PropertyChangeHandler : RTUCommandHandlerBase
 	{
-		public override string Tag { get; } = ComponentPropertyChangeArgs.MESSAGE_IDENTIFER;
+		public override string Tag { get; } = ComponentPropertyPayload.MESSAGE_IDENTIFER;
 
 		public override void Process(CommandHandlerArgs commandHandlerArgs, JsonSerializerSettings jsonSettings)
 		{
@@ -16,8 +16,8 @@ namespace RealTimeUpdateRuntime
 			{
 				try
 				{
-					var args = ProcessInternal<ComponentPropertyChangeArgs>(commandHandlerArgs, out var component,
-						out var fieldName, out var member) as ComponentPropertyChangeArgs;
+					var args = ProcessInternal<ComponentPropertyPayload>(commandHandlerArgs, out var component,
+						out var fieldName, out var member) as ComponentPropertyPayload;
 					var value = args.GetDeserializedValue(jsonSettings);
 					var memberType = member.MemberType;
 					var convertedVal = ConvertValue(memberType, value, jsonSettings);
@@ -68,8 +68,8 @@ namespace RealTimeUpdateRuntime
 			return Convert.ChangeType(value, targetType);
 		}
 
-		public IPropertyChangeArgs ProcessInternal<T>(CommandHandlerArgs commandHandlerArgs,
-			out Component component, out string fieldName, out IMemberAdapter member) where T : IPropertyChangeArgs
+		public IPropertyPayload ProcessInternal<T>(CommandHandlerArgs commandHandlerArgs,
+			out Component component, out string fieldName, out IMemberAdapter member) where T : IPropertyPayload
 		{
 			var args = JsonConvert.DeserializeObject<T>(commandHandlerArgs.Payload);
 			var go = GameObject.Find(args.GameObjectPath);
@@ -80,7 +80,7 @@ namespace RealTimeUpdateRuntime
 			}
 
 			component = go.GetComponent(type);
-			fieldName = args.PropertyPath;
+			fieldName = args.MemberName;
 
 			fieldName = fieldName.Trim("m_".ToCharArray());
 			member = null;

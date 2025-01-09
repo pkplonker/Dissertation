@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
 using UnityEditor;
-using UnityEngine;
 
 namespace RTUEditor.ObjectChange
 {
@@ -24,15 +21,10 @@ namespace RTUEditor.ObjectChange
 
 			sceneGameObjectStore.TryRemoveClone(destroyGameObjectHierarchyEvent.instanceId, out var goName);
 
-			var payload = new DestroyGameObjectChangeArgs()
+			RTUController.SendPayloadToGame(new DestroyGameObjectPayload()
 			{
 				GameObjectName = goName,
-			}.GeneratePayload(jsonSettings);
-			
-			foreach (var load in payload)
-			{
-				RTUController.SendMessageToGame(load);
-			}
+			});
 
 			RTUDebug.Log(
 				$"{ChangeType}: {destroyGameObjectHierarchyEvent.instanceId} in scene {destroyGameObjectHierarchyEvent.scene}.");

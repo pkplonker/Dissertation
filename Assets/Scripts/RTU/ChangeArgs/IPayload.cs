@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace RealTimeUpdateRuntime
 {
-	public interface IChangeArgs
+	public interface IPayload
 	{
 		public List<string>  GeneratePayload(JsonSerializerSettings JSONSettings);
 	}

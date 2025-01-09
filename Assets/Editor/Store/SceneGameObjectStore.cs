@@ -24,20 +24,31 @@ namespace RTUEditor
 		{
 			if (this.rtuScene != null)
 			{
-				rtuScene.SceneCreated -= OnSceneChanged;
+				rtuScene.SceneCreated -= RefreshScene;
 			}
 
 			this.rtuScene = rtuScene;
-			rtuScene.SceneCreated += OnSceneChanged;
+			rtuScene.SceneCreated += RefreshScene;
 		}
 
-		private void OnSceneChanged(Scene? scene)
+		private void RefreshScene(Scene? scene)
 		{
 			this.scene = scene;
+			RefreshClones();
+		}
+
+		private void RefreshClones()
+		{
 			if (scene.HasValue)
 			{
-				CreateClones(scene.Value.GetRootGameObjects().Select(x => x.transform), parentPath: string.Empty);
+				CreateClonesStart(scene.Value.GetRootGameObjects().Select(x => x.transform), parentPath: string.Empty);
 			}
+		}
+
+		private void CreateClonesStart(IEnumerable<Transform> select, string parentPath)
+		{
+			clones.Clear();
+			CreateClones(scene.Value.GetRootGameObjects().Select(x => x.transform), parentPath: string.Empty);
 		}
 
 		// recursive
@@ -108,5 +119,10 @@ namespace RTUEditor
 		}
 
 		public IReadOnlyList<Clone> GetReadOnlyClones() => clones.Values.ToList().AsReadOnly();
+
+		public void Refresh()
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

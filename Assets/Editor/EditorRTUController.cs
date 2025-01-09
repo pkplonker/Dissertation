@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
-using UnityEngine;
+using UnityEditor;
 
 namespace RTUEditor
 {
@@ -14,6 +14,8 @@ namespace RTUEditor
 		private readonly RTUEditorConnection connection;
 		private readonly List<IRTUEditorProcessor> handlers;
 		public event Action<RTUScene> SceneChanged;
+		public event Action ReplayedChanges;
+
 		private RTUScene scene;
 
 		public RTUScene Scene
@@ -27,6 +29,7 @@ namespace RTUEditor
 		}
 
 		private readonly TaskScheduler scheduler;
+		private PayloadRecorder payloadRecorder;
 		public bool IsConnected => connection?.IsConnected ?? false;
 		public SceneGameObjectStore SceneGameObjectStore { get; private set; }
 		public JsonSerializerSettings JsonSettings { get; private set; }
@@ -46,9 +49,18 @@ namespace RTUEditor
 			scheduler = TaskScheduler.FromCurrentSynchronizationContext();
 			connection = new RTUEditorConnection(scheduler);
 			JsonSettings = new JSONSettingsCreator().Create();
+			payloadRecorder = new PayloadRecorder(JsonSettings);
 		}
 
-		public void SendMessageToGame(string message) => connection.SendMessageToGame(message);
+		public void SendPayloadToGame(IPayload payload)
+		{
+			foreach (var message in payload.GeneratePayload(JsonSettings))
+			{
+				connection.SendMessageToGame(message);
+			}
+
+			payloadRecorder.Record(payload);
+		}
 
 		public void Disconnect()
 		{
@@ -67,6 +79,10 @@ namespace RTUEditor
 			try
 			{
 				CloseScene();
+				payloadRecorder.Finish(x =>
+				{
+					if (x) ReplayedChanges?.Invoke();
+				});
 			}
 			catch (Exception e)
 			{
@@ -89,8 +105,10 @@ namespace RTUEditor
 			{
 				try
 				{
+					Selection.objects = null;
 					ShowScene();
 					CreateProcessors();
+					payloadRecorder.Start();
 				}
 				catch (Exception e)
 				{
@@ -112,6 +130,11 @@ namespace RTUEditor
 
 		public void CreateProcessors()
 		{
+			foreach (var handler in handlers.OfType<IDisposable>())
+			{
+				handler.Dispose();
+			}
+
 			handlers.Clear();
 			handlers.AddRange(AppDomain.CurrentDomain.GetAssemblies()
 				.SelectMany(x => x.GetTypes())

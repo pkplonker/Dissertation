@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody))]
 public class ComponentTestScript : MonoBehaviour
 {
 	public int intField;
@@ -216,10 +214,10 @@ public class ComponentTestScript : MonoBehaviour
 
 		gameObjectField = this.gameObject;
 		transformField = this.transform;
-		rigidbdyProperty = this.GetComponent<Rigidbody>();
+		rigidbdyProperty = null;
 
 		gameObjectArray = new[] {this.gameObject};
 		transformList = new List<Transform> {this.transform};
-		rigidbodyList = new List<Rigidbody> {this.GetComponent<Rigidbody>()};
+		rigidbodyList = new List<Rigidbody> {null};
 	}
 }

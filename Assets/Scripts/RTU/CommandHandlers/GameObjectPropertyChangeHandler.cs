@@ -8,7 +8,7 @@ namespace RealTimeUpdateRuntime
 {
 	public class GameObjectPropertyChangeHandler : RTUCommandHandlerBase
 	{
-		public override string Tag { get; } = GameObjectPropertyChangeArgs.MESSAGE_IDENTIFER;
+		public override string Tag { get; } = GameObjectPropertyPayload.MESSAGE_IDENTIFER;
 
 		public override void Process(CommandHandlerArgs commandHandlerArgs, JsonSerializerSettings jsonSettings)
 		{
@@ -68,13 +68,13 @@ namespace RealTimeUpdateRuntime
 			return Convert.ChangeType(value, targetType);
 		}
 
-		public GameObjectPropertyChangeArgs ProcessInternal(CommandHandlerArgs commandHandlerArgs,
+		public GameObjectPropertyPayload ProcessInternal(CommandHandlerArgs commandHandlerArgs,
 			out string fieldName, out IMemberAdapter member)
 		{
-			var args = JsonConvert.DeserializeObject<GameObjectPropertyChangeArgs>(commandHandlerArgs.Payload);
+			var args = JsonConvert.DeserializeObject<GameObjectPropertyPayload>(commandHandlerArgs.Payload);
 			var go = GameObject.Find(args.GameObjectPath);
 
-			fieldName = args.PropertyPath;
+			fieldName = args.MemberName;
 
 			fieldName = fieldName.Trim("m_".ToCharArray());
 			member = null;

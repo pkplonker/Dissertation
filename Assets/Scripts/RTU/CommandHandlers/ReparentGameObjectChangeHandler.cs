@@ -6,7 +6,7 @@ namespace RealTimeUpdateRuntime
 {
 	public class ReparentGameObjectChangeHandler : RTUCommandHandlerBase
 	{
-		public override string Tag { get; } = ReparentGameObjectChangeArgs.MESSAGE_IDENTIFER;
+		public override string Tag { get; } = ReparentGameObjectPayload.MESSAGE_IDENTIFER;
 
 		public override void Process(CommandHandlerArgs commandHandlerArgs, JsonSerializerSettings jsonSettings)
 		{
@@ -14,7 +14,7 @@ namespace RealTimeUpdateRuntime
 			{
 				try
 				{
-					var args = JsonConvert.DeserializeObject<ReparentGameObjectChangeArgs>(commandHandlerArgs.Payload,
+					var args = JsonConvert.DeserializeObject<ReparentGameObjectPayload>(commandHandlerArgs.Payload,
 						jsonSettings);
 					var go = GameObject.Find(args.GameObjectName);
 

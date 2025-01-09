@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using RealTimeUpdateRuntime;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace RTUEditor.AssetStore
 {

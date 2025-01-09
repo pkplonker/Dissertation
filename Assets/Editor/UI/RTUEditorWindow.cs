@@ -4,7 +4,6 @@ using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
 using UnityEditor;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace RTUEditor
 {
@@ -73,10 +72,6 @@ namespace RTUEditor
 
 			EditorGUILayout.EndHorizontal();
 			EditorGUILayout.BeginHorizontal();
-			if (GUILayout.Button("Send Test Data to Game"))
-			{
-				controller.SendMessageToGame("Hello, Game!");
-			}
 
 			if (GUILayout.Button("Scene Test"))
 			{
