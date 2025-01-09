@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using Object = UnityEngine.Object;
 
 namespace RealTimeUpdateRuntime
 {
-	[CustomPropertyChangeArgs(typeof(object))] //default
 	[Serializable]
 	public class ComponentPropertyPayload : IPropertyPayload
 	{
