@@ -7,7 +7,7 @@ namespace RealTimeUpdateRuntime
 	{
 		public string GameObjectPath { get; set; }
 		public string ComponentTypeName { get; set; }
-		public string PropertyPath { get; set; }
+		public string MemberName { get; set; }
 		public object Value { get; set; }
 
 		[JsonIgnore]

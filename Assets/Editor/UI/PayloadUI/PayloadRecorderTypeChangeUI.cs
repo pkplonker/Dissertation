@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
 using UnityEditor;
 using UnityEngine;
@@ -15,14 +16,16 @@ namespace RTUEditor
 
 	public abstract class PayloadRecorderTypeChangeUI<T> : PayloadRecorderTypeChangeUI where T : IPayload
 	{
-		private List<bool> toggles = new();
+		protected List<bool> toggles = new();
 		protected IReadOnlyList<T> filteredPayloads;
 		protected IReadOnlyList<T> originalPayloads;
 		protected abstract string name { get; }
 		private bool show = true;
+		protected readonly JsonSerializerSettings jsonSettings;
 
-		protected PayloadRecorderTypeChangeUI(IReadOnlyList<IPayload> payloads)
+		protected PayloadRecorderTypeChangeUI(IReadOnlyList<IPayload> payloads, JsonSerializerSettings jsonSettings)
 		{
+			this.jsonSettings = jsonSettings;
 			ExtractPayloads(payloads);
 		}
 

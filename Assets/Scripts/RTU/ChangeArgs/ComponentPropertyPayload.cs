@@ -12,7 +12,8 @@ namespace RealTimeUpdateRuntime
 		public static string MESSAGE_IDENTIFER = "Property";
 		public string GameObjectPath { get; set; } = string.Empty;
 		public string ComponentTypeName { get; set; } = string.Empty;
-		public string PropertyPath { get; set; } = string.Empty;
+		public string MemberName { get; set; } = string.Empty;
+		public int InstanceID { get; set; }
 
 		public virtual List<string> GeneratePayload(JsonSerializerSettings JSONSettings) => new List<string>()
 			{$"{MESSAGE_IDENTIFER}\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}"};

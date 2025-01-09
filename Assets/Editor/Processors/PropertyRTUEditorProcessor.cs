@@ -119,7 +119,7 @@ namespace RTUEditor
 							{
 								InstanceID = currentClone.InstanceID,
 								GameObjectPath = originalName, // in case this is what has changed
-								PropertyPath = change.Key,
+								MemberName = change.Key,
 								Value = change.Value,
 								ValueType = change.Value.GetType()
 							});
@@ -157,13 +157,14 @@ namespace RTUEditor
 					{
 						foreach (var change in changes)
 						{
-							args.Add(new ComponentPropertyPayload()
+							args.Add(new ComponentPropertyPayload
 							{
 								GameObjectPath = fullPath,
 								ComponentTypeName = component.GetType().AssemblyQualifiedName,
-								PropertyPath = change.Key,
+								MemberName = change.Key,
 								Value = change.Value,
-								ValueType = change.Value.GetType()
+								ValueType = change.Value.GetType(),
+								InstanceID = go.GetInstanceID(),
 							});
 						}
 					}

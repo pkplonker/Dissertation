@@ -31,7 +31,8 @@ namespace RTUEditor
 			changeUIs ??= new();
 			foreach (var converter in converters)
 			{
-				changeUIs.Add((PayloadRecorderTypeChangeUI) Activator.CreateInstance(converter, new object[] {payloads}));
+				changeUIs.Add((PayloadRecorderTypeChangeUI) Activator.CreateInstance(converter,
+					new object[] {payloads, jsonSettings}));
 			}
 
 			ShowInternal();
@@ -63,6 +64,7 @@ namespace RTUEditor
 				{
 					changeUI?.Replay();
 				}
+
 				Close();
 			}
 		}

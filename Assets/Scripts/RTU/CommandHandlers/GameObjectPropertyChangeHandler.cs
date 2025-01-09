@@ -74,7 +74,7 @@ namespace RealTimeUpdateRuntime
 			var args = JsonConvert.DeserializeObject<GameObjectPropertyPayload>(commandHandlerArgs.Payload);
 			var go = GameObject.Find(args.GameObjectPath);
 
-			fieldName = args.PropertyPath;
+			fieldName = args.MemberName;
 
 			fieldName = fieldName.Trim("m_".ToCharArray());
 			member = null;

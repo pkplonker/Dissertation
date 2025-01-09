@@ -80,7 +80,7 @@ namespace RealTimeUpdateRuntime
 			}
 
 			component = go.GetComponent(type);
-			fieldName = args.PropertyPath;
+			fieldName = args.MemberName;
 
 			fieldName = fieldName.Trim("m_".ToCharArray());
 			member = null;
