@@ -34,7 +34,7 @@ namespace RTUEditor
 
 		protected override List<string> GetColumnHeaders() => new() {"GameObject", "Property", "Values"};
 
-		public override void Replay()
+		public override bool Replay()
 		{
 			for (var i = 0; i < toggles.Count; i++)
 			{
@@ -67,6 +67,8 @@ namespace RTUEditor
 						$"Failed to replay component property change for {payload.InstanceID} : {payload.ComponentTypeName} : {e.Message}");
 				}
 			}
+
+			return toggles.Any(x => x);
 		}
 	}
 }

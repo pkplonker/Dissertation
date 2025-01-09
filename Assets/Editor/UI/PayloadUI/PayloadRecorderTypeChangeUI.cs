@@ -11,7 +11,9 @@ namespace RTUEditor
 	{
 		public abstract bool Draw();
 
-		public abstract void Replay();
+		public abstract bool Replay();
+
+		public abstract bool HasChanges();
 	}
 
 	public abstract class PayloadRecorderTypeChangeUI<T> : PayloadRecorderTypeChangeUI where T : IPayload
@@ -22,6 +24,7 @@ namespace RTUEditor
 		protected abstract string name { get; }
 		private bool show = true;
 		protected readonly JsonSerializerSettings jsonSettings;
+		public override bool HasChanges() => filteredPayloads.Any();
 
 		protected PayloadRecorderTypeChangeUI(IReadOnlyList<IPayload> payloads, JsonSerializerSettings jsonSettings)
 		{

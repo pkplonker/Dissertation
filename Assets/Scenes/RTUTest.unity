@@ -1563,7 +1563,7 @@ GameObject:
   - component: {fileID: 924186300}
   - component: {fileID: 924186299}
   m_Layer: 0
-  m_Name: NESTED2
+  m_Name: NESTED3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1941,7 +1941,7 @@ GameObject:
   - component: {fileID: 1155436097}
   - component: {fileID: 1155436095}
   m_Layer: 0
-  m_Name: Sphere2
+  m_Name: Sphere4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

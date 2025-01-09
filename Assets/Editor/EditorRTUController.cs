@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
+using Unity.VisualScripting;
 using UnityEditor;
 
 namespace RTUEditor
@@ -14,6 +15,8 @@ namespace RTUEditor
 		private readonly RTUEditorConnection connection;
 		private readonly List<IRTUEditorProcessor> handlers;
 		public event Action<RTUScene> SceneChanged;
+		public event Action ReplayedChanges;
+
 		private RTUScene scene;
 
 		public RTUScene Scene
@@ -77,7 +80,10 @@ namespace RTUEditor
 			try
 			{
 				CloseScene();
-				payloadRecorder.Finish();
+				payloadRecorder.Finish(x =>
+				{
+					if (x) ReplayedChanges?.Invoke();
+				});
 			}
 			catch (Exception e)
 			{

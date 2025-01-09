@@ -1,9 +1,7 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
-using UnityEditor;
-using UnityEngine;
 
 namespace RTUEditor
 {
@@ -28,9 +26,9 @@ namespace RTUEditor
 			Payloads.Add(payload);
 		}
 
-		public void Finish()
+		public void Finish(Action<bool> finishCompleteCallback)
 		{
-			PayloadRecorderEditor.Show(this, jsonSettings);
+			PayloadRecorderEditor.Show(this, jsonSettings,finishCompleteCallback);
 		}
 	}
 }

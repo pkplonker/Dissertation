@@ -18,9 +18,12 @@ namespace RTUEditor
 		private static bool init;
 		private static List<Type> converters;
 		private static List<PayloadRecorderTypeChangeUI> changeUIs = new();
+		private static Action<bool> FinishCompleteCallback;
 
-		public static void Show(PayloadRecorder payloadRecorder, JsonSerializerSettings settings)
+		public static void Show(PayloadRecorder payloadRecorder, JsonSerializerSettings settings,
+			Action<bool> finishCompleteCallback)
 		{
+			FinishCompleteCallback = finishCompleteCallback;
 			jsonSettings = settings;
 			PayloadRecorderEditor.PayloadRecorder = payloadRecorder;
 
@@ -29,13 +32,19 @@ namespace RTUEditor
 
 			var payloads = PayloadRecorder.Payloads;
 			changeUIs ??= new();
+			var hasChanges = false;
 			foreach (var converter in converters)
 			{
-				changeUIs.Add((PayloadRecorderTypeChangeUI) Activator.CreateInstance(converter,
-					new object[] {payloads, jsonSettings}));
+				var changeUI = (PayloadRecorderTypeChangeUI) Activator.CreateInstance(converter,
+					new object[] {payloads, jsonSettings});
+				changeUIs.Add(changeUI);
+				hasChanges |= changeUI.HasChanges();
 			}
 
-			ShowInternal();
+			if (hasChanges)
+			{
+				ShowInternal();
+			}
 		}
 
 		[MenuItem("SH/Replay RTU Changes")]
@@ -53,22 +62,29 @@ namespace RTUEditor
 		private void OnGUI()
 		{
 			var hasShownContent = false;
-			foreach (var changeUI in changeUIs)
+			if (changeUIs != null)
 			{
-				hasShownContent |= changeUI?.Draw() ?? true;
-			}
-
-			if (hasShownContent && GUILayout.Button("Submit"))
-			{
-				if (EditorUtility.DisplayDialog("This action is irreversible",
-					    "Are you sure you want to replay selected changes?", "Yes", "Cancel"))
+				foreach (var changeUI in changeUIs)
 				{
-					foreach (var changeUI in changeUIs)
-					{
-						changeUI?.Replay();
-					}
+					hasShownContent |= changeUI?.Draw() ?? true;
+				}
 
-					Close();
+				if (hasShownContent && GUILayout.Button("Submit"))
+				{
+					if (EditorUtility.DisplayDialog("This action is irreversible",
+						    "Are you sure you want to replay selected changes?", "Yes", "Cancel"))
+					{
+						var changesMade = false;
+						foreach (var changeUI in changeUIs)
+						{
+							// TODO In theory, the order in which we execute these could be important,
+							// for example, handling property changes for renamed GameObjects
+							changesMade |= changeUI?.Replay() ?? false;
+						}
+
+						FinishCompleteCallback?.Invoke(changesMade);
+						Close();
+					}
 				}
 			}
 
@@ -77,6 +93,7 @@ namespace RTUEditor
 				if (EditorUtility.DisplayDialog("All changes will be lost", "Are you sure you want to close?", "Close",
 					    "Cancel"))
 				{
+					FinishCompleteCallback?.Invoke(false);
 					Close();
 				}
 			}
