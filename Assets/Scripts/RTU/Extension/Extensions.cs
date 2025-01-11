@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using CompressionLevel = UnityEngine.CompressionLevel;
 
 public static class Extensions
 {
@@ -90,5 +93,28 @@ public static class Extensions
 		RenderTexture.active = previous;
 		RenderTexture.ReleaseTemporary(renderTex);
 		return readableText;
+	}
+
+	public static byte[] Compress(this byte[] data)
+	{
+		var output = new MemoryStream();
+		using (var deflate = new DeflateStream(output, System.IO.Compression.CompressionLevel.Optimal))
+		{
+			deflate.Write(data, 0, data.Length);
+		}
+
+		return output.ToArray();
+	}
+
+	public static byte[] Decompress(this byte[] data)
+	{
+		var input = new MemoryStream(data);
+		var output = new MemoryStream();
+		using (DeflateStream deflate = new DeflateStream(input, CompressionMode.Decompress))
+		{
+			deflate.CopyTo(output);
+		}
+
+		return output.ToArray();
 	}
 }

@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Scripting;
 
 namespace RealTimeUpdateRuntime
@@ -25,8 +27,15 @@ namespace RealTimeUpdateRuntime
 				["name"] = value.name,
 				["filterMode"] = value.filterMode.ToString(),
 				["wrapMode"] = value.wrapMode.ToString(),
-				["anisoLevel"] = value.anisoLevel
+				["anisoLevel"] = value.anisoLevel,
+				["graphicsFormat"] = (int) value.graphicsFormat,
 			};
+			if (value is Texture2D tex)
+			{
+				textureObj.Add("textureFormat", (int) tex.format);
+				byte[] rawTextureData = tex.GetRawTextureData();
+				textureObj["imageData"] = rawTextureData.Compress();
+			}
 
 			if (!value.isReadable)
 			{
@@ -40,11 +49,6 @@ namespace RealTimeUpdateRuntime
 				}
 			}
 
-			var decompressed = value.Decompress();
-			byte[] textureBytes = decompressed.EncodeToPNG();
-			string base64Data = Convert.ToBase64String(textureBytes);
-
-			textureObj["imageData"] = base64Data;
 			textureObj["width"] = value.width;
 			textureObj["height"] = value.height;
 			if (value is Texture2D texture2D)
@@ -68,11 +72,24 @@ namespace RealTimeUpdateRuntime
 
 			if (!textureObj.ContainsKey("imageData")) return null;
 
-			string base64Data = textureObj["imageData"].ToString();
-			byte[] textureBytes = Convert.FromBase64String(base64Data);
+			Texture2D texture;
+			if (textureObj.ContainsKey("graphicsFormat") && Enum.TryParse(
+				    typeof(UnityEngine.Experimental.Rendering.GraphicsFormat),
+				    textureObj["graphicsFormat"].ToString(), out var outFormat) &&
+			    textureObj.ContainsKey("textureFormat") && Enum.TryParse(
+				    typeof(TextureFormat),
+				    textureObj["textureFormat"].ToString(), out var texFormat))
+			{
+				texture = new Texture2D((int) textureObj["width"], (int) textureObj["height"],
+					(TextureFormat) texFormat, false);
+			}
+			else
+			{
+				texture = new Texture2D((int) textureObj["width"], (int) textureObj["height"]);
+			}
 
-			Texture2D texture = new Texture2D(0, 0);
-			texture.LoadImage(textureBytes);
+			var rawTextureData = (byte[]) textureObj["imageData"];
+			texture.LoadRawTextureData(rawTextureData.Decompress());
 
 			if (textureObj.ContainsKey("filterMode") &&
 			    Enum.TryParse(textureObj["filterMode"].ToString(), out FilterMode filterMode))

@@ -79,10 +79,7 @@ namespace RTUEditor
 			try
 			{
 				CloseScene();
-				payloadRecorder.Finish(x =>
-				{
-					if (x) ReplayedChanges?.Invoke();
-				});
+				RecorderFinish();
 			}
 			catch (Exception e)
 			{
@@ -97,6 +94,14 @@ namespace RTUEditor
 			{
 				RTUDebug.LogError($"Failed to execute disconnection callback: {e.Message}");
 			}
+		}
+
+		private void RecorderFinish()
+		{
+			payloadRecorder.Finish(x =>
+			{
+				if (x) ReplayedChanges?.Invoke();
+			});
 		}
 
 		private Action OnConnection(Action connectCallback)
