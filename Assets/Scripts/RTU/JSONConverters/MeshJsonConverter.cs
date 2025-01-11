@@ -52,7 +52,6 @@ namespace RealTimeUpdateRuntime
 			serializer.Serialize(writer, value.uv8);
 			writer.WritePropertyName("name");
 			writer.WriteValue(value.name);
-			//todo missing properties
 			writer.WriteEndObject();
 		}
 

@@ -26,12 +26,6 @@ public static class Extensions
 
 	public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T> enumerable) => enumerable.Where(x => x != null);
 
-	public static HashSet<GameObject> GetAllGameObjects(this Scene scene)
-	{
-		// todo change to actually get all..
-		return scene.GetRootGameObjects().ToHashSet();
-	}
-
 	public static IEnumerable<Transform> GetChildren(this Transform trans)
 	{
 		IList<Transform> transforms = new List<Transform>();
@@ -43,9 +37,6 @@ public static class Extensions
 		return transforms;
 	}
 
-	public static IEnumerable<GameObject> GetChildrenAsGameObjects(this Transform trans) =>
-		trans.GetChildren().Select(x => x.gameObject);
-
 	public static string GetFullName(this GameObject obj)
 	{
 		string path = "/" + obj.name;
@@ -56,22 +47,6 @@ public static class Extensions
 		}
 
 		return path.TrimStart('/');
-	}
-
-	public static bool IsCollection(this object obj) => obj is IEnumerable && obj is not string;
-
-	public static object CreateListFromType(this Type type) =>
-		Activator.CreateInstance(typeof(List<>).MakeGenericType(type));
-
-	public static Type GetElementTypeForCollection(this Type type)
-	{
-		var elementType = type.GetElementType();
-		if (elementType == null)
-		{
-			elementType = type.GetGenericArguments()[0];
-		}
-
-		return elementType;
 	}
 
 	//https://discussions.unity.com/t/system-type-gettype-transform-not-work/406299/5

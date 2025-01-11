@@ -117,12 +117,5 @@ namespace RTUEditor
 
 			return true;
 		}
-
-		public IReadOnlyList<Clone> GetReadOnlyClones() => clones.Values.ToList().AsReadOnly();
-
-		public void Refresh()
-		{
-			throw new NotImplementedException();
-		}
 	}
 }
