@@ -7,10 +7,10 @@ namespace RTUEditor.ObjectChange
 {
 	public class DefaultAssetChangePayloadStrategy : IAssetChangePayloadStrategy
 	{
-		public virtual bool TryGenerateArgs(Clone originalClone, Clone currentClone,
+		public virtual bool TryGenerateArgs(Clone existingClone,Clone currentClone,
 			out AssetPropertyChangeEventArgs args)
 		{
-			if (HasChange(originalClone, currentClone, out var changes))
+			if (HasChange(currentClone, existingClone, out var changes))
 			{
 				UpdateAssetStoreWithLatest(currentClone);
 				args = CreateArgs(currentClone,changes);
@@ -38,11 +38,11 @@ namespace RTUEditor.ObjectChange
 			return args;
 		}
 
-		protected virtual bool HasChange(Clone originalClone, Clone currentClone,
+		protected virtual bool HasChange(Clone existingClone, Clone currentClone,
 			out Dictionary<string, object> changes)
 		{
 			// working on the assumption that only the values change.
-			changes = originalClone.Except(currentClone).ToDictionary(x => x.Key, x => x.Value);
+			changes = existingClone.Except(currentClone).ToDictionary(x => x.Key, x => x.Value);
 			return changes.Any();
 		}
 	}

@@ -27,11 +27,11 @@ namespace RTUEditor.ObjectChange
 				var changeAssetPath = AssetDatabase.GUIDToAssetPath(changeAssetObjectPropertiesEvent.guid);
 				var type = Path.GetExtension(changeAssetPath).Trim('.');
 
-				if (RTUAssetStore.TryGetExistingClone(changeAssetPath, type, out var databaseClone))
+				if (RTUAssetStore.TryGetExistingClone(changeAssetPath, type, out var existingClone))
 				{
-					if (RTUAssetStore.GenerateClone(changeAssetPath, type, out var currentClone))
+					if (RTUAssetStore.GenerateClone(changeAssetPath, type, out var newClone))
 					{
-						if (assetChangePayloadStrategyFactory.GeneratePayload(databaseClone, currentClone, type,
+						if (assetChangePayloadStrategyFactory.GeneratePayload(existingClone, newClone, type,
 							    out var payload))
 						{
 							controller.SendPayloadToGame(payload);

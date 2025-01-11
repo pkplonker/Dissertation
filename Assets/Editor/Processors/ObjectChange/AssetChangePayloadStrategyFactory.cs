@@ -16,20 +16,20 @@ namespace RTUEditor.ObjectChange
 				{"PNG", new TextureAssetChangePayloadStrategy()},
 			};
 
-		public bool GeneratePayload(Clone databaseClone, Clone currentClone, string type, out IPayload payload)
+		public bool GeneratePayload(Clone existingClone, Clone newClone, string type, out IPayload payload)
 		{
 			payload = null;
 			var strategy = GetStrategy(type);
 			if (strategy != null)
 			{
-				if (strategy.TryGenerateArgs(databaseClone, currentClone, out var args))
+				if (strategy.TryGenerateArgs(existingClone, newClone, out var args))
 				{
 					payload = args;
 					return true;
 				}
 			}
 
-			RTUDebug.LogWarning($"Failed to generate payload for {currentClone}");
+			RTUDebug.LogWarning($"Failed to generate payload for {newClone}");
 
 			return false;
 		}
