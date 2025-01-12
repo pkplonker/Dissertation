@@ -14,6 +14,11 @@ namespace RTUEditor
 		public abstract bool Replay();
 
 		public abstract bool HasChanges();
+
+		public virtual void Close()
+		{
+			
+		}
 	}
 
 	public abstract class PayloadRecorderTypeChangeUI<T> : PayloadRecorderTypeChangeUI where T : IPayload

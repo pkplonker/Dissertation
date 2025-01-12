@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
+using Object = UnityEngine.Object;
 
 namespace RTUEditor.ObjectChange
 {
@@ -16,13 +17,13 @@ namespace RTUEditor.ObjectChange
 				{"PNG", new TextureAssetChangePayloadStrategy()},
 			};
 
-		public bool GeneratePayload(Clone existingClone, Clone newClone, string type, out IPayload payload)
+		public bool GeneratePayload(Clone existingClone, Clone newClone, string type, UnityEngine.Object asset,out AssetPropertyChangeEventArgs payload)
 		{
 			payload = null;
 			var strategy = GetStrategy(type);
 			if (strategy != null)
 			{
-				if (strategy.TryGenerateArgs(existingClone, newClone, out var args))
+				if (strategy.TryGenerateArgs(existingClone, newClone, asset,out var args))
 				{
 					payload = args;
 					return true;

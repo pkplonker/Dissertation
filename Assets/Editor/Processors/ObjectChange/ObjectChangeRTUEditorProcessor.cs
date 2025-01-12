@@ -37,8 +37,6 @@ namespace RTUEditor.ObjectChange
 			for (int i = 0; i < stream.length; ++i)
 			{
 				var type = stream.GetEventType(i);
-				RTUDebug.Log(type.ToString());
-				RTUDebug.Log(this.GetHashCode());
 				if (objectChangeProcessors.TryGetValue(type, out var processor))
 				{
 					processor.Process(stream, i, controller.JsonSettings, controller.SceneGameObjectStore);
