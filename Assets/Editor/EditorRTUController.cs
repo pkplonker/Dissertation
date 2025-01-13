@@ -79,11 +79,19 @@ namespace RTUEditor
 			try
 			{
 				CloseScene();
-				RecorderFinish();
 			}
 			catch (Exception e)
 			{
 				RTUDebug.LogError($"Failed to close scene on disconnect: {e.Message}");
+			}
+			
+			try
+			{
+				RecorderFinish();
+			}
+			catch (Exception e)
+			{
+				RTUDebug.LogError($"Failed to show replayble changes: {e.Message}");
 			}
 
 			try
