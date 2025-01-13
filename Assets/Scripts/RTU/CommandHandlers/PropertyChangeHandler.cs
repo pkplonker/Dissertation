@@ -68,7 +68,7 @@ namespace RealTimeUpdateRuntime
 			return Convert.ChangeType(value, targetType);
 		}
 
-		public IPropertyPayload ProcessInternal<T>(CommandHandlerArgs commandHandlerArgs,
+		private IPropertyPayload ProcessInternal<T>(CommandHandlerArgs commandHandlerArgs,
 			out Component component, out string fieldName, out IMemberAdapter member) where T : IPropertyPayload
 		{
 			var args = JsonConvert.DeserializeObject<T>(commandHandlerArgs.Payload);
@@ -81,8 +81,11 @@ namespace RealTimeUpdateRuntime
 
 			component = go.GetComponent(type);
 			fieldName = args.MemberName;
+			if (fieldName.StartsWith("m_", StringComparison.InvariantCultureIgnoreCase))
+			{
+				fieldName = fieldName.Substring(2, fieldName.Length - 2);
+			}
 
-			fieldName = fieldName.Trim("m_".ToCharArray());
 			member = null;
 			try
 			{
