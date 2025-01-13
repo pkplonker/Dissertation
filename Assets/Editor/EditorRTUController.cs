@@ -79,14 +79,19 @@ namespace RTUEditor
 			try
 			{
 				CloseScene();
-				payloadRecorder.Finish(x =>
-				{
-					if (x) ReplayedChanges?.Invoke();
-				});
 			}
 			catch (Exception e)
 			{
 				RTUDebug.LogError($"Failed to close scene on disconnect: {e.Message}");
+			}
+			
+			try
+			{
+				RecorderFinish();
+			}
+			catch (Exception e)
+			{
+				RTUDebug.LogError($"Failed to show replayble changes: {e.Message}");
 			}
 
 			try
@@ -97,6 +102,14 @@ namespace RTUEditor
 			{
 				RTUDebug.LogError($"Failed to execute disconnection callback: {e.Message}");
 			}
+		}
+
+		private void RecorderFinish()
+		{
+			payloadRecorder.Finish(x =>
+			{
+				if (x) ReplayedChanges?.Invoke();
+			});
 		}
 
 		private Action OnConnection(Action connectCallback)

@@ -14,6 +14,11 @@ namespace RTUEditor
 		public abstract bool Replay();
 
 		public abstract bool HasChanges();
+
+		public virtual void Close()
+		{
+			
+		}
 	}
 
 	public abstract class PayloadRecorderTypeChangeUI<T> : PayloadRecorderTypeChangeUI where T : IPayload
@@ -50,7 +55,7 @@ namespace RTUEditor
 			EditorGUILayout.BeginHorizontal();
 			foreach (var column in columns)
 			{
-				columnWidths.Add(Mathf.Max(100, column.Length * 20));
+				columnWidths.Add(300);
 				EditorGUILayout.LabelField(column, EditorStyles.boldLabel, GUILayout.Width(columnWidths.Last()));
 			}
 

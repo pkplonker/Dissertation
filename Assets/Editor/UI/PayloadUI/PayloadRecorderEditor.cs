@@ -56,6 +56,7 @@ namespace RTUEditor
 		private static void ShowInternal()
 		{
 			var window = GetWindow<PayloadRecorderEditor>("Replay RTU Changes", true);
+			window.ShowModalUtility();
 			window.position = new Rect(WINDOW_INITAL_POSITION, WINDOW_INITAL_SIZE);
 		}
 
@@ -93,6 +94,12 @@ namespace RTUEditor
 				if (EditorUtility.DisplayDialog("All changes will be lost", "Are you sure you want to close?", "Close",
 					    "Cancel"))
 				{
+					foreach (var changeUI in changeUIs)
+					{
+						// TODO In theory, the order in which we execute these could be important,
+						// for example, handling property changes for renamed GameObjects
+						changeUI?.Close();
+					}
 					FinishCompleteCallback?.Invoke(false);
 					Close();
 				}

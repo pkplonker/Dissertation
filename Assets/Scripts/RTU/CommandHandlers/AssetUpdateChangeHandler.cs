@@ -34,38 +34,41 @@ namespace RealTimeUpdateRuntime
 							var matchingMats = mats.Where(x =>
 								x.name.Remove(x.name.IndexOf(instanceString, StringComparison.OrdinalIgnoreCase),
 									instanceString.Length).TrimEnd(' ').Equals(materialName));
-							if (matchingMats.Count() == 1)
+							if (matchingMats.Any())
 							{
-								var mat = matchingMats.First();
-								var members = MemberAdaptorUtils.GetMemberAdapters(mat.GetType());
-								foreach (var change in args.Changes)
+								foreach (var mat in matchingMats)
 								{
-									var member = members.FirstOrDefault(x =>
-										x.Name.Equals(change.Key, StringComparison.InvariantCultureIgnoreCase));
-									try
+									var members = MemberAdaptorUtils.GetMemberAdapters(mat.GetType());
+									foreach (var change in args.Changes)
 									{
-										var value = change.Value;
-										if (change.Value is JArray a)
+										var member = members.FirstOrDefault(x =>
+											x.Name.Equals(change.Key, StringComparison.InvariantCultureIgnoreCase));
+										try
 										{
-											value = a.ToObject(member?.MemberType);
-										}
+											var value = change.Value;
+											if (change.Value is JArray a)
+											{
+												value = a.ToObject(member?.MemberType);
+											}
 
-										member?.SetValue(mat, value);
-									}
-									catch (Exception e)
-									{
-										RTUDebug.LogWarning($"Failed setting {change.Key} on {args.Path}: {e.Message}");
+											if (value is JObject)
+											{
+												value = JsonConvert.DeserializeObject(value.ToString(), member.MemberType, jsonSettings);
+											}
+
+											member?.SetValue(mat, value);
+										}
+										catch (Exception e)
+										{
+											RTUDebug.LogWarning(
+												$"Failed setting {change.Key} on {args.Path}: {e.Message}");
+										}
 									}
 								}
 							}
-							else if (!matchingMats.Any())
-							{
-								RTUDebug.LogWarning($"No matches found for {materialName} - no change is being made");
-							}
 							else
 							{
-								RTUDebug.LogWarning(
-									$"Multiply possible matches found for {materialName} - no change is being made");
+								RTUDebug.LogWarning($"No matches found for {materialName} - no change is being made");
 							}
 
 							break;

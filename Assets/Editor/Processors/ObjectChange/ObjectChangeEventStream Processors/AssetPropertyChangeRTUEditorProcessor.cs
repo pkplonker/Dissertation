@@ -1,8 +1,11 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
 using UnityEditor;
+using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace RTUEditor.ObjectChange
 {
@@ -25,13 +28,13 @@ namespace RTUEditor.ObjectChange
 				stream.GetChangeAssetObjectPropertiesEvent(streamIdx, out var changeAssetObjectPropertiesEvent);
 				var changeAsset = EditorUtility.InstanceIDToObject(changeAssetObjectPropertiesEvent.instanceId);
 				var changeAssetPath = AssetDatabase.GUIDToAssetPath(changeAssetObjectPropertiesEvent.guid);
-				var type = Path.GetExtension(changeAssetPath).Trim('.');
+				var extension = Path.GetExtension(changeAssetPath).Trim('.');
 
-				if (RTUAssetStore.TryGetExistingClone(changeAssetPath, type, out var databaseClone))
+				if (RTUAssetStore.TryGetExistingClone(changeAssetPath, extension, out var existingClone))
 				{
-					if (RTUAssetStore.GenerateClone(changeAssetPath, type, out var currentClone))
+					if (RTUAssetStore.GenerateClone(changeAssetPath, extension, out var newClone))
 					{
-						if (assetChangePayloadStrategyFactory.GeneratePayload(databaseClone, currentClone, type,
+						if (assetChangePayloadStrategyFactory.GeneratePayload(existingClone, newClone, extension,changeAsset,
 							    out var payload))
 						{
 							controller.SendPayloadToGame(payload);
