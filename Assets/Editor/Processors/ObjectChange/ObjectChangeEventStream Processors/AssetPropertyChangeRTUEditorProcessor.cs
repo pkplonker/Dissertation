@@ -27,9 +27,8 @@ namespace RTUEditor.ObjectChange
 			{
 				stream.GetChangeAssetObjectPropertiesEvent(streamIdx, out var changeAssetObjectPropertiesEvent);
 				var changeAsset = EditorUtility.InstanceIDToObject(changeAssetObjectPropertiesEvent.instanceId);
-				var changeAssetPath = AssetDatabase.GUIDToAssetPath(changeAssetObjectPropertiesEvent.guid);
+				var changeAssetPath = AssetDatabase.GetAssetPath(changeAsset);
 				var extension = Path.GetExtension(changeAssetPath).Trim('.');
-
 				if (RTUAssetStore.TryGetExistingClone(changeAssetPath, extension, out var existingClone))
 				{
 					if (RTUAssetStore.GenerateClone(changeAssetPath, extension, out var newClone))

@@ -18,6 +18,16 @@ namespace RealTimeUpdateRuntime
 				{
 					var args = ProcessInternal<ComponentPropertyPayload>(commandHandlerArgs, out var component,
 						out var fieldName, out var member) as ComponentPropertyPayload;
+					if (member == null)
+					{
+						throw new NullReferenceException(nameof(member));
+					}
+
+					if (component == null)
+					{
+						throw new NullReferenceException(nameof(member));
+					}
+
 					var value = args.GetDeserializedValue(jsonSettings);
 					var memberType = member.MemberType;
 					var convertedVal = ConvertValue(memberType, value, jsonSettings);

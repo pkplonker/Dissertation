@@ -16,9 +16,10 @@ namespace RTUEditor.AssetStore
 
 		public static HashSet<string> AssetTypes = new(StringComparer.InvariantCultureIgnoreCase)
 		{
-			//"Shader",
+			"Shader",
 			"Mat",
-			//"PNG"
+			"PNG",
+			"physicMaterial",
 		};
 
 		static RTUAssetStore()
