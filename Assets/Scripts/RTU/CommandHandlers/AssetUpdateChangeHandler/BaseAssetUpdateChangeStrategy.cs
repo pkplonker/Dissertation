@@ -12,13 +12,32 @@ namespace RealTimeUpdateRuntime
 		public static string INSTANCE_STRING = "(Instance)";
 
 		public virtual string EXTENSION { get; }
+
+		private string RemoveInstanceString(string name, string instanceString)
+		{
+			while (true)
+			{
+				var index = name.IndexOf(instanceString, StringComparison.OrdinalIgnoreCase);
+				if (index == -1)
+					break;
+
+				name = name.Remove(index, instanceString.Length).TrimEnd();
+			}
+
+			return name;
+		}
+
 		public void Update(JsonSerializerSettings jsonSettings, AssetPropertyChangeEventArgs args)
 		{
 			var elements = GetElements();
 			var materialName = Path.GetFileNameWithoutExtension(args.Path);
 			var matchingMats = elements.Where(x =>
-				x.name.Remove(x.name.IndexOf(IAssetUpdateChangeStrategy.INSTANCE_STRING, StringComparison.OrdinalIgnoreCase),
-					IAssetUpdateChangeStrategy.INSTANCE_STRING.Length).TrimEnd(' ').Equals(materialName));
+			{
+				var name = RemoveInstanceString(x.name, IAssetUpdateChangeStrategy.INSTANCE_STRING);
+
+				return name.TrimEnd(' ').Equals(materialName, StringComparison.InvariantCultureIgnoreCase);
+			});
+
 			if (matchingMats.Any())
 			{
 				foreach (var mat in matchingMats)
@@ -42,7 +61,13 @@ namespace RealTimeUpdateRuntime
 									member.MemberType, jsonSettings);
 							}
 
+							if (!member.MemberType.IsInstanceOfType(value))
+							{
+								value = Convert.ChangeType(value, member.MemberType);
+							}
+
 							member?.SetValue(mat, value);
+							RTUDebug.Log($"Updated asset {change.Key} on {args.Path}");
 						}
 						catch (Exception e)
 						{

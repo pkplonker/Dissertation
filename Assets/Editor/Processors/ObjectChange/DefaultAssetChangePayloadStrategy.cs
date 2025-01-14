@@ -7,13 +7,13 @@ namespace RTUEditor.ObjectChange
 {
 	public class DefaultAssetChangePayloadStrategy : IAssetChangePayloadStrategy
 	{
-		public virtual bool TryGenerateArgs(Clone existingClone, Clone currentClone,UnityEngine.Object asset,
+		public virtual bool TryGenerateArgs(Clone existingClone, Clone currentClone, UnityEngine.Object asset,
 			out AssetPropertyChangeEventArgs args)
 		{
 			if (HasChange(currentClone, existingClone, out var changes, out var originalValues))
 			{
 				UpdateAssetStoreWithLatest(currentClone);
-				args = CreateArgs(currentClone, changes, asset,originalValues);
+				args = CreateArgs(currentClone, changes, asset, originalValues);
 				return true;
 			}
 
@@ -27,7 +27,7 @@ namespace RTUEditor.ObjectChange
 		}
 
 		protected virtual AssetPropertyChangeEventArgs CreateArgs(Clone currentClone,
-			Dictionary<string, object> changes, UnityEngine.Object asset,Dictionary<string, object> originalValues)
+			Dictionary<string, object> changes, UnityEngine.Object asset, Dictionary<string, object> originalValues)
 		{
 			var args = new AssetPropertyChangeEventArgs
 			{

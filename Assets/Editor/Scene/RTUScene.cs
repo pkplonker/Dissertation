@@ -47,21 +47,6 @@ namespace RTUEditor
 			{
 				if (IsVisible())
 				{
-					// bool result = EditorUtility.DisplayDialog(
-					// 	"Copy RTU changes back to scene?",
-					// 	"Copy RTU changes back to scene?",
-					// 	"Yes",
-					// 	"No"
-					// );
-					//
-					// if (result)
-					// {
-					// 	
-					// }
-					// else
-					// {
-					// 	
-					// }
 					StageUtility.GoToMainStage();
 				}
 			}, scheduler,1000);
