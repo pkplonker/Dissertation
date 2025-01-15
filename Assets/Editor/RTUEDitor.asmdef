@@ -1,0 +1,18 @@
+{
+    "name": "RTUEDitor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:723fa4943336d0d47817e6af1eca9cbf"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
