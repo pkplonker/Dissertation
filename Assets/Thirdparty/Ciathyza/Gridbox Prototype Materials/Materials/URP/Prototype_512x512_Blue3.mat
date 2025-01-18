@@ -13,6 +13,7 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _NORMALMAP
+  - _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
   - _SPECULARHIGHLIGHTS_OFF
   m_InvalidKeywords: []
   m_LightmapFlags: 4
@@ -254,7 +255,7 @@ Material:
     - _IridescenceThickness: 1
     - _LinkDetailsWithBase: 1
     - _MaterialID: 1
-    - _Metallic: 0.979
+    - _Metallic: 0.638
     - _MetallicRemapMax: 0
     - _MetallicRemapMin: 0
     - _Mode: 0
@@ -276,11 +277,11 @@ Material:
     - _RefractionModel: 0
     - _SSRefractionProjectionModel: 0
     - _Shininess: 0
-    - _Smoothness: 0
+    - _Smoothness: 1
     - _SmoothnessRemapMax: 1
     - _SmoothnessRemapMin: 0
     - _SmoothnessSource: 1
-    - _SmoothnessTextureChannel: 0
+    - _SmoothnessTextureChannel: 1
     - _SpecSource: 0
     - _SpecularAAScreenSpaceVariance: 0.1
     - _SpecularAAThreshold: 0.2

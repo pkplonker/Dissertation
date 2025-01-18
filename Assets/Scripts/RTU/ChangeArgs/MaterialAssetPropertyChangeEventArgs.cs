@@ -7,8 +7,6 @@ namespace RealTimeUpdateRuntime
 	[Serializable]
 	public class MaterialAssetPropertyChangeEventArgs : AssetPropertyChangeEventArgs
 	{
-		public static string MESSAGE_IDENTIFER = "AssetUpdate";
-
 		public Dictionary<string, Dictionary<string, object>> ShaderProperties { get; set; } =
 			new(StringComparer.InvariantCultureIgnoreCase);
 

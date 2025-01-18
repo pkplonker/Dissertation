@@ -27,39 +27,44 @@ namespace RTUEditor.ObjectChange
 			{
 				stream.GetChangeAssetObjectPropertiesEvent(streamIdx, out var changeAssetObjectPropertiesEvent);
 				var changeAsset = EditorUtility.InstanceIDToObject(changeAssetObjectPropertiesEvent.instanceId);
-				var changeAssetPath = AssetDatabase.GetAssetPath(changeAsset);
-				var extension = Path.GetExtension(changeAssetPath).Trim('.');
-				if (changeAsset is AssetImporter importer)
-				{ 
-					AssetDatabase.ImportAsset(importer.assetPath, ImportAssetOptions.ForceUpdate);
-					var asset = AssetDatabase.LoadAssetAtPath(changeAssetPath, typeof(UnityEngine.Object));
-					if (asset != null)
-					{
-						changeAsset = asset;
-					}
-				}
-				if (RTUAssetStore.TryGetExistingClone(changeAssetPath, extension, out var existingClone))
+				Process(changeAsset);
+			}
+		}
+
+		public void Process(Object changeAsset)
+		{
+			var changeAssetPath = AssetDatabase.GetAssetPath(changeAsset);
+			var extension = Path.GetExtension(changeAssetPath).Trim('.');
+			if (changeAsset is AssetImporter importer)
+			{ 
+				AssetDatabase.ImportAsset(importer.assetPath, ImportAssetOptions.ForceUpdate);
+				var asset = AssetDatabase.LoadAssetAtPath(changeAssetPath, typeof(UnityEngine.Object));
+				if (asset != null)
 				{
-					if (RTUAssetStore.GenerateClone(changeAsset, changeAssetPath, extension, out var newClone))
-					{
+					changeAsset = asset;
+				}
+			}
+			if (RTUAssetStore.TryGetExistingClone(changeAssetPath, extension, out var existingClone))
+			{
+				if (RTUAssetStore.GenerateClone(changeAsset, changeAssetPath, extension, out var newClone))
+				{
 						
-						if (assetChangePayloadStrategyFactory.GeneratePayload(existingClone, newClone, extension,changeAsset,
-							    out var payload))
-						{
-							controller.SendPayloadToGame(payload);
-							RTUDebug.Log(
-								$"AssetPropertyChanged: {changeAsset} at {changeAssetPath} in scene {changeAssetObjectPropertiesEvent.scene}.");
-						}
-					}
-					else
+					if (assetChangePayloadStrategyFactory.GeneratePayload(existingClone, newClone, extension,changeAsset,
+						    out var payload))
 					{
-						RTUDebug.LogWarning($"Failed to generate clone for current asset {changeAssetPath}");
+						controller.SendPayloadToGame(payload);
+						RTUDebug.Log(
+							$"AssetPropertyChanged: {changeAsset} at {changeAssetPath}.");
 					}
 				}
 				else
 				{
-					RTUDebug.LogWarning("Failed to get asset for path");
+					RTUDebug.LogWarning($"Failed to generate clone for current asset {changeAssetPath}");
 				}
+			}
+			else
+			{
+				RTUDebug.LogWarning("Failed to get asset for path");
 			}
 		}
 	}

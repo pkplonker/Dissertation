@@ -50,6 +50,7 @@ namespace RTUEditor
 			connection = new RTUEditorConnection(scheduler);
 			JsonSettings = new JSONSettingsCreator().Create();
 			payloadRecorder = new PayloadRecorder(JsonSettings);
+			RTUAssetPostProcesor.Init(this);
 		}
 
 		public void SendPayloadToGame(IPayload payload)
