@@ -21,29 +21,33 @@ namespace RTUEditor
 		{
 			this.filteredPayloads = payloads.OfType<AssetPropertyChangeEventArgs>().ToList();
 			List<AssetPropertyChangeEventArgs> customPayloads = new List<AssetPropertyChangeEventArgs>();
-			var result = filteredPayloads
+			var groupings = filteredPayloads
 				.GroupBy(x => x.ID);
-			foreach (var r in result)
+			foreach (var group in groupings)
 			{
-				var changesDict = r
-					.SelectMany(x => x.Changes)
-					.ToLookup(x => x.Key, x => x.Value)
-					.ToDictionary(x => x.Key, x => x.Last());
-				var originalValues = r
-					.SelectMany(x => x.OriginalValues)
-					.ToLookup(x => x.Key, x => x.Value)
-					.ToDictionary(x => x.Key, x => x.First());
-				customPayloads.Add(new AssetPropertyChangeEventArgs
-				{
-					ID = r.Key,
-					Path = AssetDatabase.GetAssetPath(EditorUtility.InstanceIDToObject(r.Key)),
-					Changes = changesDict,
-					OriginalValues = originalValues
-				});
+				GenerateChanges(group, customPayloads);
 			}
 
 			filteredPayloads = customPayloads;
 		}
+
+		private void GenerateChanges(IGrouping<int, AssetPropertyChangeEventArgs> group,
+			List<AssetPropertyChangeEventArgs> customPayloads)
+		{
+			if (group.OfType<MaterialAssetPropertyChangeEventArgs>().Any())
+			{
+				customPayloads.Add(MaterialAssetPropertyChangeEventArgs.GenerateCombinedChange(group));
+			}
+			else if (group.OfType<MaterialAssetPropertyChangeEventArgs>().Any())
+			{
+				customPayloads.Add(TextureAssetPropertyChangeEventArgs.GenerateCombinedChange(group));
+			}
+			else
+			{
+				customPayloads.Add(AssetPropertyChangeEventArgs.GenerateCombinedChange(group));
+			}
+		}
+		
 
 		protected override void DrawValues(AssetPropertyChangeEventArgs change,
 			List<float> columnWidths)
@@ -57,8 +61,9 @@ namespace RTUEditor
 
 		public override void Close()
 		{
-			Replay();// this is inverse of the others as we need to undo things when they're not selected
+			Replay(); // this is inverse of the others as we need to undo things when they're not selected
 		}
+
 		public override bool Replay()
 		{
 			for (var i = 0; i < toggles.Count; i++)

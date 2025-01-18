@@ -10,7 +10,7 @@ namespace RTUEditor
 	public class
 		GameObjectStructureChangePayloadRecorderTypeChangeUI : PayloadRecorderTypeChangeUI<GameObjectStructurePayload>
 	{
-		protected override string name { get; } = "Component Add/Delete Changes";
+		protected override string name { get; } = "GameObject Structure Changes";
 
 		public GameObjectStructureChangePayloadRecorderTypeChangeUI(IReadOnlyList<IPayload> payloads,
 			JsonSerializerSettings jsonSettings) : base(payloads, jsonSettings) { }
