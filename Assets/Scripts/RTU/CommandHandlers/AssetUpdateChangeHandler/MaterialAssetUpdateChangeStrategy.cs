@@ -38,23 +38,21 @@ namespace RealTimeUpdateRuntime
 							try
 							{
 								var value = change.Value;
-								// if (change.Value is JArray a)
-								// {
-								// 	value = a.ToObject(member?.MemberType);
-								// }
-								//
-								// if (value is JObject)
-								// {
-								// 	value = JsonConvert.DeserializeObject(value.ToString(),
-								// 		member.MemberType, jsonSettings);
-								// }
-								//
-								// if (!member.MemberType.IsInstanceOfType(value))
-								// {
-								// 	value = ValueConverter.ConvertValue(member.MemberType, value);
-								// }
-								//
-								// member?.SetValue(mat, value);
+
+								if (mat.HasFloat(change.Key))
+								{
+									var val = (float) Convert.ChangeType(value, typeof(float));
+									mat.SetFloat(change.Key, val);
+								}
+								else if (mat.HasInt(change.Key))
+								{
+									mat.SetInteger(change.Key, (int) Convert.ChangeType(value, typeof(int)));
+								}
+								else if (mat.HasVector(change.Key))
+								{
+									mat.SetVector(change.Key, (Vector4) Convert.ChangeType(value, typeof(Vector4)));
+								}
+
 								RTUDebug.Log($"Updated asset {change.Key} on {args.Path}");
 							}
 							catch (Exception e)
@@ -63,7 +61,6 @@ namespace RealTimeUpdateRuntime
 									$"Failed setting {change.Key} on {args.Path}: {e.Message}");
 							}
 						}
-						
 					}
 				}
 			}

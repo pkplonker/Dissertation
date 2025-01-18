@@ -21,7 +21,7 @@ namespace RTUEditor.ObjectChange
 			return false;
 		}
 
-		private void UpdateAssetStoreWithLatest(Clone currentClone)
+		protected void UpdateAssetStoreWithLatest(Clone currentClone)
 		{
 			RTUAssetStore.UpdateClone(currentClone);
 		}

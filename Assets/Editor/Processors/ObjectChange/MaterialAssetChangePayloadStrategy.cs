@@ -24,8 +24,12 @@ namespace RTUEditor.ObjectChange
 						ShaderPropertiesOriginalValues = originalValues,
 					};
 					args = matArgs;
+					UpdateAssetStoreWithLatest(currentClone);
+
 					return true;
 				}
+
+				UpdateAssetStoreWithLatest(currentClone);
 
 				return true;
 			}
@@ -38,6 +42,8 @@ namespace RTUEditor.ObjectChange
 				args = matArgs;
 				matArgs.ShaderProperties = changes;
 				matArgs.ShaderPropertiesOriginalValues = originalValues;
+				UpdateAssetStoreWithLatest(currentClone);
+
 				return true;
 			}
 
@@ -53,15 +59,15 @@ namespace RTUEditor.ObjectChange
 			for (var i = 0; i < existingClone.ShaderProperties.Count; i++)
 			{
 				var key = existingClone.ShaderProperties.ElementAt(i).Key;
-				changes.TryAdd(key, existingClone.ShaderProperties.ElementAt(i).Value
+				originalValues.TryAdd(key, existingClone.ShaderProperties.ElementAt(i).Value
 					.Except(currentClone.ShaderProperties.ElementAt(i).Value)
 					.ToDictionary(x => x.Key, x => x.Value));
-				originalValues.TryAdd(key, currentClone.ShaderProperties.ElementAt(i).Value
+				changes.TryAdd(key, currentClone.ShaderProperties.ElementAt(i).Value
 					.Except(existingClone.ShaderProperties.ElementAt(i).Value)
 					.ToDictionary(x => x.Key, x => x.Value));
 			}
 
-			return changes.Any();
+			return changes.Any(x => x.Value.Any());
 		}
 
 		private MaterialAssetPropertyChangeEventArgs CreateMaterialArgs(Clone currentClone,
