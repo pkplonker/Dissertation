@@ -70,7 +70,6 @@ namespace RTUEditor
 
 		public void Connect(string ip, Action connectCallback = null, Action disconnectCallback = null)
 		{
-			RTUAssetStore.GenerateDictionary();
 			connection.Connect(ip, OnConnection(connectCallback), b => OnDisconnect(disconnectCallback, b));
 		}
 
@@ -84,7 +83,7 @@ namespace RTUEditor
 			{
 				RTUDebug.LogError($"Failed to close scene on disconnect: {e.Message}");
 			}
-			
+
 			try
 			{
 				RecorderFinish();
@@ -114,11 +113,22 @@ namespace RTUEditor
 
 		private Action OnConnection(Action connectCallback)
 		{
-			return () =>
+			return async () =>
 			{
 				try
 				{
-					Selection.objects = null;
+					await ThreadingHelpers.ActionOnSchedulerAsync(RTUAssetStore.GenerateDictionary, scheduler);
+				}
+				catch (Exception e)
+				{
+					RTUDebug.LogError($"Failed to setup Asset Store: {e.Message}");
+					connection.Disconnect();
+					return;
+				}
+
+				try
+				{
+					await ThreadingHelpers.ActionOnSchedulerAsync(() => Selection.objects = null,scheduler);
 					ShowScene();
 					CreateProcessors();
 					payloadRecorder.Start();
@@ -127,6 +137,7 @@ namespace RTUEditor
 				{
 					RTUDebug.LogError($"Failed to setup editor for connection: {e.Message}");
 					connection.Disconnect();
+					return;
 				}
 
 				try
@@ -137,6 +148,7 @@ namespace RTUEditor
 				{
 					RTUDebug.LogError($"Failed to execute connection callback: {e.Message}");
 					connection.Disconnect();
+					return;
 				}
 			};
 		}

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using UnityEditor;
 using UnityEngine;
@@ -6,19 +7,27 @@ using Object = UnityEngine.Object;
 
 namespace RTUEditor.AssetStore
 {
-	public class TextureCloneStrategy : DefaultCloneStrategy
+	public class MaterialCloneStrategy : DefaultCloneStrategy
 	{
 		public override Clone Clone(Object asset, string path)
 		{
-			var clone = CloneInternal(asset, asset.GetType(), new TextureClone(path)) as TextureClone;
+			var clone = CloneInternal(asset, asset.GetType(), new MaterialClone(path)) as MaterialClone;
 
 			try
 			{
-				using (var md5 = MD5.Create())
+				var mat = asset as Material;
+
+				foreach (var fl in mat.GetPropertyNames(MaterialPropertyType.Float))
 				{
-					clone.ByteHash = BitConverter.ToString(md5.ComputeHash((asset as Texture2D).GetRawTextureData()))
-						.Replace("-", "")
-						.ToLowerInvariant();
+					clone.ShaderProperties["float"].Add(fl, mat.GetFloat(fl));
+				}
+				foreach (var fl in mat.GetPropertyNames(MaterialPropertyType.Vector))
+				{
+					clone.ShaderProperties["vector"].Add(fl, mat.GetVector(fl));
+				}
+				foreach (var fl in mat.GetPropertyNames(MaterialPropertyType.Int))
+				{
+					clone.ShaderProperties["int"].Add(fl, mat.GetInteger(fl));
 				}
 			}
 			catch (Exception e)

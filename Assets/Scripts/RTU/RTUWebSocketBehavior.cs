@@ -41,30 +41,30 @@ namespace RealTimeUpdateRuntime
 			try
 			{
 				var data = Encoding.UTF8.GetString(args.RawData);
-				Debug.Log($"Message received raw {data}");
+				RTUDebug.Log($"Message received raw {data}");
 				try
 				{
 					HandleMessage(data);
 				}
 				catch (Exception e)
 				{
-					Debug.LogWarning($"Unable to handle message {e.Message}");
+					RTUDebug.LogWarning($"Unable to handle message {e.Message}");
 				}
 			}
 			catch (Exception e)
 			{
-				Debug.LogWarning($"Unable to parse message {e.Message}");
+				RTUDebug.LogWarning($"Unable to parse message {e.Message}");
 			}
 		}
 
 		protected override void OnClose(CloseEventArgs args)
 		{
-			Debug.Log($"Disconnected from editor {args.Reason}");
+			RTUDebug.Log($"Disconnected from editor {args.Reason}");
 		}
 
 		protected override void OnOpen()
 		{
-			Debug.Log("Connection established");
+			RTUDebug.Log("Connection established");
 		}
 
 		private void HandleMessage(string rawMessage)
@@ -93,12 +93,12 @@ namespace RealTimeUpdateRuntime
 					}
 					else
 					{
-						Debug.Log($"Unknown command: {messageType ?? "null"}");
+						RTUDebug.Log($"Unknown command: {messageType ?? "null"}");
 					}
 				}
 				catch (Exception e)
 				{
-					Debug.LogError($"Failed to parse message: {message} {e.Message}");
+					RTUDebug.LogError($"Failed to parse message: {message} {e.Message}");
 				}
 			}
 		}

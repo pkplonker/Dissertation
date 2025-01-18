@@ -5,21 +5,26 @@ using Newtonsoft.Json;
 namespace RealTimeUpdateRuntime
 {
 	[Serializable]
-	public class AssetPropertyChangeEventArgs : IPayload
+	public class MaterialAssetPropertyChangeEventArgs : AssetPropertyChangeEventArgs
 	{
 		public static string MESSAGE_IDENTIFER = "AssetUpdate";
-		public Dictionary<string, object> Changes { get; set; }
+
+		public Dictionary<string, Dictionary<string, object>> ShaderProperties { get; set; } =
+			new(StringComparer.InvariantCultureIgnoreCase);
 
 		[JsonIgnore]
-		public int ID { get; set; }
+		public Dictionary<string, Dictionary<string, object>> ShaderPropertiesOriginalValues { get; set; } =
+			new(StringComparer.InvariantCultureIgnoreCase);
 
-		[JsonIgnore]
-		public Dictionary<string, object> OriginalValues { get; set; }
+		public MaterialAssetPropertyChangeEventArgs() { }
 
-		public string Path { get; set; }
-		public string Type { get; set; }
-
-		public virtual List<string> GeneratePayload(JsonSerializerSettings JSONSettings) => new()
-			{$"{MESSAGE_IDENTIFER}\n{JsonConvert.SerializeObject(this, Formatting.Indented, JSONSettings)}"};
+		public MaterialAssetPropertyChangeEventArgs(AssetPropertyChangeEventArgs other)
+		{
+			Changes = other.Changes;
+			ID = other.ID;
+			OriginalValues = other.OriginalValues;
+			Path = other.Path;
+			Type = other.Type;
+		}
 	}
 }

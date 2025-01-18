@@ -1,12 +1,29 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace RTUEditor.AssetStore
 {
-	public class TextureClone : Clone
+	public class MaterialClone : Clone
 	{
-		public string ByteHash { get; set; }
-		public TextureClone(string name) : base(name) { }
+		public Dictionary<string, Dictionary<string, object>> ShaderProperties { get; set; } = new(StringComparer.InvariantCultureIgnoreCase);
 
-		public TextureClone(string name, StringComparer StringComparer) : base(name, StringComparer) { }
+		public Dictionary<string, Dictionary<string, object>> ShaderPropertiesOriginalValues { get; set; } = new(StringComparer.InvariantCultureIgnoreCase);
+
+		public MaterialClone(string name) : base(name)
+		{
+			SetupDict();
+		}
+
+		public MaterialClone(string name, StringComparer StringComparer) : base(name, StringComparer)
+		{
+			SetupDict();
+		}
+
+		private void SetupDict()
+		{
+			ShaderProperties.Add("float", new(StringComparer.InvariantCultureIgnoreCase));
+			ShaderProperties.Add("int", new(StringComparer.InvariantCultureIgnoreCase));
+			ShaderProperties.Add("vector", new(StringComparer.InvariantCultureIgnoreCase));
+		}
 	}
 }

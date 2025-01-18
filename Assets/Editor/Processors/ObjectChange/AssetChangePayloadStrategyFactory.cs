@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
-using Object = UnityEngine.Object;
 
 namespace RTUEditor.ObjectChange
 {
@@ -15,6 +14,7 @@ namespace RTUEditor.ObjectChange
 			new(StringComparer.InvariantCultureIgnoreCase)
 			{
 				{"PNG", new TextureAssetChangePayloadStrategy()},
+				{"mat", new MaterialAssetChangePayloadStrategy()},
 			};
 
 		public bool GeneratePayload(Clone existingClone, Clone newClone, string type, UnityEngine.Object asset,out AssetPropertyChangeEventArgs payload)

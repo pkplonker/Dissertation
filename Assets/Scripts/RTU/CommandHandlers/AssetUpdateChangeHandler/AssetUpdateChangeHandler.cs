@@ -34,7 +34,7 @@ namespace RealTimeUpdateRuntime
 						jsonSettings);
 					if (converters.TryGetValue(args.Type, out var converter))
 					{
-						converter.Update(jsonSettings, args);
+						converter.Update(commandHandlerArgs.Payload, jsonSettings);
 					}
 					else
 					{
