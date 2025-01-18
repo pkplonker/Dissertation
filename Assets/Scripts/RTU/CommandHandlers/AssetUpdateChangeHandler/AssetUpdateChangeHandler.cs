@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace RealTimeUpdateRuntime
 {
@@ -34,7 +30,7 @@ namespace RealTimeUpdateRuntime
 						jsonSettings);
 					if (converters.TryGetValue(args.Type, out var converter))
 					{
-						converter.Update(jsonSettings, args);
+						converter.Update(commandHandlerArgs.Payload, jsonSettings);
 					}
 					else
 					{

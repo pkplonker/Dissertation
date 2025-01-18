@@ -48,7 +48,8 @@ namespace RTUEditor.AssetStore
 
 				foreach (var path in paths)
 				{
-					if (!GenerateClone(path, assetType, out var assetClone))
+					var asset = AssetDatabase.LoadMainAssetAtPath(path);
+					if (!GenerateClone(asset, path, assetType, out var assetClone))
 					{
 						RTUDebug.LogWarning($"Failed to generate clone for {path}");
 					}
@@ -63,19 +64,17 @@ namespace RTUEditor.AssetStore
 			assets = assetDict;
 		}
 
-		public static bool GenerateClone(string path, string assetType, out Clone assetClone)
+		public static bool GenerateClone(UnityEngine.Object asset, string path, string assetType, out Clone assetClone)
 		{
 			assetClone = null;
+			if (asset == null) return false;
 
 			if (!AssetTypes.TryGetValue(assetType, out var _))
 			{
-				Debug.LogWarning($"Type {assetType} not supported in RTUAssetStore");
+				RTUDebug.LogWarning($"Type {assetType} not supported in RTUAssetStore");
 				return false;
 			}
 
-			var asset = AssetDatabase.LoadMainAssetAtPath(path);
-			var mat = asset as Material;
-			if (asset == null) return false;
 			var strategy = assetCloneStrategyFactory.GetCloneStrategy(assetType);
 			assetClone = strategy.Clone(asset, path);
 			return true;

@@ -13,7 +13,7 @@ namespace RealTimeUpdateRuntime
 
 		public virtual string EXTENSION { get; }
 
-		private string RemoveInstanceString(string name, string instanceString)
+		protected string RemoveInstanceString(string name, string instanceString)
 		{
 			while (true)
 			{
@@ -27,26 +27,29 @@ namespace RealTimeUpdateRuntime
 			return name;
 		}
 
-		public void Update(JsonSerializerSettings jsonSettings, AssetPropertyChangeEventArgs args)
+		public virtual void Update(string payload, JsonSerializerSettings jsonSettings)
 		{
+			var args = JsonConvert.DeserializeObject<AssetPropertyChangeEventArgs>(payload,
+				jsonSettings);
 			var elements = GetElements();
-			var materialName = Path.GetFileNameWithoutExtension(args.Path);
-			var matchingMats = elements.Where(x =>
+			var assetName = Path.GetFileNameWithoutExtension(args.Path);
+			var matchingAssets = elements.WhereNotNull().Where(x =>
 			{
 				var name = RemoveInstanceString(x.name, IAssetUpdateChangeStrategy.INSTANCE_STRING);
 
-				return name.TrimEnd(' ').Equals(materialName, StringComparison.InvariantCultureIgnoreCase);
+				return name.TrimEnd(' ').Equals(assetName, StringComparison.InvariantCultureIgnoreCase);
 			});
 
-			if (matchingMats.Any())
+			if (matchingAssets.Any())
 			{
-				foreach (var mat in matchingMats)
+				foreach (var mat in matchingAssets)
 				{
 					var members = MemberAdaptorUtils.GetMemberAdapters(mat.GetType());
 					foreach (var change in args.Changes)
 					{
 						var member = members.FirstOrDefault(x =>
 							x.Name.Equals(change.Key, StringComparison.InvariantCultureIgnoreCase));
+						if (IsMemberNull(member,change.Key)) continue;
 						try
 						{
 							var value = change.Value;
@@ -63,7 +66,7 @@ namespace RealTimeUpdateRuntime
 
 							if (!member.MemberType.IsInstanceOfType(value))
 							{
-								value = Convert.ChangeType(value, member.MemberType);
+								value = ValueConverter.ConvertValue(member.MemberType, value);
 							}
 
 							member?.SetValue(mat, value);
@@ -79,8 +82,18 @@ namespace RealTimeUpdateRuntime
 			}
 			else
 			{
-				RTUDebug.LogWarning($"No matches found for {materialName} - no change is being made");
+				RTUDebug.LogWarning($"No matches found for {assetName} - no change is being made");
 			}
+		}
+
+		protected virtual bool IsMemberNull(IMemberAdapter member, string changeKey)
+		{
+			if (member == null)
+			{
+				RTUDebug.LogWarning($"No matches found for {changeKey} - no change is being made for this member");
+				return true;
+			}
+			return false;
 		}
 
 		protected abstract List<UnityEngine.Object> GetElements();

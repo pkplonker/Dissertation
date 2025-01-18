@@ -9,6 +9,7 @@ namespace RTUEditor.AssetStore
 		private Dictionary<string, ICloneStrategy> cloneStrategies = new(StringComparer.InvariantCultureIgnoreCase)
 		{
 			{"PNG", new TextureCloneStrategy()},
+			{"mat", new MaterialCloneStrategy()},
 		};
 
 		public ICloneStrategy GetCloneStrategy(string assetType) =>
