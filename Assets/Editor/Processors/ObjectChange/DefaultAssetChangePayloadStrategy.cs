@@ -2,6 +2,7 @@
 using System.Linq;
 using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
+using UnityEngine;
 
 namespace RTUEditor.ObjectChange
 {
@@ -10,7 +11,7 @@ namespace RTUEditor.ObjectChange
 		public virtual bool TryGenerateArgs(Clone existingClone, Clone currentClone, UnityEngine.Object asset,
 			out AssetPropertyChangeEventArgs args)
 		{
-			if (HasChange(currentClone, existingClone, out var changes, out var originalValues))
+			if (HasChange(currentClone, existingClone, asset,out var changes, out var originalValues))
 			{
 				UpdateAssetStoreWithLatest(currentClone);
 				args = CreateArgs(currentClone, changes, asset, originalValues);
@@ -40,12 +41,13 @@ namespace RTUEditor.ObjectChange
 			return args;
 		}
 
-		protected virtual bool HasChange(Clone existingClone, Clone currentClone,
+		protected virtual bool HasChange(Clone existingClone, Clone currentClone, Object asset,
 			out Dictionary<string, object> changes, out Dictionary<string, object> originalValues)
 		{
 			// working on the assumption that only the values change.
-			changes = existingClone.Except(currentClone).ToDictionary(x => x.Key, x => x.Value);
-			originalValues = currentClone.Except(existingClone).ToDictionary(x => x.Key, x => x.Value);
+			var adaptors = MemberAdaptorUtils.GetMemberAdaptersAsDict(asset.GetType());
+			changes = existingClone.Except(currentClone).ToDictionary(x => x.Key, x => adaptors[x.Key].GetValue(asset));
+			originalValues = currentClone.Except(existingClone).ToDictionary(x => x.Key, x => adaptors[x.Key].GetValue(asset));
 
 			return changes.Any();
 		}
