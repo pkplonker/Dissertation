@@ -76,6 +76,7 @@ namespace RTUEditor
 
 		private void OnDisconnect(Action disconnectCallback, bool b)
 		{
+			ClearHandlers();
 			try
 			{
 				CloseScene();
@@ -156,12 +157,7 @@ namespace RTUEditor
 
 		public void CreateProcessors()
 		{
-			foreach (var handler in handlers.OfType<IDisposable>())
-			{
-				handler.Dispose();
-			}
-
-			handlers.Clear();
+			ClearHandlers();
 			handlers.AddRange(AppDomain.CurrentDomain.GetAssemblies()
 				.SelectMany(x => x.GetTypes())
 				.Where(x => x.GetInterfaces().Contains(typeof(IRTUEditorProcessor)))
@@ -169,6 +165,16 @@ namespace RTUEditor
 				.Select(x =>
 					(IRTUEditorProcessor) Activator.CreateInstance(x, new object[] {this}))
 				.ToList());
+		}
+
+		private void ClearHandlers()
+		{
+			foreach (var handler in handlers.OfType<IDisposable>())
+			{
+				handler.Dispose();
+			}
+
+			handlers.Clear();
 		}
 	}
 }

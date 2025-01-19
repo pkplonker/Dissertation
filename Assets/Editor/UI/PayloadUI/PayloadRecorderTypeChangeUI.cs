@@ -24,8 +24,8 @@ namespace RTUEditor
 	public abstract class PayloadRecorderTypeChangeUI<T> : PayloadRecorderTypeChangeUI where T : IPayload
 	{
 		protected List<bool> toggles = new();
-		protected IReadOnlyList<T> filteredPayloads;
-		protected IReadOnlyList<T> originalPayloads;
+		protected virtual IReadOnlyList<T> filteredPayloads { get; set; }
+		protected virtual IReadOnlyList<T> originalPayloads { get; set; }
 		protected abstract string name { get; }
 		private bool show = true;
 		protected readonly JsonSerializerSettings jsonSettings;
