@@ -21,6 +21,11 @@ namespace RealTimeUpdateRuntime
 			return elements;
 		}
 
+		public override void MultiUpdate(string payload, JsonSerializerSettings jsonSettings)
+		{
+			throw new NotImplementedException();
+		}
+
 		protected override bool IsMemberNull(IMemberAdapter member, string changeKey)
 		{
 			if (member == null)

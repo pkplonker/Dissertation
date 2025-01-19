@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace RTUEditor.AssetStore
 {
@@ -17,6 +18,12 @@ namespace RTUEditor.AssetStore
 		public Clone(string name)
 		{
 			this.Name = name;
+		}
+
+		public bool ContainsValue(object value, out string key)
+		{
+			key = this.FirstOrDefault(x => x.Value == value).Key;
+			return !string.IsNullOrEmpty(key);
 		}
 	}
 }

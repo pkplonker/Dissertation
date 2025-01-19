@@ -141,7 +141,7 @@ namespace RTUEditor
 					connection.Disconnect();
 					return;
 				}
-
+				
 				try
 				{
 					connectCallback?.Invoke();

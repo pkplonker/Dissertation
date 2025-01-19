@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
@@ -24,14 +26,12 @@ namespace RTUEditor.ObjectChange
 		public void Process(ObjectChangeEventStream stream, int streamIdx, JsonSerializerSettings jsonSettings,
 			SceneGameObjectStore sceneGameObjectStore)
 		{
-			{
-				stream.GetChangeAssetObjectPropertiesEvent(streamIdx, out var changeAssetObjectPropertiesEvent);
-				var changeAsset = EditorUtility.InstanceIDToObject(changeAssetObjectPropertiesEvent.instanceId);
-				Process(changeAsset);
-			}
+			stream.GetChangeAssetObjectPropertiesEvent(streamIdx, out var changeAssetObjectPropertiesEvent);
+			var changeAsset = EditorUtility.InstanceIDToObject(changeAssetObjectPropertiesEvent.instanceId);
+			Process(changeAsset, sceneGameObjectStore);
 		}
 
-		public void Process(Object changeAsset)
+		public void Process(Object changeAsset, SceneGameObjectStore sceneGameObjectStore = null)
 		{
 			var changeAssetPath = AssetDatabase.GetAssetPath(changeAsset);
 			var extension = Path.GetExtension(changeAssetPath).Trim('.');
@@ -64,9 +64,36 @@ namespace RTUEditor.ObjectChange
 					RTUDebug.LogWarning($"Failed to generate clone for current asset {changeAssetPath}");
 				}
 			}
-			else
+			else if (sceneGameObjectStore != null)
 			{
-				RTUDebug.LogWarning("Failed to get asset for path");
+				var clones = sceneGameObjectStore.GetClones();
+				var results = new List<MultiObjectAssetChange>();
+				foreach (var clone in clones.Values.OfType<GameObjectClone>())
+				{
+					foreach (var component in clone.components)
+					{
+						if (component.ContainsValue(changeAsset, out var key))
+						{
+							results.Add(new MultiObjectAssetChange()
+							{
+								PropName = key,
+								ComponentName = component.Name,
+								GameObject = clone.Name,
+							});
+						}
+					}
+				}
+
+				var args = new MultiObjectAssetChangeEventArgs
+				{
+					ID = changeAsset.GetInstanceID(),
+					ImpactedAssets = results,
+					Value = changeAsset,
+					ValueType = changeAsset.GetType(),
+				};
+				controller.SendPayloadToGame(args);
+				RTUDebug.Log(
+					$"MultiObjectAssetPropertyChanged: {changeAsset} at {changeAssetPath}.");
 			}
 		}
 	}

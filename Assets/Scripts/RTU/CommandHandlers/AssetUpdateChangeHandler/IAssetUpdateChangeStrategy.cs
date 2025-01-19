@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace RealTimeUpdateRuntime
 {
@@ -8,5 +9,6 @@ namespace RealTimeUpdateRuntime
 
 		public string EXTENSION { get; }
 		public void Update(string payload, JsonSerializerSettings jsonSettings);
+		void MultiUpdate(string payload, JsonSerializerSettings jsonSettings);
 	}
 }

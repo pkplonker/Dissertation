@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -8,6 +9,11 @@ namespace RealTimeUpdateRuntime
 	public class PhysicsMaterialAssetUpdateChangeStrategy : BaseAssetUpdateChangeStrategy
 	{
 		public override string EXTENSION { get; } = "physicmaterial";
+
+		public override void MultiUpdate(string payload, JsonSerializerSettings jsonSettings)
+		{
+			throw new System.NotImplementedException();
+		}
 
 		protected override List<Object> GetElements()
 		{

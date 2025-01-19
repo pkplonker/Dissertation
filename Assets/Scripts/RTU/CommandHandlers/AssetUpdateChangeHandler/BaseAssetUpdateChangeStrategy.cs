@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Object = UnityEngine.Object;
 
 namespace RealTimeUpdateRuntime
 {
@@ -42,49 +43,57 @@ namespace RealTimeUpdateRuntime
 
 			if (matchingAssets.Any())
 			{
-				foreach (var mat in matchingAssets)
-				{
-					var members = MemberAdaptorUtils.GetMemberAdapters(mat.GetType());
-					foreach (var change in args.Changes)
-					{
-						var member = members.FirstOrDefault(x =>
-							x.Name.Equals(change.Key, StringComparison.InvariantCultureIgnoreCase));
-						if (IsMemberNull(member,change.Key)) continue;
-						try
-						{
-							var value = change.Value;
-							if (change.Value is JArray a)
-							{
-								value = a.ToObject(member?.MemberType);
-							}
-
-							if (value is JObject)
-							{
-								value = JsonConvert.DeserializeObject(value.ToString(),
-									member.MemberType, jsonSettings);
-							}
-
-							if (!member.MemberType.IsInstanceOfType(value))
-							{
-								value = ValueConverter.ConvertValue(member.MemberType, value);
-							}
-
-							member?.SetValue(mat, value);
-							RTUDebug.Log($"Updated asset {change.Key} on {args.Path}");
-						}
-						catch (Exception e)
-						{
-							RTUDebug.LogWarning(
-								$"Failed setting {change.Key} on {args.Path}: {e.Message}");
-						}
-					}
-				}
+				UpdateAsset(jsonSettings, matchingAssets, args);
 			}
 			else
 			{
 				RTUDebug.LogWarning($"No matches found for {assetName} - no change is being made");
 			}
 		}
+
+		protected virtual void UpdateAsset(JsonSerializerSettings jsonSettings, IEnumerable<Object> matchingAssets,
+			AssetPropertyChangeEventArgs args)
+		{
+			foreach (var mat in matchingAssets)
+			{
+				var members = MemberAdaptorUtils.GetMemberAdapters(mat.GetType());
+				foreach (var change in args.Changes)
+				{
+					var member = members.FirstOrDefault(x =>
+						x.Name.Equals(change.Key, StringComparison.InvariantCultureIgnoreCase));
+					if (IsMemberNull(member,change.Key)) continue;
+					try
+					{
+						var value = change.Value;
+						if (change.Value is JArray a)
+						{
+							value = a.ToObject(member?.MemberType);
+						}
+
+						if (value is JObject)
+						{
+							value = JsonConvert.DeserializeObject(value.ToString(),
+								member.MemberType, jsonSettings);
+						}
+
+						if (!member.MemberType.IsInstanceOfType(value))
+						{
+							value = ValueConverter.ConvertValue(member.MemberType, value);
+						}
+
+						member?.SetValue(mat, value);
+						RTUDebug.Log($"Updated asset {change.Key} on {args.Path}");
+					}
+					catch (Exception e)
+					{
+						RTUDebug.LogWarning(
+							$"Failed setting {change.Key} on {args.Path}: {e.Message}");
+					}
+				}
+			}
+		}
+
+		public abstract void MultiUpdate(string payload, JsonSerializerSettings jsonSettings);
 
 		protected virtual bool IsMemberNull(IMemberAdapter member, string changeKey)
 		{

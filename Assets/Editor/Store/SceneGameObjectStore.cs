@@ -117,5 +117,7 @@ namespace RTUEditor
 
 			return true;
 		}
+
+		public Dictionary<string, Clone> GetClones() => new(clones);
 	}
 }

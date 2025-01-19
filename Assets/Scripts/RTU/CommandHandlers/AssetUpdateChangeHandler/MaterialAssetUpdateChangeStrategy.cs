@@ -35,6 +35,11 @@ namespace RealTimeUpdateRuntime
 			}
 		}
 
+		public override void MultiUpdate(string payload, JsonSerializerSettings jsonSettings)
+		{
+			throw new NotImplementedException();
+		}
+
 		public static void Perform(Dictionary<string,object> changes, Material mat, string path)
 		{
 			foreach (var change in changes)

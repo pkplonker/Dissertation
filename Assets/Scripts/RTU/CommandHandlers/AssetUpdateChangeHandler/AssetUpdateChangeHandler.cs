@@ -7,7 +7,7 @@ namespace RealTimeUpdateRuntime
 {
 	public class AssetUpdateChangeHandler : RTUCommandHandlerBase
 	{
-		private Dictionary<string, IAssetUpdateChangeStrategy> converters = new();
+		protected Dictionary<string, IAssetUpdateChangeStrategy> converters = new();
 		public override string Tag { get; } = AssetPropertyChangeEventArgs.MESSAGE_IDENTIFER;
 
 		public AssetUpdateChangeHandler()
