@@ -22,6 +22,31 @@ namespace RTUEditor.ObjectChange
 			return false;
 		}
 
+		public bool TryGenerateRefreshArgs(Object changeAsset, out AssetPropertyChangeEventArgs args)
+		{
+			args = CreateRefreshArgs(changeAsset);
+			return true;
+		}
+
+		protected virtual AssetPropertyChangeEventArgs CreateRefreshArgs(UnityEngine.Object asset)
+		{
+			var args = new AssetPropertyChangeEventArgs
+			{
+				ID = asset.GetInstanceID(),
+				Path = asset.name,
+				Changes = GenerateRefreshChangeDict(asset),
+				OriginalValues = null,
+				Type = asset.GetType().ToString(),
+			};
+			return args;
+		}
+
+		protected Dictionary<string, object> GenerateRefreshChangeDict(Object asset)
+		{
+			var adaptors = MemberAdaptorUtils.GetMemberAdaptersAsDict(asset.GetType());
+			return adaptors.ToDictionary(x => x.Key, x => x.Value.GetValue(asset));
+		}
+
 		protected void UpdateAssetStoreWithLatest(Clone currentClone)
 		{
 			RTUAssetStore.UpdateClone(currentClone);

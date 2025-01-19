@@ -66,7 +66,12 @@ namespace RTUEditor.ObjectChange
 			}
 			else
 			{
-				RTUDebug.LogWarning("Failed to get asset for path");
+				if (assetChangePayloadStrategyFactory.GenerateRefreshPayload(changeAsset, out var payload))
+				{
+					controller.SendPayloadToGame(payload);
+					RTUDebug.Log(
+						$"Refresh AssetPropertyChanged: {changeAsset} at {changeAsset.name}.");
+				}
 			}
 		}
 	}
