@@ -36,20 +36,22 @@ namespace RTUEditor.ObjectChange
 			var changeAssetPath = AssetDatabase.GetAssetPath(changeAsset);
 			var extension = Path.GetExtension(changeAssetPath).Trim('.');
 			if (changeAsset is AssetImporter importer)
-			{ 
-				AssetDatabase.ImportAsset(importer.assetPath, ImportAssetOptions.ForceUpdate);
+			{
+				RTUImportAsset.ImportAsset(importer);
+
 				var asset = AssetDatabase.LoadAssetAtPath(changeAssetPath, typeof(UnityEngine.Object));
 				if (asset != null)
 				{
 					changeAsset = asset;
 				}
 			}
+
 			if (RTUAssetStore.TryGetExistingClone(changeAssetPath, extension, out var existingClone))
 			{
 				if (RTUAssetStore.GenerateClone(changeAsset, changeAssetPath, extension, out var newClone))
 				{
-						
-					if (assetChangePayloadStrategyFactory.GeneratePayload(existingClone, newClone, extension,changeAsset,
+					if (assetChangePayloadStrategyFactory.GeneratePayload(existingClone, newClone, extension,
+						    changeAsset,
 						    out var payload))
 					{
 						controller.SendPayloadToGame(payload);

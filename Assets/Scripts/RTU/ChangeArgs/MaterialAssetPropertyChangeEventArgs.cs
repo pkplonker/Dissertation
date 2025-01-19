@@ -7,11 +7,11 @@ namespace RealTimeUpdateRuntime
 	[Serializable]
 	public class MaterialAssetPropertyChangeEventArgs : AssetPropertyChangeEventArgs
 	{
-		public Dictionary<string, Dictionary<string, object>> ShaderProperties { get; set; } =
+		public Dictionary<string, object> ShaderProperties { get; set; } =
 			new(StringComparer.InvariantCultureIgnoreCase);
 
 		[JsonIgnore]
-		public Dictionary<string, Dictionary<string, object>> ShaderPropertiesOriginalValues { get; set; } =
+		public Dictionary<string, object> ShaderPropertiesOriginalValues { get; set; } =
 			new(StringComparer.InvariantCultureIgnoreCase);
 
 		public MaterialAssetPropertyChangeEventArgs() { }

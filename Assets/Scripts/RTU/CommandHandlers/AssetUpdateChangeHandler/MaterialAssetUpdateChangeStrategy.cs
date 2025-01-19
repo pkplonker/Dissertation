@@ -30,37 +30,39 @@ namespace RealTimeUpdateRuntime
 			{
 				foreach (var mat in matchingAssets)
 				{
-					foreach (var propDict in args.ShaderProperties)
+					Perform(args.ShaderProperties, mat, args.Path);
+				}
+			}
+		}
+
+		public static void Perform(Dictionary<string,object> changes, Material mat, string path)
+		{
+			foreach (var change in changes)
+			{
+				try
+				{
+					var value = change.Value;
+
+					if (mat.HasFloat(change.Key))
 					{
-						foreach (var change in propDict.Value)
-						{
-							try
-							{
-								var value = change.Value;
-
-								if (mat.HasFloat(change.Key))
-								{
-									var val = (float) Convert.ChangeType(value, typeof(float));
-									mat.SetFloat(change.Key, val);
-								}
-								else if (mat.HasInt(change.Key))
-								{
-									mat.SetInteger(change.Key, (int) Convert.ChangeType(value, typeof(int)));
-								}
-								else if (mat.HasVector(change.Key))
-								{
-									mat.SetVector(change.Key, (Vector4) Convert.ChangeType(value, typeof(Vector4)));
-								}
-
-								RTUDebug.Log($"Updated asset {change.Key} on {args.Path}");
-							}
-							catch (Exception e)
-							{
-								RTUDebug.LogWarning(
-									$"Failed setting {change.Key} on {args.Path}: {e.Message}");
-							}
-						}
+						var val = (float) Convert.ChangeType(value, typeof(float));
+						mat.SetFloat(change.Key, val);
 					}
+					else if (mat.HasInt(change.Key))
+					{
+						mat.SetInteger(change.Key, (int) Convert.ChangeType(value, typeof(int)));
+					}
+					else if (mat.HasVector(change.Key))
+					{
+						mat.SetVector(change.Key, (Vector4) Convert.ChangeType(value, typeof(Vector4)));
+					}
+
+					RTUDebug.Log($"Updated asset {change.Key} on {path}");
+				}
+				catch (Exception e)
+				{
+					RTUDebug.LogWarning(
+						$"Failed setting {change.Key} on {path}: {e.Message}");
 				}
 			}
 		}

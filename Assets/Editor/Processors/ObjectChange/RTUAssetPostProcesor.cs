@@ -8,11 +8,12 @@ namespace RTUEditor
 	{
 		private static EditorRtuController editorRtuController;
 		private static AssetPropertyChangeRTUEditorProcessor processor;
+		public static bool Surpress { get; set; } = false;
 
 		static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets,
 			string[] movedFromAssetPaths, bool reload)
 		{
-			if (reload || !editorRtuController.IsConnected) return;
+			if (reload || !editorRtuController.IsConnected || Surpress) return;
 			foreach (string path in importedAssets)
 			{
 				Debug.Log("Reimported Asset: " + path);

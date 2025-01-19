@@ -30,7 +30,7 @@ namespace RTUEditor.ObjectChange
 				}
 			}
 
-			RTUDebug.LogWarning($"Failed to generate payload for {newClone}");
+			//RTUDebug.LogWarning($"Failed to generate payload for {newClone}");
 
 			return false;
 		}

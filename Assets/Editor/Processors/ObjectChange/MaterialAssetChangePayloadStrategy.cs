@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
-using UnityEngine;
-using Object = System.Object;
 
 namespace RTUEditor.ObjectChange
 {
@@ -51,23 +49,17 @@ namespace RTUEditor.ObjectChange
 		}
 
 		private bool HasShaderChanges(MaterialClone existingClone, MaterialClone currentClone,
-			out Dictionary<string, Dictionary<string, object>> changes,
-			out Dictionary<string, Dictionary<string, object>> originalValues)
+			out Dictionary<string, object> changes,
+			out Dictionary<string, object> originalValues)
 		{
-			changes = new Dictionary<string, Dictionary<string, object>>();
-			originalValues = new Dictionary<string, Dictionary<string, object>>();
-			for (var i = 0; i < existingClone.ShaderProperties.Count; i++)
-			{
-				var key = existingClone.ShaderProperties.ElementAt(i).Key;
-				originalValues.TryAdd(key, existingClone.ShaderProperties.ElementAt(i).Value
-					.Except(currentClone.ShaderProperties.ElementAt(i).Value)
-					.ToDictionary(x => x.Key, x => x.Value));
-				changes.TryAdd(key, currentClone.ShaderProperties.ElementAt(i).Value
-					.Except(existingClone.ShaderProperties.ElementAt(i).Value)
-					.ToDictionary(x => x.Key, x => x.Value));
-			}
+			changes = new Dictionary<string, object>();
+			originalValues = new Dictionary<string, object>();
 
-			return changes.Any(x => x.Value.Any());
+			changes = currentClone.ShaderProperties.Except(existingClone.ShaderProperties).ToDictionary(x => x.Key, x => x.Value);
+			originalValues = existingClone.ShaderProperties.Except(currentClone.ShaderProperties)
+				.ToDictionary(x => x.Key, x => x.Value);
+
+			return changes.Any();
 		}
 
 		private MaterialAssetPropertyChangeEventArgs CreateMaterialArgs(Clone currentClone,

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Security.Cryptography;
-using UnityEditor;
+using RealTimeUpdateRuntime;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -17,17 +15,19 @@ namespace RTUEditor.AssetStore
 			{
 				var mat = asset as Material;
 
-				foreach (var fl in mat.GetPropertyNames(MaterialPropertyType.Float))
+				foreach (var val in mat.GetPropertyNames(MaterialPropertyType.Float))
 				{
-					clone.ShaderProperties["float"].Add(fl, mat.GetFloat(fl));
+					clone.ShaderProperties.Add(val, mat.GetFloat(val));
 				}
-				foreach (var fl in mat.GetPropertyNames(MaterialPropertyType.Vector))
+
+				foreach (var val in mat.GetPropertyNames(MaterialPropertyType.Vector))
 				{
-					clone.ShaderProperties["vector"].Add(fl, mat.GetVector(fl));
+					clone.ShaderProperties.Add(val,mat.GetVector(val));
 				}
+
 				foreach (var fl in mat.GetPropertyNames(MaterialPropertyType.Int))
 				{
-					clone.ShaderProperties["int"].Add(fl, mat.GetInteger(fl));
+					clone.ShaderProperties.Add(fl, mat.GetInteger(fl));
 				}
 			}
 			catch (Exception e)
