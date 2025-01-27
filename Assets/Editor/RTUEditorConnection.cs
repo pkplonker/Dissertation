@@ -18,9 +18,8 @@ namespace RTUEditor
 
 		public bool IsConnected => socket?.ReadyState == WebSocketState.Open;
 
-		public void Connect(string ipAddress, Action completeCallback = null, Action<bool> disconnectCallback = null)
+		public void Connect(string ipAddress, int port, Action completeCallback = null, Action<bool> disconnectCallback = null)
 		{
-			int port = 6666;
 			string behaviour = "RTU";
 			try
 			{

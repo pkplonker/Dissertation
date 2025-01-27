@@ -2192,6 +2192,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3769ef7c9568d84a93c16da50335b41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IP: {fileID: 11400000, guid: 750a35ee8c88ddb4593c2816dde639f9, type: 2}
+  Port: {fileID: 11400000, guid: 569a4ec0df91cd04eb5e3d2b2f7194bc, type: 2}
 --- !u!4 &1184236022
 Transform:
   m_ObjectHideFlags: 0

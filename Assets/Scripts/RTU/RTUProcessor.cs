@@ -16,7 +16,8 @@ namespace RealTimeUpdateRuntime
 		private WebSocketServer webSocketServer;
 		private static readonly Queue<Action> ExecutionQueue = new Queue<Action>();
 		public TaskScheduler Schedular { get; private set; }
-
+		public StringScriptableObject IP;
+		public IntScriptableObject Port;
 		private void Awake()
 		{
 			gameObject.hideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector;
@@ -46,7 +47,6 @@ namespace RealTimeUpdateRuntime
 			try
 			{
 				RTUDebug.Log("Starting Server");
-				int port = 6666;
 				string localIP;
 				// https://stackoverflow.com/questions/6803073/get-local-ip-address
 				if (System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
@@ -65,7 +65,7 @@ namespace RealTimeUpdateRuntime
 					return;
 				}
 
-				webSocketServer = new WebSocketServer(port);
+				webSocketServer = new WebSocketServer(Port.Value);
 				webSocketServer.AddWebSocketService<RTUWebSocketBehavior>("/RTU");
 				webSocketServer.Start();
 			}

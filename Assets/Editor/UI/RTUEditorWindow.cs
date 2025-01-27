@@ -11,8 +11,9 @@ namespace RTUEditor
 	public class RTUEditorWindow : EditorWindow
 	{
 		private EditorRtuController controller = new EditorRtuController();
-		private string ip = "127.0.0.52";
+		private StringScriptableObject IPSO;
 		private string gamePath = "S:\\Users\\pkplo\\OneDrive\\Desktop\\RTUBuild\\Dev\\RTUIdeaTest.exe";
+		private IntScriptableObject PortSO; 
 
 		[MenuItem("SH/RTU")]
 		public static void ShowWindow()
@@ -24,6 +25,8 @@ namespace RTUEditor
 		{
 			EditorGUILayout.BeginHorizontal();
 			gamePath = EditorGUILayout.TextField("Game Exe Path", gamePath);
+			IPSO = AssetDatabase.LoadAssetAtPath<StringScriptableObject>( "Assets/ip.asset");
+			PortSO = AssetDatabase.LoadAssetAtPath<IntScriptableObject>( "Assets/port.asset");
 
 			if (GUILayout.Button("Run Game"))
 			{
@@ -65,7 +68,9 @@ namespace RTUEditor
 
 			EditorGUILayout.EndHorizontal();
 			EditorGUILayout.BeginHorizontal();
-			ip = EditorGUILayout.TextField("IP Address", ip);
+			IPSO.Value = EditorGUILayout.TextField("IP Address", IPSO.Value);
+			PortSO.Value = EditorGUILayout.IntField("Port", PortSO.Value);
+
 			if (GUILayout.Button("Run Game & Connect"))
 			{
 				try
@@ -79,7 +84,7 @@ namespace RTUEditor
 						while (!controller.IsConnected && timeoutCount<10)
 						{
 							timeoutCount++;
-							controller.Connect(ip);
+							controller.Connect(IPSO.Value,PortSO.Value);
 							Task.Delay(1000);
 						}
 					});
@@ -101,7 +106,7 @@ namespace RTUEditor
 			{
 				if (GUILayout.Button("Connect to Game"))
 				{
-					controller.Connect(ip);
+					controller.Connect(IPSO.Value,PortSO.Value);
 				}
 			}
 

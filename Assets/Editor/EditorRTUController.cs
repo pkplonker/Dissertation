@@ -69,9 +69,9 @@ namespace RTUEditor
 			connection.Disconnect();
 		}
 
-		public void Connect(string ip, Action connectCallback = null, Action disconnectCallback = null)
+		public void Connect(string ip,int port, Action connectCallback = null, Action disconnectCallback = null)
 		{
-			connection.Connect(ip, OnConnection(connectCallback), b => OnDisconnect(disconnectCallback, b));
+			connection.Connect(ip, port,OnConnection(connectCallback), b => OnDisconnect(disconnectCallback, b));
 		}
 
 		private void OnDisconnect(Action disconnectCallback, bool b)
@@ -88,7 +88,8 @@ namespace RTUEditor
 
 			try
 			{
-				RecorderFinish();
+				ThreadingHelpers.ActionOnScheduler(RecorderFinish, scheduler);
+				
 			}
 			catch (Exception e)
 			{
