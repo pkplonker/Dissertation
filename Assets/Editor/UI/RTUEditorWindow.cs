@@ -68,8 +68,17 @@ namespace RTUEditor
 
 			EditorGUILayout.EndHorizontal();
 			EditorGUILayout.BeginHorizontal();
-			IPSO.Value = EditorGUILayout.TextField("IP Address", IPSO.Value);
-			PortSO.Value = EditorGUILayout.IntField("Port", PortSO.Value);
+			
+			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.LabelField("IP Address", GUILayout.MaxWidth(100));
+			IPSO.Value = EditorGUILayout.TextField(string.Empty, IPSO.Value);
+			EditorGUILayout.EndHorizontal();
+
+			
+			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.LabelField("Port", GUILayout.MaxWidth(70));
+			PortSO.Value = EditorGUILayout.IntField(string.Empty, PortSO.Value);
+			EditorGUILayout.EndHorizontal();
 
 			if (GUILayout.Button("Run Game & Connect"))
 			{
