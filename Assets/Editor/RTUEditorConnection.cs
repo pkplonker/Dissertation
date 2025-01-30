@@ -8,12 +8,12 @@ namespace RTUEditor
 {
 	public class RTUEditorConnection
 	{
-		private static WebSocket socket;
+		private WebSocket socket;
 		public bool IsConnected => socket?.ReadyState == WebSocketState.Open;
 		public string IPAddress { get; private set; } = string.Empty;
 		public int Port { get; private set; } = -1;
 
-		public void Connect(string ipAddress, int port, Action completeCallback = null, Action<bool> disconnectCallback = null)
+		public void Connect(string ipAddress, int port, Action completeCallback = null, Action disconnectCallback = null)
 		{
 			IPAddress = ipAddress;
 			Port = port;
@@ -44,23 +44,15 @@ namespace RTUEditor
 					RTUDebug.LogWarning($"Unable to establish connection to game. Reason: {args.Reason}");
 				}
 
-				Reset();
-				disconnectCallback?.Invoke(args.WasClean);
+				disconnectCallback?.Invoke();
 			};
 			socket.OnMessage += (_, args) => RTUDebug.Log($"Message received: {args.Data}");
 			socket.OnError += (_, args) =>
 			{
 				RTUDebug.Log($"Error connection to game: {args.Message}");
-				Reset();
 			};
 
 			socket.Connect();
-		}
-
-		private void Reset()
-		{
-			Port = -1;
-			IPAddress = String.Empty;
 		}
 
 		public void SendMessageToGame(string message)
@@ -79,7 +71,6 @@ namespace RTUEditor
 			{
 				socket.Close();
 			}
-			Reset();
 		}
 	}
 }
