@@ -11,7 +11,7 @@ namespace RTUEditor
 {
 	public class EditorRtuController : IEditorRtuController
 	{
-		private readonly RTUEditorConnection connection;
+		private readonly HashSet<RTUEditorConnection> connections;
 		private readonly List<IRTUEditorProcessor> handlers;
 		public event Action<RTUScene> SceneChanged;
 		public event Action ReplayedChanges;
@@ -30,7 +30,7 @@ namespace RTUEditor
 
 		private readonly TaskScheduler scheduler;
 		private PayloadRecorder payloadRecorder;
-		public bool IsConnected => connection?.IsConnected ?? false;
+		public bool IsConnected => connections?.Any(x => x.IsConnected) ?? false;
 		public SceneGameObjectStore SceneGameObjectStore { get; private set; }
 		public JsonSerializerSettings JsonSettings { get; private set; }
 
@@ -47,7 +47,7 @@ namespace RTUEditor
 			SceneGameObjectStore = new SceneGameObjectStore(this);
 			handlers = new List<IRTUEditorProcessor>();
 			scheduler = TaskScheduler.FromCurrentSynchronizationContext();
-			connection = new RTUEditorConnection(scheduler);
+			connections = new(new RTUEditorConnectionComparer());
 			JsonSettings = new JSONSettingsCreator().Create();
 			payloadRecorder = new PayloadRecorder(JsonSettings);
 			RTUAssetPostProcesor.Init(this);
@@ -57,24 +57,37 @@ namespace RTUEditor
 		{
 			foreach (var message in payload.GeneratePayload(JsonSettings))
 			{
-				connection.SendMessageToGame(message);
+				connections.ForEach(x => x.SendMessageToGame(message));
 			}
 
 			payloadRecorder.Record(payload);
 		}
 
-		public void Disconnect()
+		public void Disconnect(string ip)
+		{
+			var connection = connections.FirstOrDefault(x => x.IPAddress.Equals(ip));
+			connection?.Disconnect();
+			if (!connections.Any())
+			{
+				CloseScene();
+			}
+		}
+
+		public void DisconnectAll()
 		{
 			CloseScene();
-			connection.Disconnect();
+			connections.ForEach(x => Disconnect(x.IPAddress));
 		}
 
-		public void Connect(string ip,int port, Action connectCallback = null, Action disconnectCallback = null)
+		public void Connect(string ip, int port, Action connectCallback = null, Action disconnectCallback = null)
 		{
-			connection.Connect(ip, port,OnConnection(connectCallback), b => OnDisconnect(disconnectCallback, b));
+			var connection = new RTUEditorConnection();
+			connections.Add(connection);
+			connection.Connect(ip, port, OnConnection(connectCallback, connection),
+				b => OnDisconnect(disconnectCallback, b, connection));
 		}
 
-		private void OnDisconnect(Action disconnectCallback, bool b)
+		private void OnDisconnect(Action disconnectCallback, bool b, RTUEditorConnection connection)
 		{
 			ClearHandlers();
 			try
@@ -89,7 +102,6 @@ namespace RTUEditor
 			try
 			{
 				ThreadingHelpers.ActionOnScheduler(RecorderFinish, scheduler);
-				
 			}
 			catch (Exception e)
 			{
@@ -104,6 +116,8 @@ namespace RTUEditor
 			{
 				RTUDebug.LogError($"Failed to execute disconnection callback: {e.Message}");
 			}
+
+			connections.Remove(connection);
 		}
 
 		private void RecorderFinish()
@@ -114,7 +128,7 @@ namespace RTUEditor
 			});
 		}
 
-		private Action OnConnection(Action connectCallback)
+		private Action OnConnection(Action connectCallback, RTUEditorConnection connection)
 		{
 			return async () =>
 			{
@@ -131,7 +145,7 @@ namespace RTUEditor
 
 				try
 				{
-					await ThreadingHelpers.ActionOnSchedulerAsync(() => Selection.objects = null,scheduler);
+					await ThreadingHelpers.ActionOnSchedulerAsync(() => Selection.objects = null, scheduler);
 					ShowScene();
 					CreateProcessors();
 					payloadRecorder.Start();
@@ -176,6 +190,11 @@ namespace RTUEditor
 			}
 
 			handlers.Clear();
+		}
+
+		public bool HasConnection(string tempValue)
+		{
+			return connections.Any(x => x.IPAddress.Equals(tempValue));
 		}
 	}
 }

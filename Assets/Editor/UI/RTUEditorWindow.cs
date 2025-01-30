@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
@@ -10,10 +13,10 @@ namespace RTUEditor
 {
 	public class RTUEditorWindow : EditorWindow
 	{
+		private List<string> potentialConnections = new();
 		private EditorRtuController controller = new EditorRtuController();
-		private StringScriptableObject IPSO;
 		private string gamePath = "S:\\Users\\pkplo\\OneDrive\\Desktop\\RTUBuild\\Dev\\RTUIdeaTest.exe";
-		private IntScriptableObject PortSO; 
+		private IntScriptableObject PortSO;
 
 		[MenuItem("SH/RTU")]
 		public static void ShowWindow()
@@ -23,11 +26,9 @@ namespace RTUEditor
 
 		private void OnGUI()
 		{
-			EditorGUILayout.BeginHorizontal();
-			gamePath = EditorGUILayout.TextField("Game Exe Path", gamePath);
-			IPSO = AssetDatabase.LoadAssetAtPath<StringScriptableObject>( "Assets/ip.asset");
-			PortSO = AssetDatabase.LoadAssetAtPath<IntScriptableObject>( "Assets/port.asset");
+			PortSO = AssetDatabase.LoadAssetAtPath<IntScriptableObject>("Assets/port.asset");
 
+			EditorGUILayout.BeginHorizontal();
 			if (GUILayout.Button("Run Game"))
 			{
 				try
@@ -39,6 +40,7 @@ namespace RTUEditor
 					RTUDebug.LogWarning($"Failed to Launch built game {e.Message}");
 				}
 			}
+
 			if (GUILayout.Button("Build"))
 			{
 				try
@@ -53,6 +55,7 @@ namespace RTUEditor
 					RTUDebug.LogWarning($"Failed to Launch built game {e.Message}");
 				}
 			}
+
 			if (GUILayout.Button("Build + Run Game"))
 			{
 				try
@@ -66,62 +69,104 @@ namespace RTUEditor
 				}
 			}
 
-			EditorGUILayout.EndHorizontal();
-			EditorGUILayout.BeginHorizontal();
-			
-			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("IP Address", GUILayout.MaxWidth(100));
-			IPSO.Value = EditorGUILayout.TextField(string.Empty, IPSO.Value);
+			// if (GUILayout.Button("Run Game & Connect"))
+			// {
+			// 	try
+			// 	{
+			// 		Task.Run(() =>
+			// 		{
+			// 			Process.Start(gamePath);
+			// 			var timeout = 10;
+			// 			var timeoutCount = 0;
+			//
+			// 			while (!controller.IsConnected && timeoutCount < 10)
+			// 			{
+			// 				timeoutCount++;
+			// 				//controller.Connect(IPSO.Value, PortSO.Value);
+			// 				Task.Delay(1000);
+			// 			}
+			// 		});
+			// 	}
+			// 	catch (Exception e)
+			// 	{
+			// 		RTUDebug.LogWarning($"Failed to Launch built game {e.Message}");
+			// 	}
+			// }
+
 			EditorGUILayout.EndHorizontal();
 
-			
 			EditorGUILayout.BeginHorizontal();
+			gamePath = EditorGUILayout.TextField("Game Exe Path", gamePath);
 			EditorGUILayout.LabelField("Port", GUILayout.MaxWidth(70));
 			PortSO.Value = EditorGUILayout.IntField(string.Empty, PortSO.Value);
 			EditorGUILayout.EndHorizontal();
 
-			if (GUILayout.Button("Run Game & Connect"))
+			BigSeperator();
+			var newConnections = new List<string>();
+
+			foreach (var connection in potentialConnections)
 			{
-				try
+				EditorGUILayout.BeginHorizontal();
+				var tempValue = EditorGUILayout.TextField("IP: ", connection);
+				if (controller.HasConnection(tempValue))
 				{
-					Task.Run(() =>
+					if (GUILayout.Button("Disconnect", GUILayout.MaxWidth(75)))
 					{
-						Process.Start(gamePath);
-						var timeout = 10;
-						var timeoutCount = 0;
+						controller.Disconnect(tempValue);
+					}
+				}
+				else
+				{
+					if (GUILayout.Button("Connect", GUILayout.MaxWidth(75)) && IPAddress.TryParse(tempValue, out _))
+					{
+						controller.Connect(tempValue, PortSO.Value);
+					}
+				}
 
-						while (!controller.IsConnected && timeoutCount<10)
-						{
-							timeoutCount++;
-							controller.Connect(IPSO.Value,PortSO.Value);
-							Task.Delay(1000);
-						}
-					});
-					
-				}
-				catch (Exception e)
+				if (GUILayout.Button("Remove", GUILayout.MaxWidth(75)))
 				{
-					RTUDebug.LogWarning($"Failed to Launch built game {e.Message}");
+					controller.Disconnect(tempValue);
 				}
-			}
-			if (controller.IsConnected)
-			{
-				if (GUILayout.Button("Disconnect from Game"))
+				else
 				{
-					controller.Disconnect();
+					newConnections.Add(tempValue);
 				}
-			}
-			else
-			{
-				if (GUILayout.Button("Connect to Game"))
-				{
-					controller.Connect(IPSO.Value,PortSO.Value);
-				}
+
+				EditorGUILayout.EndHorizontal();
 			}
 
-			EditorGUILayout.EndHorizontal();
+			potentialConnections = newConnections;
+
+			if (GUILayout.Button("Add New Connection"))
+			{
+				potentialConnections.Add(string.Empty);
+			}
+
+			if (GUILayout.Button("Connect All"))
+			{
+				foreach (var pc in potentialConnections)
+				{
+					controller.Connect(pc, PortSO.Value);
+				}
+			}
+
+			BigSeperator();
+
+			SupportActions();
+		}
+
+		private static void BigSeperator()
+		{
+			EditorGUILayout.Space();
+			EditorGUILayout.Space();
+			EditorGUILayout.Separator();
+			EditorGUILayout.Space();
+			EditorGUILayout.Space();
+		}
+
+		private void SupportActions()
+		{
 			EditorGUILayout.BeginHorizontal();
-
 			if (GUILayout.Button("Scene Test"))
 			{
 				controller.ShowScene();

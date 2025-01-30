@@ -41,15 +41,15 @@ namespace RTUEditor
 		public bool IsVisible() => StageUtility.GetCurrentStage() == customStage;
 		public Scene? GetScene() => customStage?.scene;
 
-		public void Close()
+		public async void Close()
 		{
-			ThreadingHelpers.ActionOnScheduler(() =>
+			await ThreadingHelpers.ActionOnSchedulerAsync(() =>
 			{
 				if (IsVisible())
 				{
 					StageUtility.GoToMainStage();
 				}
-			}, scheduler,1000);
+			}, scheduler);
 		}
 	}
 }
