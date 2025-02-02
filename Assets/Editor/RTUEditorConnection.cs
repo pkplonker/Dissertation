@@ -21,6 +21,7 @@ namespace RTUEditor
 			try
 			{
 				socket = new WebSocket($"ws://{ipAddress}:{port}/{behaviour}");
+                
 			}
 			catch (Exception e)
 			{
