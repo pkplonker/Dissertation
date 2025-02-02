@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -28,13 +29,15 @@ namespace RealTimeUpdateRuntime
 				["filterMode"] = value.filterMode.ToString(),
 				["wrapMode"] = value.wrapMode.ToString(),
 				["anisoLevel"] = value.anisoLevel,
-				["graphicsFormat"] = (int) value.graphicsFormat,
 			};
+
 			if (value is Texture2D tex)
 			{
 				textureObj.Add("textureFormat", (int) tex.format);
-				byte[] rawTextureData = tex.GetRawTextureData();
-				textureObj["imageData"] = rawTextureData.Compress();
+				Color32[] data = tex.GetPixels32();
+				var byteArray = MemoryMarshal.Cast<Color32, byte>(data).ToArray();
+				var compressed = byteArray.Compress();
+				textureObj["imageData"] = compressed;
 			}
 
 			if (!value.isReadable)
@@ -51,11 +54,6 @@ namespace RealTimeUpdateRuntime
 
 			textureObj["width"] = value.width;
 			textureObj["height"] = value.height;
-			if (value is Texture2D texture2D)
-			{
-				textureObj["format"] = texture2D.format.ToString();
-			}
-
 			textureObj["mipmapCount"] = value.mipmapCount;
 			textureObj["name"] = value.name;
 
@@ -72,24 +70,14 @@ namespace RealTimeUpdateRuntime
 
 			if (!textureObj.ContainsKey("imageData")) return null;
 
-			Texture2D texture;
-			if (textureObj.ContainsKey("graphicsFormat") && Enum.TryParse(
-				    typeof(UnityEngine.Experimental.Rendering.GraphicsFormat),
-				    textureObj["graphicsFormat"].ToString(), out var outFormat) &&
-			    textureObj.ContainsKey("textureFormat") && Enum.TryParse(
-				    typeof(TextureFormat),
-				    textureObj["textureFormat"].ToString(), out var texFormat))
-			{
-				texture = new Texture2D((int) textureObj["width"], (int) textureObj["height"],
-					(TextureFormat) texFormat, false);
-			}
-			else
-			{
-				texture = new Texture2D((int) textureObj["width"], (int) textureObj["height"]);
-			}
+			Texture2D texture = new Texture2D((int) textureObj["width"], (int) textureObj["height"],
+				TextureFormat.RGBA32,
+				false);
 
 			var rawTextureData = (byte[]) textureObj["imageData"];
-			texture.LoadRawTextureData(rawTextureData.Decompress());
+			var decompressed = rawTextureData.Decompress();
+			var colors = MemoryMarshal.Cast<byte, Color32>(decompressed).ToArray();
+			texture.SetPixels32(colors);
 
 			if (textureObj.ContainsKey("filterMode") &&
 			    Enum.TryParse(textureObj["filterMode"].ToString(), out FilterMode filterMode))

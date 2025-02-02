@@ -8,22 +8,20 @@ namespace RTUEditor
 {
 	public class RTUEditorConnection
 	{
-		private static WebSocket socket;
-		private readonly TaskScheduler scheduler;
-
-		public RTUEditorConnection(TaskScheduler scheduler)
-		{
-			this.scheduler = scheduler;
-		}
-
+		private WebSocket socket;
 		public bool IsConnected => socket?.ReadyState == WebSocketState.Open;
+		public string IPAddress { get; private set; } = string.Empty;
+		public int Port { get; private set; } = -1;
 
-		public void Connect(string ipAddress, int port, Action completeCallback = null, Action<bool> disconnectCallback = null)
+		public void Connect(string ipAddress, int port, Action completeCallback = null, Action disconnectCallback = null)
 		{
+			IPAddress = ipAddress;
+			Port = port;
 			string behaviour = "RTU";
 			try
 			{
 				socket = new WebSocket($"ws://{ipAddress}:{port}/{behaviour}");
+                
 			}
 			catch (Exception e)
 			{
@@ -46,10 +44,14 @@ namespace RTUEditor
 				{
 					RTUDebug.LogWarning($"Unable to establish connection to game. Reason: {args.Reason}");
 				}
-				disconnectCallback?.Invoke(args.WasClean);
+
+				disconnectCallback?.Invoke();
 			};
 			socket.OnMessage += (_, args) => RTUDebug.Log($"Message received: {args.Data}");
-			socket.OnError += (_, args) => RTUDebug.Log($"Error connection to game: {args.Message}");
+			socket.OnError += (_, args) =>
+			{
+				RTUDebug.Log($"Error connection to game: {args.Message}");
+			};
 
 			socket.Connect();
 		}
