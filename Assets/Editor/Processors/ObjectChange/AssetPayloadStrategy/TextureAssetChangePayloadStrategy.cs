@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Newtonsoft.Json;
 using RealTimeUpdateRuntime;
 using RTUEditor.AssetStore;
@@ -18,9 +19,13 @@ namespace RTUEditor.ObjectChange
 				var changes = args.Changes.Where(x =>
 					x.Key.Equals("imageContentsHash", StringComparison.InvariantCultureIgnoreCase));
 				if (!changes.Any()) return true;
+				Color32[] data = tex.GetPixels32();
+				var byteArray = MemoryMarshal.Cast<Color32, byte>(data).ToArray();
+				var compressed = byteArray.Compress();
+				
 				var newArgs = new TextureAssetPropertyChangeEventArgs(args)
 				{
-					ImageData = Convert.ToBase64String(tex.GetRawTextureData().Compress())
+					ImageData = compressed
 				};
 				args = newArgs;
 				return true;

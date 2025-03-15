@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Newtonsoft.Json;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -40,6 +41,7 @@ namespace RealTimeUpdateRuntime
 				x.Key.Equals("imageContentsHash", StringComparison.InvariantCultureIgnoreCase));
 			if (!changes.Any()) return;
 			var change = args.ImageData;
+
 			var elements = GetElements();
 			var assetName = Path.GetFileNameWithoutExtension(args.Path);
 			var matchingAssets = elements.WhereNotNull().Where(x =>
@@ -55,13 +57,54 @@ namespace RealTimeUpdateRuntime
 				{
 					if (texture is Texture2D tex2d)
 					{
-						var bytes = Convert.FromBase64String((string)change);
-						var decompressed = bytes.Decompress();
-						tex2d.LoadRawTextureData(decompressed);
-						tex2d.Apply();
+						try
+						{
+							var rawTextureData = Convert.FromBase64String((string) args.ImageData);
+							var decompressed = rawTextureData.Decompress();
+							var colors = MemoryMarshal.Cast<byte, Color32>(decompressed).ToArray();
+
+							if (!tex2d.isReadable || tex2d.format != TextureFormat.RGBA32)
+							{
+								Texture2D newTex = new Texture2D(tex2d.width, tex2d.height, TextureFormat.RGBA32,
+									false);
+								newTex.SetPixels32(colors);
+								newTex.Apply();
+
+								var renderers = FindObjectsWithTexture(tex2d);
+								foreach (var renderer in renderers)
+								{
+									if (renderer != null)
+									{
+										renderer.material.mainTexture = newTex;
+									}
+								}
+							}
+							else
+							{
+								tex2d.SetPixels32(colors);
+								tex2d.Apply(updateMipmaps: false);
+							}
+						}
+						catch (Exception e)
+						{
+							RTUDebug.LogWarning($"Texture update failed: {e}");
+						}
 					}
 				}
 			}
+		}
+
+		private IEnumerable<Renderer> FindObjectsWithTexture(Texture2D texture)
+		{
+			foreach (var renderer in Object.FindObjectsOfType<Renderer>())
+			{
+				if (renderer.material?.mainTexture == texture)
+				{
+					yield return renderer;
+				}
+			}
+
+			yield break;
 		}
 	}
 }
