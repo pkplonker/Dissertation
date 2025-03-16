@@ -45,7 +45,8 @@ namespace RealTimeUpdateRuntime
 				return;
 			}
 
-			var potentialConverter = converters.FirstOrDefault(x => valueType.IsSubclassOf(x.Key));
+			var potentialConverter = converters
+				.FirstOrDefault(x => valueType.IsSubclassOf(x.Key));
 			if (!potentialConverter.Equals(default(KeyValuePair<Type,JsonConverter>)))
 			{
 				potentialConverter.Value.WriteJson(writer, value, serializer);
